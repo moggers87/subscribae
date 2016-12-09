@@ -7,8 +7,8 @@ class Subscription(models.Model):
     """A subscription that belongs to a user"""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     channel_id = models.CharField(max_length=200)  # check this?
-    last_update = models.DateTime()
-    last_viewed = models.DateTime()
+    last_update = models.DateTimeField()
+    last_viewed = models.DateTimeField()
 
 
 class Bucket(models.Model):
@@ -18,8 +18,8 @@ class Bucket(models.Model):
     """
     subs = RelatedSetField(Subscription)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    last_update = models.DateTime()
-    last_viewed = models.DateTime()
+    last_update = models.DateTimeField()
+    last_viewed = models.DateTimeField()
 
 
 class Video(models.Model):
