@@ -10,9 +10,11 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = (
-    # Examples:
-    # url(r'^$', 'subscribae.views.home', name='home'),
-    # url(r'^blog/', include('blog.urls')),
+    url(r'^$', 'subscribae.views.home', name='home'),
+    url(r'^bucket/(?P<bucket>.+$', 'subscribae.views.bucket', name='bucket'),
+    url(r'^subscription/(?P<subscription>.+$', 'subscribae.views.subscription', name='subscription'),
+    url(r'^video/(?P<video>.+$', 'subscribae.views.video', name='video'),
+
     url(r'^_ah/', include('djangae.urls')),
 
     # Note that by default this is also locked down with login:admin in app.yaml
