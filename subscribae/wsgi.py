@@ -18,6 +18,4 @@ from djangae.wsgi import DjangaeApplication
 settings = "subscribae.settings_live" if is_production_environment() else "subscribae.settings"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings)
 
-
-
 application = DjangaeApplication(get_wsgi_application())
