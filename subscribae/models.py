@@ -6,9 +6,16 @@ from djangae.fields import RelatedSetField
 class Subscription(models.Model):
     """A subscription that belongs to a user"""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    channel_id = models.CharField(max_length=200)  # check this?
     last_update = models.DateTimeField()
     last_viewed = models.DateTimeField()
+
+    # from subscription endpoint
+    channel_id = models.CharField(max_length=200)  # snippet.resourceId.channelId
+    title = models.CharField(max_length=200)  # snippet.title
+    description = models.CharField(max_length=200)  # snippet.description
+    thumbnail = models.ImageField()  # snippet.thumbnails.default
+    # from channel endpoint
+    upload_playlist = models.CharField(max_length=200)  # contentDetails.relatedPlaylists.uploads
 
 
 class Bucket(models.Model):
@@ -24,7 +31,15 @@ class Bucket(models.Model):
 
 class Video(models.Model):
     """A video"""
-    subs = models.ForeignKey(Subscription)
+    subscription = models.ForeignKey(Subscription)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     viewed = models.BooleanField(default=False)
-    youtube_id = models.CharField(max_length=200)  # check this?
+    buckets = RelatedSetField(Bucket)
+
+    # from video endpoint
+    youtube_id = models.CharField(max_length=200)  # id
+    title = models.CharField(max_length=200)  # snippet.title
+    description = models.CharField(max_length=200)  # snippet.description
+    thumbnail = models.ImageField()  # snippet.thumbnails.default
+    # maybe?
+    #player = models.TextField()  # player.embedHtml
