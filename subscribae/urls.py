@@ -16,6 +16,7 @@ urlpatterns = (
     url(r'^bucket/(?P<bucket>.+)$', sub_views.bucket, name='bucket'),
     url(r'^subscription/(?P<subscription>.+)$', sub_views.subscription, name='subscription'),
     url(r'^video/(?P<video>.+)$', sub_views.video, name='video'),
+    url(r'^oauth2callback$', sub_views.oauth_callback, name='oauth2callback'),
 
     url(r'^_ah/', include('djangae.urls')),
 
