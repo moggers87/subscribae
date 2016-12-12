@@ -23,7 +23,7 @@ def video(request, video):
 
 def oauth_callback(request):
     flow = client.flow_from_clientsecrets(
-        settings.OAUTH_SETTINGS,
+        settings.OAUTH_CONF_PATH,
         scope=settings.OAUTH_SCOPES,
         redirect_uri=reverse("oauth2callback"),
     )
