@@ -6,7 +6,7 @@ threadsafe: true
 
 handlers:
 
-- url: /_ah/(mapreduce|queue|warmup|start|stop).*
+- url: /_ah/(clearsessions|mapreduce|queue|warmup|start|stop).*
   script: subscribae.wsgi.application
   login: admin
   secure: always
@@ -18,12 +18,6 @@ handlers:
 - url: /static
   static_dir: static/
   secure: always
-
-# Set Django admin to be login:admin as well as Django's is_staff restriction
-- url: /admin.*
-  script: subscribae.wsgi.application
-  secure: always
-  login: admin
 
 - url: /.*
   script: subscribae.wsgi.application

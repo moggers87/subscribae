@@ -110,6 +110,11 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Oauth settings
+OAUTH_CONF_PATH = os.path.join(BASE_DIR, 'oauth_secrets.json')
+OAUTH_SCOPES = [
+    'https://www.googleapis.com/auth/youtube.readonly',
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/

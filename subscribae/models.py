@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-from djangae.fields import RelatedSetField
+from djangae.fields import JSONField, RelatedSetField
 
 
 class Subscription(models.Model):
@@ -43,3 +43,9 @@ class Video(models.Model):
     thumbnail = models.ImageField()  # snippet.thumbnails.default
     # maybe?
     #player = models.TextField()  # player.embedHtml
+
+
+class OauthToken(models.Model):
+    """Oauth tokens for a specific user"""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    data = JSONField()
