@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 
 from subscribae.models import OauthToken
 from subscribae.utils import get_oauth_flow
@@ -40,4 +40,4 @@ def oauth_callback(request):
 
         return HttpResponseRedirect(reverse("home"))
     else:
-        return HttpResponse("Something went wrong: %s" % request.GET)
+        return HttpResponseForbidden("Something went wrong: %s" % request.GET)

@@ -1,0 +1,16 @@
+language: python
+python:
+    - "2.7"
+
+install: python install_deps
+
+script:
+    - python manage.py test
+
+notifications:
+    irc:
+        channels:
+            - "ircs://irc.megworld.co.uk:9000#inboxen"
+        use_notice: true
+
+sudo: false

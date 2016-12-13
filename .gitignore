@@ -10,6 +10,7 @@ oauth_secrets.json
 !/.gitignore
 !/.gitmodules
 !/.editorconfig
+!/.travis.yml
 
 # C extensions
 *.so
