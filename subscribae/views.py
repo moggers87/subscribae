@@ -35,6 +35,7 @@ def oauth_callback(request):
         redirect_uri=redirect_uri,
         login_hint=request.user.email,
     )
+    flow.params['access_type'] = 'offline'
 
     # TODO: deal with errors. Maybe initial Oauth should be a separate view?
     if "code" not in request.GET:
