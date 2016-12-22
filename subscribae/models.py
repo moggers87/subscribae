@@ -1,6 +1,15 @@
+import base64
+
 from django.conf import settings
 from django.db import models
-from djangae.fields import JSONField, RelatedSetField
+from djangae.fields import ComputedCharField, RelatedSetField
+
+from oauth2client.client import Credentials
+
+
+def _create_key(*args):
+    key = '|'.join([a for a in args])
+    return base64.urlsafe_b64encode(key)
 
 
 class Subscription(models.Model):
@@ -16,6 +25,9 @@ class Subscription(models.Model):
     thumbnail = models.ImageField()  # snippet.thumbnails.default
     # from channel endpoint
     upload_playlist = models.CharField(max_length=200)  # contentDetails.relatedPlaylists.uploads
+
+    # calculate id based on user ID + channel ID so we can get by keys later
+    id = ComputedCharField(lambda self: _create_key(str(self.user_id), self.channel_id), primary_key=True, max_length=200)
 
 
 class Bucket(models.Model):
@@ -44,8 +56,14 @@ class Video(models.Model):
     # maybe?
     #player = models.TextField()  # player.embedHtml
 
+    # calculate id based on user ID + video ID so we can get by keys later
+    id = ComputedCharField(lambda self: _create_key(str(self.user_id), self.youtube_id), primary_key=True, max_length=200)
+
 
 class OauthToken(models.Model):
     """Oauth tokens for a specific user"""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    data = JSONField()
+    data = models.TextField()
+
+    def get(self):
+        return Credentials.new_from_json(self.data)
