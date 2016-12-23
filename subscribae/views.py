@@ -10,14 +10,17 @@ def home(request):
     return HttpResponse("Hello")
 
 
+@login_required
 def bucket(request, bucket):
     return HttpResponse("Hello %s" % bucket)
 
 
+@login_required
 def subscription(request, subscription):
     return HttpResponse("Hello %s" % subscription)
 
 
+@login_required
 def video(request, video):
     return HttpResponse("Hello %s" % video)
 
