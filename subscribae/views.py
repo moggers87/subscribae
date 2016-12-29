@@ -6,6 +6,9 @@ from subscribae.models import OauthToken
 from subscribae.utils import get_oauth_flow, import_subscriptions
 
 
+OAUTH_RETURN_SESSION_KEY = 'subscribae-oauth-return-url-name'
+
+
 def home(request):
     return HttpResponse("Hello")
 
@@ -24,12 +27,14 @@ def subscription(request, subscription):
 def video(request, video):
     return HttpResponse("Hello %s" % video)
 
+
 @login_required
 def sync_subscription(request):
     try:
         import_subscriptions(request.user.id)
         return HttpResponse("Sync started")
     except OauthToken.DoesNotExist:
+        request.session[OAUTH_RETURN_SESSION_KEY] = 'sync'
         return HttpResponseRedirect(reverse('authorise'))
 
 
@@ -49,6 +54,7 @@ def oauth_callback(request):
         credentials = flow.step2_exchange(auth_code)
         OauthToken.objects.update_or_create(user=request.user, defaults={'data': credentials.to_json()})
 
-        return HttpResponseRedirect(reverse("home"))
+        redirect_uri = reverse(request.session.get(OAUTH_RETURN_SESSION_KEY, 'home'))
+        return HttpResponseRedirect(redirect_uri)
     else:
         return HttpResponseForbidden("Something went wrong: %s" % request.GET)
