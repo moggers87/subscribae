@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 
 from subscribae.models import OauthToken
-from subscribae.utils import get_oauth_flow
+from subscribae.utils import get_oauth_flow, import_subscriptions
 
 
 def home(request):
@@ -23,6 +23,14 @@ def subscription(request, subscription):
 @login_required
 def video(request, video):
     return HttpResponse("Hello %s" % video)
+
+@login_required
+def sync_subscription(request):
+    try:
+        import_subscriptions(request.user.id)
+        return HttpResponse("Sync started")
+    except OauthToken.DoesNotExist:
+        return HttpResponseRedirect(reverse('authorise'))
 
 
 @login_required
