@@ -1,3 +1,4 @@
+import logging
 import os
 
 from apiclient.discovery import build
@@ -15,6 +16,8 @@ from subscribae.models import Video, Subscription, OauthToken, create_composite_
 API_NAME = 'youtube'
 API_VERSION = 'v3'
 API_MAX_RESULTS = 10
+
+_log = logging.getLogger(__name__)
 
 
 def get_oauth_flow(user):
@@ -61,14 +64,16 @@ def import_subscriptions(user_id, page_token=None):
             sub_size = len(subscription_list['items'])
             chan_size = len(channel_list['items'])
             assert sub_size == chan_size, "Subscription list and channel list are different sizes! (%s != %s)" % (sub_size, chan_size)
+            _log.debug("Importing batch of %s subscriptions", sub_size)
 
             for channel in channel_list['items']:
                 subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
 
             for sub in subscriptions.itervalues():
                 key = sub.pop('id')
-                Subscription.objects.update_or_create(id=key, defaults=sub)
+                obj, created = Subscription.objects.update_or_create(id=key, defaults=sub)
                 deferred.defer(import_videos, user_id, key, sub['upload_playlist'])
+                _log.debug("Subscription %s%s created", obj.id, "" if created else " not")
 
             if 'nextPageToken' in subscription_list:
                 page_token = subscription_list['nextPageToken']
@@ -94,6 +99,7 @@ def import_videos(user_id, subscription_id, playlist, page_token=None):
             playlist_size = len(playlistitem_list['items'])
             video_size = len(video_list['items'])
             assert playlist_size == video_size, "Playlist item list and video list are different sizes! (%s != %s)" % (playlist_size, video_size)
+            _log.debug("Importing batch of %s videos", video_size)
 
             for video in video_list['items']:
                 data = dict(
@@ -103,7 +109,8 @@ def import_videos(user_id, subscription_id, playlist, page_token=None):
                     description=video['snippet']['description'],
                 )
                 key = create_composite_key(str(user_id), video['id'])
-                Video.objects.update_or_create(id=key, defaults=data)
+                obj, created = Video.objects.update_or_create(id=key, defaults=data)
+                _log.debug("Video %s%s created", obj.id, "" if created else " not")
 
             if 'nextPageToken' in playlistitem_list:
                 break  # TODO: decide how far back we're going to go?
