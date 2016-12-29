@@ -106,7 +106,8 @@ def import_videos(user_id, subscription_id, playlist, page_token=None):
                 Video.objects.update_or_create(id=key, defaults=data)
 
             if 'nextPageToken' in playlistitem_list:
-                page_token = playlistitem_list['nextPageToken']
+                break  # TODO: decide how far back we're going to go?
+                #page_token = playlistitem_list['nextPageToken']
             else:
                 break
     except RuntimeExceededError:
