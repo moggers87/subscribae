@@ -89,7 +89,7 @@ def import_videos(user_id, subscription_id, playlist, page_token=None):
         youtube = get_service(user_id)
         while True:
             playlistitem_list = youtube.playlistItems() \
-                .list(id=playlist, part='contentDetails', pageToken=page_token, maxResults=API_MAX_RESULTS) \
+                .list(playlistId=playlist, part='contentDetails', pageToken=page_token, maxResults=API_MAX_RESULTS) \
                 .execute()
 
             video_list = youtube.videos() \
