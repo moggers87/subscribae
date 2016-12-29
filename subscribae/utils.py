@@ -9,8 +9,7 @@ from google.appengine.runtime import DeadlineExceededError as RuntimeExceededErr
 from oauth2client import client
 import httplib2
 
-from subscribae.models import Subscription, OauthToken, create_composite_key
-
+from subscribae.models import Video, Subscription, OauthToken, create_composite_key
 
 
 API_NAME = 'youtube'
@@ -32,7 +31,7 @@ def get_oauth_flow(user):
     return flow
 
 
-def import_data_for_user(user_id, page_token=None):
+def import_subscriptions(user_id, page_token=None):
     try:
         youtube = get_service(user_id)
         while True:
@@ -50,13 +49,13 @@ def import_data_for_user(user_id, page_token=None):
                     user_id=user_id,
                     last_update=timezone.now(),
                     channel_id=channel_id,
-                    title=item["snippet"]["title"],
-                    description=item["snippet"]["description"],
+                    title=item['snippet']['title'],
+                    description=item['snippet']['description'],
                     upload_playlist=None,  # must fetch this from the channel data
                 )
 
             channel_list = youtube.channels() \
-                .list(id=",".join(subscriptions.keys()), part='contentDetails', maxResults=API_MAX_RESULTS) \
+                .list(id=','.join(subscriptions.keys()), part='contentDetails', maxResults=API_MAX_RESULTS) \
                 .execute()
 
             sub_size = len(subscription_list['items'])
@@ -64,18 +63,54 @@ def import_data_for_user(user_id, page_token=None):
             assert sub_size == chan_size, "Subscription list and channel list are different sizes! (%s != %s)" % (sub_size, chan_size)
 
             for channel in channel_list['items']:
-                subscriptions[channel["id"]]["upload_playlist"] = channel["contentDetails"]["relatedPlaylists"]["uploads"]
+                subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
 
             for sub in subscriptions.itervalues():
-                key = sub.pop("id")
+                key = sub.pop('id')
                 Subscription.objects.update_or_create(id=key, defaults=sub)
+                deferred.defer(import_videos, user_id, key, sub['upload_playlist'])
 
             if 'nextPageToken' in subscription_list:
                 page_token = subscription_list['nextPageToken']
             else:
                 break
+
     except RuntimeExceededError:
-        deferred.defer(import_data_for_user, user_id, page_token)
+        deferred.defer(import_subscriptions, user_id, page_token)
+
+
+def import_videos(user_id, subscription_id, playlist, page_token=None):
+    try:
+        youtube = get_service(user_id)
+        while True:
+            playlistitem_list = youtube.playlistitems() \
+                .list(id=playlist, part='contentDetails', pageToken=page_token, maxResults=API_MAX_RESULTS) \
+                .execute()
+
+            video_list = youtube.videos() \
+                .list(id=','.join([v['videoId'] for v in playlistitem_list['items']]), part='snippet', maxResults=API_MAX_RESULTS) \
+                .execute()
+
+            playlist_size = len(playlistitem_list['items'])
+            video_size = len(video_list['items'])
+            assert playlist_size == video_size, "Playlist item list and video list are different sizes! (%s != %s)" % (playlist_size, video_size)
+
+            for video in video_list['items']:
+                data = dict(
+                    subscription_id=subscription_id,
+                    user_id=user_id,
+                    title=video['snippet']['title'],
+                    description=video['snippet']['description'],
+                )
+                key = create_composite_key(str(user_id), video['id'])
+                Video.objects.update_or_create(id=key, defaults=data)
+
+            if 'nextPageToken' in playlistitem_list:
+                page_token = playlistitem_list['nextPageToken']
+            else:
+                break
+    except RuntimeExceededError:
+        deferred.defer(import_videos, user_id, subscription_id, playlist, page_token)
 
 
 def get_service(user_id):
