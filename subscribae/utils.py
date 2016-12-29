@@ -93,7 +93,7 @@ def import_videos(user_id, subscription_id, playlist, page_token=None):
                 .execute()
 
             video_list = youtube.videos() \
-                .list(id=','.join([v['videoId'] for v in playlistitem_list['items']]), part='snippet', maxResults=API_MAX_RESULTS) \
+                .list(id=','.join([v['contentDetails']['videoId'] for v in playlistitem_list['items']]), part='snippet', maxResults=API_MAX_RESULTS) \
                 .execute()
 
             playlist_size = len(playlistitem_list['items'])
@@ -107,6 +107,7 @@ def import_videos(user_id, subscription_id, playlist, page_token=None):
                     user_id=user_id,
                     title=video['snippet']['title'],
                     description=video['snippet']['description'],
+                    youtube_id=video['id'],
                 )
                 key = create_composite_key(str(user_id), video['id'])
                 obj, created = Video.objects.update_or_create(id=key, defaults=data)

@@ -20,7 +20,7 @@ class Subscription(models.Model):
     # from subscription endpoint
     channel_id = models.CharField(max_length=200)  # snippet.resourceId.channelId
     title = models.CharField(max_length=200)  # snippet.title
-    description = models.CharField(max_length=200)  # snippet.description
+    description = models.TextField()  # snippet.description
     thumbnail = models.ImageField()  # snippet.thumbnails.default
 
     # from channel endpoint
@@ -51,7 +51,7 @@ class Video(models.Model):
     # from video endpoint
     youtube_id = models.CharField(max_length=200)  # id
     title = models.CharField(max_length=200)  # snippet.title
-    description = models.CharField(max_length=200)  # snippet.description
+    description = models.TextField()  # snippet.description
     thumbnail = models.ImageField(null=True)  # snippet.thumbnails.default
     # maybe?
     #player = models.TextField()  # player.embedHtml
