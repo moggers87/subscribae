@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from google.appengine.ext.deferred import deferred
 
 from subscribae.models import OauthToken
 from subscribae.utils import get_oauth_flow, import_subscriptions
@@ -30,10 +31,10 @@ def video(request, video):
 
 @login_required
 def sync_subscription(request):
-    try:
-        import_subscriptions(request.user.id)
+    if OauthToken.objects.filter(user_id=request.user.id).exists():
+        deferred.defer(import_subscriptions, request.user.id)
         return HttpResponse("Sync started")
-    except OauthToken.DoesNotExist:
+    else:
         request.session[OAUTH_RETURN_SESSION_KEY] = 'sync'
         return HttpResponseRedirect(reverse('authorise'))
 
