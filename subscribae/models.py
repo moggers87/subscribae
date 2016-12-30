@@ -62,7 +62,7 @@ class Video(models.Model):
 
 class OauthToken(models.Model):
     """Oauth tokens for a specific user"""
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, primary_key=True)
     data = models.TextField()
 
     def get(self):
