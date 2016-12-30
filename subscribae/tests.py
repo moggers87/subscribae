@@ -1,8 +1,11 @@
 import os
 
 from djangae.test import TestCase
+from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 import mock
+
+from subscribae.models import OauthToken
 
 
 class ViewTestCase(TestCase):
@@ -29,6 +32,17 @@ class ViewTestCase(TestCase):
 
     def test_video(self):
         response = self.client.get(reverse('video', kwargs={'video': 1}))
+        self.assertEqual(response.status_code, 200)
+
+    def test_sync(self):
+        response = self.client.get(reverse('sync'))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], reverse('authorise'))
+
+        user = get_user_model().objects.get(username='1')
+        OauthToken.objects.create(user=user)
+
+        response = self.client.get(reverse('sync'))
         self.assertEqual(response.status_code, 200)
 
     @mock.patch('subscribae.utils.client')
