@@ -26,6 +26,9 @@ SECRET_KEY = get_app_config().secret_key
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Despite Djangae docs saying this is false by default :)
+DJANGAE_CREATE_UNKNOWN_USER = False
+
 # Application definition
 
 INSTALLED_APPS = (
