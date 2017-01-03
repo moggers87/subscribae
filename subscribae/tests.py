@@ -32,12 +32,16 @@ class MockExecute(object):
 class ViewTestCase(TestCase):
     """Mostly just smoke tests to make sure things are working"""
     def setUp(self):
+        super(ViewTestCase, self).setUp()
         os.environ['USER_EMAIL'] = 'test@example.com'
         os.environ['USER_ID'] = '1'
+        self.user = get_user_model().objects.create(username='1', email='test@example.com')
+
 
     def tearDown(self):
         del os.environ['USER_EMAIL']
         del os.environ['USER_ID']
+        super(ViewTestCase, self).tearDown()
 
     def test_home(self):
         response = self.client.get(reverse('home'))
