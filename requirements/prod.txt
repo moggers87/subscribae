@@ -7,3 +7,4 @@ six
 
 # pin oauth2client to an old version because otherwise the SDK breaks!
 oauth2client==1.4.12
+google-api-python-client
