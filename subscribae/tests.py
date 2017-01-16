@@ -1,4 +1,6 @@
+from datetime import datetime
 from exceptions import BaseException
+from unittest import skip
 import os
 
 from djangae.test import TestCase
@@ -7,7 +9,7 @@ from django.core.urlresolvers import reverse
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
 import mock
 
-from subscribae.models import OauthToken, create_composite_key
+from subscribae.models import Subscription, OauthToken, create_composite_key
 from subscribae.utils import import_subscriptions, import_videos, API_MAX_RESULTS
 
 
@@ -36,7 +38,6 @@ class ViewTestCase(TestCase):
         os.environ['USER_EMAIL'] = 'test@example.com'
         os.environ['USER_ID'] = '1'
         self.user = get_user_model().objects.create(username='1', email='test@example.com')
-
 
     def tearDown(self):
         del os.environ['USER_EMAIL']
@@ -94,6 +95,126 @@ class ViewTestCase(TestCase):
 
 
 class ImportTasksTestCase(TestCase):
+
+    # video imports
+
+    @mock.patch('subscribae.utils.deferred')
+    @mock.patch('subscribae.utils.get_service')
+    def test_import_videos(self, service_mock, defer_mock):
+        playlistitems_mock = service_mock.return_value.playlistItems.return_value.list
+        videos_mock = service_mock.return_value.videos.return_value.list
+
+        playlistitems_mock.return_value.execute.return_value = {
+            'items': [
+                {'contentDetails': {'videoId': 'video123'}},
+                {'contentDetails': {'videoId': 'video456'}},
+            ],
+        }
+        videos_mock.return_value.execute.return_value = {
+            'items': [
+                {
+                    'id': 'video123',
+                    'snippet': {
+                        'title': 'my video',
+                        'description': 'this is my video',
+                    },
+                },
+                {
+                    'id': 'video456',
+                    'snippet': {
+                        'title': 'my other video',
+                        'description': 'this is my other video',
+                    },
+                },
+            ],
+        }
+
+        user = get_user_model().objects.create(username='1')
+        OauthToken.objects.create(user=user, data={})
+        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
+
+        import_videos(user.id, subscription.id, "upload123")
+        self.assertEqual(playlistitems_mock.call_count, 1)
+        self.assertEqual(videos_mock.call_count, 1)
+        self.assertEqual(defer_mock.call_count, 0)
+
+        self.assertEqual(playlistitems_mock.call_args, (
+            (),
+            {'playlistId': 'upload123', 'part': 'contentDetails', 'maxResults': API_MAX_RESULTS, 'pageToken': None}
+        ))
+        self.assertEqual(videos_mock.call_args, (
+            (),
+            {'id': 'video123,video456', 'part': 'snippet', 'maxResults': API_MAX_RESULTS}
+        ))
+
+    @skip("Not implemented")
+    @mock.patch('subscribae.utils.get_service')
+    def test_import_videos_pagination(self, service_mock):
+        class MockExecute(object):
+            def __init__(self, return_values):
+                self.return_values = return_values[:]
+                self.return_values.reverse()
+
+            def __call__(self, *args, **kwargs):
+                value = self.return_values.pop()
+                if isinstance(value, Exception):
+                    raise value
+                else:
+                    return value
+
+        playlistitems_mock = service_mock.return_value.playlistItems.return_value.list
+
+        playlistitems_mock.return_value.execute = MockExecute([
+            {
+                'items': [],
+                'nextPageToken': '123',
+            },
+            {
+                'items': [],
+            },
+        ])
+
+        user = get_user_model().objects.create(username='1')
+        OauthToken.objects.create(user=user, data={})
+        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
+
+        import_videos(user.id, subscription.id, "upload123")
+        self.assertEqual(playlistitems_mock.call_count, 2)
+
+        self.assertEqual(playlistitems_mock.call_args_list,
+        [
+            ((), {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': None}),
+            ((), {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': '123'}),
+        ])
+
+    @skip("Not implemented")
+    @mock.patch('subscribae.utils.deferred')
+    @mock.patch('subscribae.utils.get_service')
+    def test_import_videos_runtime_exceeded(self, service_mock, defer_mock):
+        playlistitems_mock = service_mock.return_value.playlistItems.return_value.list
+
+        playlistitems_mock.return_value.execute = MockExecute([
+            {
+                'items': [],
+                'nextPageToken': '123',
+            },
+            RuntimeExceededError(),
+        ])
+
+        user = get_user_model().objects.create(username='1')
+        OauthToken.objects.create(user=user, data={})
+        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
+
+        import_videos(user.id, subscription.id, "upload123")
+        self.assertEqual(playlistitems_mock.call_count, 2)
+        self.assertEqual(defer_mock.defer.call_count, 1)
+        self.assertEqual(defer_mock.defer.call_args, (
+            (import_videos, user.id, '123'),
+            {},
+        ))
+
+    # Subscription imports
+
     @mock.patch('subscribae.utils.deferred')
     @mock.patch('subscribae.utils.get_service')
     def test_import_subscriptions(self, service_mock, defer_mock):
