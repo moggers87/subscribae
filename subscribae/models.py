@@ -38,7 +38,7 @@ class Bucket(models.Model):
     subs = RelatedSetField(Subscription)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     last_update = models.DateTimeField()
-    last_viewed = models.DateTimeField()
+    last_viewed = models.DateTimeField(null=True)
 
 
 class Video(models.Model):

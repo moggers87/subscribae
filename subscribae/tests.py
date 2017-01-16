@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
 import mock
 
-from subscribae.models import Subscription, OauthToken, create_composite_key
+from subscribae.models import Bucket, Subscription, OauthToken, create_composite_key
 from subscribae.utils import import_subscriptions, import_videos, API_MAX_RESULTS
 
 
@@ -263,7 +263,7 @@ class ImportTasksTestCase(TestCase):
         import_subscriptions(user.id)
         self.assertEqual(subscription_mock.call_count, 1)
         self.assertEqual(channel_mock.call_count, 1)
-        self.assertEqual(defer_mock.defer.call_count, 2)
+        self.assertEqual(defer_mock.defer.call_count, 0)
 
         self.assertEqual(subscription_mock.call_args, (
             (),
@@ -273,10 +273,19 @@ class ImportTasksTestCase(TestCase):
             (),
             {'id': '123,456', 'part': 'contentDetails', 'maxResults': API_MAX_RESULTS}
         ))
+
+        subscriptions = Subscription.objects.all()
+        bucket = Bucket.objects.create(user=user, subs=subscriptions, last_update=datetime.now())
+
+        import_subscriptions(user.id)
+        self.assertEqual(subscription_mock.call_count, 2)
+        self.assertEqual(channel_mock.call_count, 2)
+        self.assertEqual(defer_mock.defer.call_count, 2)
+
         self.assertEqual(defer_mock.defer.call_args_list,
             [
-                ((import_videos, user.id, create_composite_key(str(user.id), '123'), 'upload123'), {}),
-                ((import_videos, user.id, create_composite_key(str(user.id), '456'), 'upload456'), {}),
+                ((import_videos, user.id, create_composite_key(str(user.id), '123'), 'upload123', [bucket.id]), {}),
+                ((import_videos, user.id, create_composite_key(str(user.id), '456'), 'upload456', [bucket.id]), {}),
             ],
         )
 
