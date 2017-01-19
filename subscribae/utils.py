@@ -111,7 +111,7 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                     title=video['snippet']['title'],
                     description=video['snippet']['description'],
                     youtube_id=video['id'],
-                    bucket_ids=bucket_ids,
+                    buckets_ids=bucket_ids,
                 )
                 key = create_composite_key(str(user_id), video['id'])
                 obj, created = Video.objects.update_or_create(id=key, defaults=data)
