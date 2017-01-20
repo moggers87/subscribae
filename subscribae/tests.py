@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
 import mock
 
-from subscribae.models import Subscription, OauthToken, create_composite_key
+from subscribae.models import Bucket, Subscription, OauthToken, create_composite_key
 from subscribae.utils import import_subscriptions, import_videos, API_MAX_RESULTS
 
 
@@ -132,8 +132,9 @@ class ImportTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
         subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
+        bucket = Bucket.objects.create(user=user, subs=[subscription], last_update=datetime.now())
 
-        import_videos(user.id, subscription.id, "upload123")
+        import_videos(user.id, subscription.id, "upload123", [bucket.id])
         self.assertEqual(playlistitems_mock.call_count, 1)
         self.assertEqual(videos_mock.call_count, 1)
         self.assertEqual(defer_mock.call_count, 0)
@@ -177,8 +178,9 @@ class ImportTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
         subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
+        bucket = Bucket.objects.create(user=user, subs=[subscription], last_update=datetime.now())
 
-        import_videos(user.id, subscription.id, "upload123")
+        import_videos(user.id, subscription.id, "upload123", [bucket.id])
         self.assertEqual(playlistitems_mock.call_count, 2)
 
         self.assertEqual(playlistitems_mock.call_args_list,
@@ -204,8 +206,9 @@ class ImportTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
         subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
+        bucket = Bucket.objects.create(user=user, subs=[subscription], last_update=datetime.now())
 
-        import_videos(user.id, subscription.id, "upload123")
+        import_videos(user.id, subscription.id, "upload123", [bucket.id])
         self.assertEqual(playlistitems_mock.call_count, 2)
         self.assertEqual(defer_mock.defer.call_count, 1)
         self.assertEqual(defer_mock.defer.call_args, (
@@ -263,7 +266,7 @@ class ImportTasksTestCase(TestCase):
         import_subscriptions(user.id)
         self.assertEqual(subscription_mock.call_count, 1)
         self.assertEqual(channel_mock.call_count, 1)
-        self.assertEqual(defer_mock.defer.call_count, 2)
+        self.assertEqual(defer_mock.defer.call_count, 0)
 
         self.assertEqual(subscription_mock.call_args, (
             (),
@@ -273,10 +276,19 @@ class ImportTasksTestCase(TestCase):
             (),
             {'id': '123,456', 'part': 'contentDetails', 'maxResults': API_MAX_RESULTS}
         ))
+
+        subscriptions = Subscription.objects.all()
+        bucket = Bucket.objects.create(user=user, subs=subscriptions, last_update=datetime.now())
+
+        import_subscriptions(user.id)
+        self.assertEqual(subscription_mock.call_count, 2)
+        self.assertEqual(channel_mock.call_count, 2)
+        self.assertEqual(defer_mock.defer.call_count, 2)
+
         self.assertEqual(defer_mock.defer.call_args_list,
             [
-                ((import_videos, user.id, create_composite_key(str(user.id), '123'), 'upload123'), {}),
-                ((import_videos, user.id, create_composite_key(str(user.id), '456'), 'upload456'), {}),
+                ((import_videos, user.id, create_composite_key(str(user.id), '123'), 'upload123', [bucket.id]), {}),
+                ((import_videos, user.id, create_composite_key(str(user.id), '456'), 'upload456', [bucket.id]), {}),
             ],
         )
 

@@ -10,7 +10,7 @@ from google.appengine.runtime import DeadlineExceededError as RuntimeExceededErr
 from oauth2client import client
 import httplib2
 
-from subscribae.models import Video, Subscription, OauthToken, create_composite_key
+from subscribae.models import Bucket, Video, Subscription, OauthToken, create_composite_key
 
 
 API_NAME = 'youtube'
@@ -72,7 +72,10 @@ def import_subscriptions(user_id, page_token=None):
             for sub in subscriptions.itervalues():
                 key = sub.pop('id')
                 obj, created = Subscription.objects.update_or_create(id=key, defaults=sub)
-                deferred.defer(import_videos, user_id, key, sub['upload_playlist'])
+                bucket_ids = Bucket.objects.filter(subs_ids=obj.pk).values_list('pk', flat=True)
+                bucket_ids = list(bucket_ids)
+                if len(bucket_ids) > 0:
+                    deferred.defer(import_videos, user_id, key, sub['upload_playlist'], bucket_ids)
                 _log.debug("Subscription %s%s created", obj.id, "" if created else " not")
 
             if 'nextPageToken' in subscription_list:
@@ -84,7 +87,7 @@ def import_subscriptions(user_id, page_token=None):
         deferred.defer(import_subscriptions, user_id, page_token)
 
 
-def import_videos(user_id, subscription_id, playlist, page_token=None):
+def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=None):
     try:
         youtube = get_service(user_id)
         while True:
@@ -108,6 +111,7 @@ def import_videos(user_id, subscription_id, playlist, page_token=None):
                     title=video['snippet']['title'],
                     description=video['snippet']['description'],
                     youtube_id=video['id'],
+                    buckets_ids=bucket_ids,
                 )
                 key = create_composite_key(str(user_id), video['id'])
                 obj, created = Video.objects.update_or_create(id=key, defaults=data)
