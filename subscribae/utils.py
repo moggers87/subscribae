@@ -34,7 +34,10 @@ def get_oauth_flow(user):
     return flow
 
 
-def import_subscriptions(user_id, page_token=None):
+def new_subscriptions(user_id, page_token=None):
+    """Import new subscriptions into the system
+
+    Will ignore subscriptions that we already know about."""
     try:
         youtube = get_service(user_id)
         while True:
@@ -69,22 +72,17 @@ def import_subscriptions(user_id, page_token=None):
             for channel in channel_list['items']:
                 subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
 
-            for sub in subscriptions.itervalues():
-                key = sub.pop('id')
-                obj, created = Subscription.objects.update_or_create(id=key, defaults=sub)
-                bucket_ids = Bucket.objects.filter(subs_ids=obj.pk).values_list('pk', flat=True)
-                bucket_ids = list(bucket_ids)
-                if len(bucket_ids) > 0:
-                    deferred.defer(import_videos, user_id, key, sub['upload_playlist'], bucket_ids)
+            for data in subscriptions.itervalues():
+                key = data.pop('id')
+                obj, created = Subscription.objects.get_or_create(id=key, defaults=data)
                 _log.debug("Subscription %s%s created", obj.id, "" if created else " not")
 
             if 'nextPageToken' in subscription_list:
                 page_token = subscription_list['nextPageToken']
             else:
                 break
-
     except RuntimeExceededError:
-        deferred.defer(import_subscriptions, user_id, page_token)
+        deferred.defer(new_subscriptions, user_id, page_token)
 
 
 def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=None):

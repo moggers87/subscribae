@@ -10,7 +10,7 @@ from google.appengine.runtime import DeadlineExceededError as RuntimeExceededErr
 import mock
 
 from subscribae.models import Bucket, Subscription, OauthToken, create_composite_key
-from subscribae.utils import import_subscriptions, import_videos, API_MAX_RESULTS
+from subscribae.utils import new_subscriptions, import_videos, API_MAX_RESULTS
 
 
 class MockExecute(object):
@@ -94,10 +94,7 @@ class ViewTestCase(TestCase):
         self.assertEqual(response['Location'], reverse('home'))
 
 
-class ImportTasksTestCase(TestCase):
-
-    # video imports
-
+class ImportVideoTasksTestCase(TestCase):
     @mock.patch('subscribae.utils.deferred')
     @mock.patch('subscribae.utils.get_service')
     def test_import_videos(self, service_mock, defer_mock):
@@ -216,11 +213,11 @@ class ImportTasksTestCase(TestCase):
             {},
         ))
 
-    # Subscription imports
 
+class ImportSubscriptionTasksTestCase(TestCase):
     @mock.patch('subscribae.utils.deferred')
     @mock.patch('subscribae.utils.get_service')
-    def test_import_subscriptions(self, service_mock, defer_mock):
+    def test_new_subscriptions(self, service_mock, defer_mock):
         subscription_mock = service_mock.return_value.subscriptions.return_value.list
         channel_mock = service_mock.return_value.channels.return_value.list
 
@@ -263,7 +260,7 @@ class ImportTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
 
-        import_subscriptions(user.id)
+        new_subscriptions(user.id)
         self.assertEqual(subscription_mock.call_count, 1)
         self.assertEqual(channel_mock.call_count, 1)
         self.assertEqual(defer_mock.defer.call_count, 0)
@@ -280,20 +277,13 @@ class ImportTasksTestCase(TestCase):
         subscriptions = Subscription.objects.all()
         bucket = Bucket.objects.create(user=user, subs=subscriptions, last_update=datetime.now())
 
-        import_subscriptions(user.id)
+        new_subscriptions(user.id)
         self.assertEqual(subscription_mock.call_count, 2)
         self.assertEqual(channel_mock.call_count, 2)
-        self.assertEqual(defer_mock.defer.call_count, 2)
-
-        self.assertEqual(defer_mock.defer.call_args_list,
-            [
-                ((import_videos, user.id, create_composite_key(str(user.id), '123'), 'upload123', [bucket.id]), {}),
-                ((import_videos, user.id, create_composite_key(str(user.id), '456'), 'upload456', [bucket.id]), {}),
-            ],
-        )
+        self.assertEqual(defer_mock.defer.call_count, 0)
 
     @mock.patch('subscribae.utils.get_service')
-    def test_import_subscriptions_pagination(self, service_mock):
+    def test_new_subscriptions_pagination(self, service_mock):
         class MockExecute(object):
             def __init__(self, return_values):
                 self.return_values = return_values[:]
@@ -321,7 +311,7 @@ class ImportTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
 
-        import_subscriptions(user.id)
+        new_subscriptions(user.id)
         self.assertEqual(subscription_mock.call_count, 2)
 
         self.assertEqual(subscription_mock.call_args_list,
@@ -332,7 +322,7 @@ class ImportTasksTestCase(TestCase):
 
     @mock.patch('subscribae.utils.deferred')
     @mock.patch('subscribae.utils.get_service')
-    def test_import_subscriptions_runtime_exceeded(self, service_mock, defer_mock):
+    def test_new_subscriptions_runtime_exceeded(self, service_mock, defer_mock):
         subscription_mock = service_mock.return_value.subscriptions.return_value.list
 
         subscription_mock.return_value.execute = MockExecute([
@@ -346,10 +336,10 @@ class ImportTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
 
-        import_subscriptions(user.id)
+        new_subscriptions(user.id)
         self.assertEqual(subscription_mock.call_count, 2)
         self.assertEqual(defer_mock.defer.call_count, 1)
         self.assertEqual(defer_mock.defer.call_args, (
-            (import_subscriptions, user.id, '123'),
+            (new_subscriptions, user.id, '123'),
             {},
         ))

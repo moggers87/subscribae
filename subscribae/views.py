@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidde
 from google.appengine.ext.deferred import deferred
 
 from subscribae.models import OauthToken
-from subscribae.utils import get_oauth_flow, import_subscriptions
+from subscribae.utils import get_oauth_flow, new_subscriptions
 
 
 OAUTH_RETURN_SESSION_KEY = 'subscribae-oauth-return-url-name'
@@ -32,7 +32,7 @@ def video(request, video):
 @login_required
 def sync_subscription(request):
     if OauthToken.objects.filter(user_id=request.user.id).exists():
-        deferred.defer(import_subscriptions, request.user.id)
+        deferred.defer(new_subscriptions, request.user.id)
         return HttpResponse("Sync started")
     else:
         request.session[OAUTH_RETURN_SESSION_KEY] = 'sync'
