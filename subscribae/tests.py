@@ -215,13 +215,17 @@ class ImportVideoTasksTestCase(TestCase):
 
 
 class ImportSubscriptionTasksTestCase(TestCase):
-    @mock.patch('subscribae.utils.deferred')
-    @mock.patch('subscribae.utils.get_service')
-    def test_new_subscriptions(self, service_mock, defer_mock):
-        subscription_mock = service_mock.return_value.subscriptions.return_value.list
-        channel_mock = service_mock.return_value.channels.return_value.list
+    def setUp(self):
+        self.defer_patch = mock.patch('subscribae.utils.deferred')
+        self.defer_mock = self.defer_patch.start()
 
-        subscription_mock.return_value.execute.return_value = {
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.subscription_mock = self.service_mock.return_value.subscriptions.return_value.list
+        self.channel_mock = self.service_mock.return_value.channels.return_value.list
+
+        self.subscription_mock.return_value.execute.return_value = {
             'items': [
                 {
                     'snippet': {
@@ -240,7 +244,7 @@ class ImportSubscriptionTasksTestCase(TestCase):
             ],
         }
 
-        channel_mock.return_value.execute.return_value = {
+        self.channel_mock.return_value.execute.return_value = {
             'items': [
                 {
                     'id': '123',
@@ -257,33 +261,32 @@ class ImportSubscriptionTasksTestCase(TestCase):
             ],
         }
 
-        user = get_user_model().objects.create(username='1')
-        OauthToken.objects.create(user=user, data={})
+        self.user = get_user_model().objects.create(username='1')
+        OauthToken.objects.create(user=self.user, data={})
 
-        new_subscriptions(user.id)
-        self.assertEqual(subscription_mock.call_count, 1)
-        self.assertEqual(channel_mock.call_count, 1)
-        self.assertEqual(defer_mock.defer.call_count, 0)
+    def test_new_subscriptions(self):
+        new_subscriptions(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 1)
+        self.assertEqual(self.channel_mock.call_count, 1)
+        self.assertEqual(self.defer_mock.defer.call_count, 0)
 
-        self.assertEqual(subscription_mock.call_args, (
+        self.assertEqual(self.subscription_mock.call_args, (
             (),
             {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': None}
         ))
-        self.assertEqual(channel_mock.call_args, (
+        self.assertEqual(self.channel_mock.call_args, (
             (),
             {'id': '123,456', 'part': 'contentDetails', 'maxResults': API_MAX_RESULTS}
         ))
 
         subscriptions = Subscription.objects.all()
-        bucket = Bucket.objects.create(user=user, subs=subscriptions, last_update=datetime.now())
 
-        new_subscriptions(user.id)
-        self.assertEqual(subscription_mock.call_count, 2)
-        self.assertEqual(channel_mock.call_count, 2)
-        self.assertEqual(defer_mock.defer.call_count, 0)
+        new_subscriptions(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 2)
+        self.assertEqual(self.channel_mock.call_count, 2)
+        self.assertEqual(self.defer_mock.defer.call_count, 0)
 
-    @mock.patch('subscribae.utils.get_service')
-    def test_new_subscriptions_pagination(self, service_mock):
+    def test_new_subscriptions_pagination(self):
         class MockExecute(object):
             def __init__(self, return_values):
                 self.return_values = return_values[:]
@@ -296,9 +299,7 @@ class ImportSubscriptionTasksTestCase(TestCase):
                 else:
                     return value
 
-        subscription_mock = service_mock.return_value.subscriptions.return_value.list
-
-        subscription_mock.return_value.execute = MockExecute([
+        self.subscription_mock.return_value.execute = MockExecute([
             {
                 'items': [],
                 'nextPageToken': '123',
@@ -307,39 +308,31 @@ class ImportSubscriptionTasksTestCase(TestCase):
                 'items': [],
             },
         ])
+        self.channel_mock.return_value.execute.return_value = {'items': []}
 
-        user = get_user_model().objects.create(username='1')
-        OauthToken.objects.create(user=user, data={})
+        new_subscriptions(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 2)
 
-        new_subscriptions(user.id)
-        self.assertEqual(subscription_mock.call_count, 2)
-
-        self.assertEqual(subscription_mock.call_args_list,
+        self.assertEqual(self.subscription_mock.call_args_list,
         [
             ((), {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': None}),
             ((), {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': '123'}),
         ])
 
-    @mock.patch('subscribae.utils.deferred')
-    @mock.patch('subscribae.utils.get_service')
-    def test_new_subscriptions_runtime_exceeded(self, service_mock, defer_mock):
-        subscription_mock = service_mock.return_value.subscriptions.return_value.list
-
-        subscription_mock.return_value.execute = MockExecute([
+    def test_new_subscriptions_runtime_exceeded(self):
+        self.subscription_mock.return_value.execute = MockExecute([
             {
                 'items': [],
                 'nextPageToken': '123',
             },
             RuntimeExceededError(),
         ])
+        self.channel_mock.return_value.execute.return_value = {'items': []}
 
-        user = get_user_model().objects.create(username='1')
-        OauthToken.objects.create(user=user, data={})
-
-        new_subscriptions(user.id)
-        self.assertEqual(subscription_mock.call_count, 2)
-        self.assertEqual(defer_mock.defer.call_count, 1)
-        self.assertEqual(defer_mock.defer.call_args, (
-            (new_subscriptions, user.id, '123'),
+        new_subscriptions(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 2)
+        self.assertEqual(self.defer_mock.defer.call_count, 1)
+        self.assertEqual(self.defer_mock.defer.call_args, (
+            (new_subscriptions, self.user.id, '123'),
             {},
         ))
