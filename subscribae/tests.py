@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from exceptions import BaseException
 from unittest import skip
 import os
@@ -6,11 +6,13 @@ import os
 from djangae.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
+from django.utils import timezone
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
+import factory
 import mock
 
 from subscribae.models import Bucket, Subscription, OauthToken, create_composite_key
-from subscribae.utils import new_subscriptions, import_videos, API_MAX_RESULTS
+from subscribae.utils import new_subscriptions, update_subscriptions, import_videos, API_MAX_RESULTS
 
 
 class MockExecute(object):
@@ -24,11 +26,41 @@ class MockExecute(object):
         self.return_values.reverse()
 
     def __call__(self, *args, **kwargs):
-        value = self.return_values.pop()
-        if isinstance(value, BaseException):
-            raise value
+        try:
+            self.last_value = self.return_values.pop()
+        except IndexError:
+            pass
+
+        if isinstance(self.last_value, BaseException):
+            raise self.last_value
         else:
-            return value
+            return self.last_value
+
+
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = get_user_model()
+
+    username = factory.Sequence(lambda n: 'john%s' % n)
+    email = factory.LazyAttribute(lambda o: '%s@example.org' % o.username)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        """Call `create_user` rather than `create`
+
+        Happily ignores `django_get_or_create`
+        """
+        manager = cls._get_manager(model_class)
+
+        return manager.create_user(*args, **kwargs)
+
+
+class SubscriptionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Subscription
+
+    user = factory.SubFactory(UserFactory)
+    last_update = factory.LazyFunction(datetime.utcnow)
 
 
 class ViewTestCase(TestCase):
@@ -216,8 +248,7 @@ class ImportVideoTasksTestCase(TestCase):
 
 class ImportSubscriptionTasksTestCase(TestCase):
     def setUp(self):
-        self.defer_patch = mock.patch('subscribae.utils.deferred')
-        self.defer_mock = self.defer_patch.start()
+        super(ImportSubscriptionTasksTestCase, self).setUp()
 
         self.service_patch = mock.patch('subscribae.utils.get_service')
         self.service_mock = self.service_patch.start()
@@ -261,14 +292,14 @@ class ImportSubscriptionTasksTestCase(TestCase):
             ],
         }
 
-        self.user = get_user_model().objects.create(username='1')
+        self.user = UserFactory.create()
         OauthToken.objects.create(user=self.user, data={})
 
     def test_new_subscriptions(self):
         new_subscriptions(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 1)
         self.assertEqual(self.channel_mock.call_count, 1)
-        self.assertEqual(self.defer_mock.defer.call_count, 0)
+        self.assertNumTasksEquals(0)
 
         self.assertEqual(self.subscription_mock.call_args, (
             (),
@@ -284,7 +315,7 @@ class ImportSubscriptionTasksTestCase(TestCase):
         new_subscriptions(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 2)
         self.assertEqual(self.channel_mock.call_count, 2)
-        self.assertEqual(self.defer_mock.defer.call_count, 0)
+        self.assertNumTasksEquals(0)
 
     def test_new_subscriptions_pagination(self):
         class MockExecute(object):
@@ -326,13 +357,16 @@ class ImportSubscriptionTasksTestCase(TestCase):
                 'nextPageToken': '123',
             },
             RuntimeExceededError(),
+            {
+                'items': [],
+            }
         ])
         self.channel_mock.return_value.execute.return_value = {'items': []}
 
         new_subscriptions(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 2)
-        self.assertEqual(self.defer_mock.defer.call_count, 1)
-        self.assertEqual(self.defer_mock.defer.call_args, (
-            (new_subscriptions, self.user.id, '123'),
-            {},
-        ))
+        # deadline exceeded will cause a new task to be spawned
+        self.assertNumTasksEquals(1)
+        # run the task
+        self.process_task_queues()
+        self.assertEqual(self.subscription_mock.call_count, 3)
