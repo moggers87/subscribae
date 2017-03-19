@@ -370,3 +370,67 @@ class ImportSubscriptionTasksTestCase(TestCase):
         # run the task
         self.process_task_queues()
         self.assertEqual(self.subscription_mock.call_count, 3)
+
+    def test_update_subscriptions(self):
+        last_week = timezone.now() - timedelta(7)
+        sub1 = SubscriptionFactory.create(user=self.user, channel_id="123", last_update=last_week)
+        sub2 = SubscriptionFactory.create(user=self.user, channel_id="456", last_update=last_week)
+
+        update_subscriptions(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 1)
+        self.assertEqual(self.channel_mock.call_count, 1)
+
+        sub1.refresh_from_db()
+        self.assertNotEqual(sub1.last_update, last_week)
+        self.assertEqual(sub1.title, "A channel")
+        self.assertEqual(sub1.description, "It's a channel")
+
+        sub2.refresh_from_db()
+        self.assertNotEqual(sub2.last_update, last_week)
+        self.assertEqual(sub2.title, "Another channel")
+        self.assertEqual(sub2.description, "It's another channel")
+
+        # the update task end by deferring itself with the last PK
+        self.assertNumTasksEquals(1)
+        # make sure it doens't infinitely loop
+        self.process_task_queues()
+
+    def test_update_subscriptions_with_last_pk(self):
+        last_week = timezone.now() - timedelta(7)
+        sub1 = SubscriptionFactory.create(user=self.user, channel_id="123", last_update=last_week)
+        sub2 = SubscriptionFactory.create(user=self.user, channel_id="456", last_update=last_week)
+        first, second = sorted([sub1, sub2], key=lambda x: x.pk)
+
+        self.subscription_mock.return_value.execute.return_value['items'] = [{
+            'snippet': {
+                'title': 'Another channel',
+                'description': "It's another channel",
+                'resourceId': {'channelId': second.channel_id},
+            },
+        }]
+
+        self.channel_mock.return_value.execute.return_value['items'] = [{
+            'id': second.channel_id,
+            'contentDetails': {
+                'relatedPlaylists': {'uploads': 'upload%s' % second.channel_id},
+            },
+        }]
+
+        update_subscriptions(self.user.id, last_pk=first.id)
+        self.assertEqual(self.subscription_mock.call_count, 1)
+        self.assertEqual(self.channel_mock.call_count, 1)
+
+        first.refresh_from_db()
+        self.assertEqual(first.last_update, last_week)
+        self.assertEqual(first.title, "")
+        self.assertEqual(first.description, "")
+
+        second.refresh_from_db()
+        self.assertNotEqual(second.last_update, last_week)
+        self.assertEqual(second.title, "Another channel")
+        self.assertEqual(second.description, "It's another channel")
+
+        # the update task end by deferring itself with the last PK
+        self.assertNumTasksEquals(1)
+        # make sure it doens't infinitely loop
+        self.process_task_queues()

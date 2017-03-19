@@ -2,6 +2,7 @@ import logging
 import os
 
 from apiclient.discovery import build
+from djangae.db import transaction
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils import timezone
@@ -32,6 +33,78 @@ def get_oauth_flow(user):
     flow.params['access_type'] = 'offline'
 
     return flow
+
+
+def update_subscriptions(user_id, last_pk=None):
+    """Updates subscriptions"""
+    try:
+        subscriptions = {}
+
+        subscriptions_qs = Subscription.objects.order_by("pk").filter(user_id=user_id)
+        if last_pk:
+            subscriptions_qs = subscriptions_qs.filter(pk__gt=last_pk)
+        subscriptions_qs[:API_MAX_RESULTS]
+        if len(subscriptions_qs) == 0:
+            logging.debug("Subscription updates for User %s done.", user_id)
+            return
+
+        youtube = get_service(user_id)
+
+        subscription_list = youtube.subscriptions() \
+            .list(mine=True, forChannelId=','.join([obj.channel_id for obj in subscriptions_qs]), part='snippet', maxResults=API_MAX_RESULTS) \
+            .execute()
+
+        for item in subscription_list['items']:
+            channel_id = item['snippet']['resourceId']['channelId']
+
+            subscriptions[channel_id] = dict(
+                last_update=timezone.now(),
+                title=item['snippet']['title'],
+                description=item['snippet']['description'],
+                upload_playlist=None,  # must fetch this from the channel data
+            )
+
+        channel_list = youtube.channels() \
+            .list(id=','.join(subscriptions.keys()), part='contentDetails', maxResults=API_MAX_RESULTS) \
+            .execute()
+
+        sub_size = len(subscription_list['items'])
+        chan_size = len(channel_list['items'])
+        assert sub_size == chan_size, "Subscription list and channel list are different sizes! (%s != %s)" % (sub_size, chan_size)
+
+        for channel in channel_list['items']:
+            subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
+
+        sub_count = 0
+        for obj in subscriptions_qs:
+            if obj.channel_id not in subscriptions:
+                # unsubscribed?
+                continue
+
+            sub_count += 1
+            data = subscriptions[obj.channel_id]
+            with transaction.atomic():
+                obj.refresh_from_db()
+
+                obj.last_update = data['last_update']
+                obj.title = data['title']
+                obj.description = data['description']
+                obj.upload_playlist = data['upload_playlist']
+
+                obj.save()
+
+            bucket_ids = Bucket.objects.filter(subs_ids=obj.pk).values_list('pk', flat=True)
+            bucket_ids = list(bucket_ids)
+            if len(bucket_ids) > 0:
+                deferred.defer(import_videos, user_id, key, obj.upload_playlist, bucket_ids)
+
+            last_pk = obj.pk
+
+        assert sub_count == sub_size, "Subscription count mismatch: %s != %s" % (sub_count, sub_size)
+    except RuntimeExceededError:
+        pass
+
+    deferred.defer(update_subscriptions, user_id, last_pk)
 
 
 def new_subscriptions(user_id, page_token=None):
