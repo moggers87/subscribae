@@ -97,6 +97,10 @@ class ViewTestCase(TestCase):
         response = self.client.get(reverse('home'))
         self.assertEqual(response.status_code, 200)
 
+    def test_overview(self):
+        response = self.client.get(reverse('overview'))
+        self.assertEqual(response.status_code, 200)
+
     def test_bucket(self):
         response = self.client.get(reverse('bucket', kwargs={'bucket': 1}))
         self.assertEqual(response.status_code, 200)

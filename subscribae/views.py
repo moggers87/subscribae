@@ -18,6 +18,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.template.response import TemplateResponse
 from google.appengine.ext.deferred import deferred
 
 from subscribae.models import OauthToken
@@ -29,6 +30,11 @@ OAUTH_RETURN_SESSION_KEY = 'subscribae-oauth-return-url-name'
 
 def home(request):
     return HttpResponse("Hello")
+
+
+@login_required
+def overview(request):
+    return TemplateResponse(request, 'subscribae/overview.html', {})
 
 
 @login_required
