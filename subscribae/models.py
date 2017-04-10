@@ -54,6 +54,7 @@ class Bucket(models.Model):
     """
     subs = RelatedSetField(Subscription)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    title = models.CharField(max_length=200)
     last_update = models.DateTimeField()
     last_viewed = models.DateTimeField(null=True)
 
