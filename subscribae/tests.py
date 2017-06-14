@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from exceptions import BaseException
 from unittest import skip
 import os
@@ -6,11 +6,13 @@ import os
 from djangae.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
+from django.utils import timezone
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
+import factory
 import mock
 
 from subscribae.models import Bucket, Subscription, OauthToken, create_composite_key
-from subscribae.utils import import_subscriptions, import_videos, API_MAX_RESULTS
+from subscribae.utils import new_subscriptions, update_subscriptions, import_videos, API_MAX_RESULTS
 
 
 class MockExecute(object):
@@ -24,11 +26,41 @@ class MockExecute(object):
         self.return_values.reverse()
 
     def __call__(self, *args, **kwargs):
-        value = self.return_values.pop()
-        if isinstance(value, BaseException):
-            raise value
+        try:
+            self.last_value = self.return_values.pop()
+        except IndexError:
+            pass
+
+        if isinstance(self.last_value, BaseException):
+            raise self.last_value
         else:
-            return value
+            return self.last_value
+
+
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = get_user_model()
+
+    username = factory.Sequence(lambda n: 'john%s' % n)
+    email = factory.LazyAttribute(lambda o: '%s@example.org' % o.username)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        """Call `create_user` rather than `create`
+
+        Happily ignores `django_get_or_create`
+        """
+        manager = cls._get_manager(model_class)
+
+        return manager.create_user(*args, **kwargs)
+
+
+class SubscriptionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Subscription
+
+    user = factory.SubFactory(UserFactory)
+    last_update = factory.LazyFunction(datetime.utcnow)
 
 
 class ViewTestCase(TestCase):
@@ -94,10 +126,7 @@ class ViewTestCase(TestCase):
         self.assertEqual(response['Location'], reverse('home'))
 
 
-class ImportTasksTestCase(TestCase):
-
-    # video imports
-
+class ImportVideoTasksTestCase(TestCase):
     @mock.patch('subscribae.utils.deferred')
     @mock.patch('subscribae.utils.get_service')
     def test_import_videos(self, service_mock, defer_mock):
@@ -216,15 +245,18 @@ class ImportTasksTestCase(TestCase):
             {},
         ))
 
-    # Subscription imports
 
-    @mock.patch('subscribae.utils.deferred')
-    @mock.patch('subscribae.utils.get_service')
-    def test_import_subscriptions(self, service_mock, defer_mock):
-        subscription_mock = service_mock.return_value.subscriptions.return_value.list
-        channel_mock = service_mock.return_value.channels.return_value.list
+class ImportSubscriptionTasksTestCase(TestCase):
+    def setUp(self):
+        super(ImportSubscriptionTasksTestCase, self).setUp()
 
-        subscription_mock.return_value.execute.return_value = {
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.subscription_mock = self.service_mock.return_value.subscriptions.return_value.list
+        self.channel_mock = self.service_mock.return_value.channels.return_value.list
+
+        self.subscription_mock.return_value.execute.return_value = {
             'items': [
                 {
                     'snippet': {
@@ -243,7 +275,7 @@ class ImportTasksTestCase(TestCase):
             ],
         }
 
-        channel_mock.return_value.execute.return_value = {
+        self.channel_mock.return_value.execute.return_value = {
             'items': [
                 {
                     'id': '123',
@@ -260,40 +292,32 @@ class ImportTasksTestCase(TestCase):
             ],
         }
 
-        user = get_user_model().objects.create(username='1')
-        OauthToken.objects.create(user=user, data={})
+        self.user = UserFactory.create()
+        OauthToken.objects.create(user=self.user, data={})
 
-        import_subscriptions(user.id)
-        self.assertEqual(subscription_mock.call_count, 1)
-        self.assertEqual(channel_mock.call_count, 1)
-        self.assertEqual(defer_mock.defer.call_count, 0)
+    def test_new_subscriptions(self):
+        new_subscriptions(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 1)
+        self.assertEqual(self.channel_mock.call_count, 1)
+        self.assertNumTasksEquals(0)
 
-        self.assertEqual(subscription_mock.call_args, (
+        self.assertEqual(self.subscription_mock.call_args, (
             (),
             {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': None}
         ))
-        self.assertEqual(channel_mock.call_args, (
+        self.assertEqual(self.channel_mock.call_args, (
             (),
             {'id': '123,456', 'part': 'contentDetails', 'maxResults': API_MAX_RESULTS}
         ))
 
         subscriptions = Subscription.objects.all()
-        bucket = Bucket.objects.create(user=user, subs=subscriptions, last_update=datetime.now())
 
-        import_subscriptions(user.id)
-        self.assertEqual(subscription_mock.call_count, 2)
-        self.assertEqual(channel_mock.call_count, 2)
-        self.assertEqual(defer_mock.defer.call_count, 2)
+        new_subscriptions(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 2)
+        self.assertEqual(self.channel_mock.call_count, 2)
+        self.assertNumTasksEquals(0)
 
-        self.assertEqual(defer_mock.defer.call_args_list,
-            [
-                ((import_videos, user.id, create_composite_key(str(user.id), '123'), 'upload123', [bucket.id]), {}),
-                ((import_videos, user.id, create_composite_key(str(user.id), '456'), 'upload456', [bucket.id]), {}),
-            ],
-        )
-
-    @mock.patch('subscribae.utils.get_service')
-    def test_import_subscriptions_pagination(self, service_mock):
+    def test_new_subscriptions_pagination(self):
         class MockExecute(object):
             def __init__(self, return_values):
                 self.return_values = return_values[:]
@@ -306,9 +330,7 @@ class ImportTasksTestCase(TestCase):
                 else:
                     return value
 
-        subscription_mock = service_mock.return_value.subscriptions.return_value.list
-
-        subscription_mock.return_value.execute = MockExecute([
+        self.subscription_mock.return_value.execute = MockExecute([
             {
                 'items': [],
                 'nextPageToken': '123',
@@ -317,39 +339,98 @@ class ImportTasksTestCase(TestCase):
                 'items': [],
             },
         ])
+        self.channel_mock.return_value.execute.return_value = {'items': []}
 
-        user = get_user_model().objects.create(username='1')
-        OauthToken.objects.create(user=user, data={})
+        new_subscriptions(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 2)
 
-        import_subscriptions(user.id)
-        self.assertEqual(subscription_mock.call_count, 2)
-
-        self.assertEqual(subscription_mock.call_args_list,
+        self.assertEqual(self.subscription_mock.call_args_list,
         [
             ((), {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': None}),
             ((), {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': '123'}),
         ])
 
-    @mock.patch('subscribae.utils.deferred')
-    @mock.patch('subscribae.utils.get_service')
-    def test_import_subscriptions_runtime_exceeded(self, service_mock, defer_mock):
-        subscription_mock = service_mock.return_value.subscriptions.return_value.list
-
-        subscription_mock.return_value.execute = MockExecute([
+    def test_new_subscriptions_runtime_exceeded(self):
+        self.subscription_mock.return_value.execute = MockExecute([
             {
                 'items': [],
                 'nextPageToken': '123',
             },
             RuntimeExceededError(),
+            {
+                'items': [],
+            }
         ])
+        self.channel_mock.return_value.execute.return_value = {'items': []}
 
-        user = get_user_model().objects.create(username='1')
-        OauthToken.objects.create(user=user, data={})
+        new_subscriptions(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 2)
+        # deadline exceeded will cause a new task to be spawned
+        self.assertNumTasksEquals(1)
+        # run the task
+        self.process_task_queues()
+        self.assertEqual(self.subscription_mock.call_count, 3)
 
-        import_subscriptions(user.id)
-        self.assertEqual(subscription_mock.call_count, 2)
-        self.assertEqual(defer_mock.defer.call_count, 1)
-        self.assertEqual(defer_mock.defer.call_args, (
-            (import_subscriptions, user.id, '123'),
-            {},
-        ))
+    def test_update_subscriptions(self):
+        last_week = timezone.now() - timedelta(7)
+        sub1 = SubscriptionFactory.create(user=self.user, channel_id="123", last_update=last_week)
+        sub2 = SubscriptionFactory.create(user=self.user, channel_id="456", last_update=last_week)
+
+        update_subscriptions(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 1)
+        self.assertEqual(self.channel_mock.call_count, 1)
+
+        sub1.refresh_from_db()
+        self.assertNotEqual(sub1.last_update, last_week)
+        self.assertEqual(sub1.title, "A channel")
+        self.assertEqual(sub1.description, "It's a channel")
+
+        sub2.refresh_from_db()
+        self.assertNotEqual(sub2.last_update, last_week)
+        self.assertEqual(sub2.title, "Another channel")
+        self.assertEqual(sub2.description, "It's another channel")
+
+        # the update task end by deferring itself with the last PK
+        self.assertNumTasksEquals(1)
+        # make sure it doens't infinitely loop
+        self.process_task_queues()
+
+    def test_update_subscriptions_with_last_pk(self):
+        last_week = timezone.now() - timedelta(7)
+        sub1 = SubscriptionFactory.create(user=self.user, channel_id="123", last_update=last_week)
+        sub2 = SubscriptionFactory.create(user=self.user, channel_id="456", last_update=last_week)
+        first, second = sorted([sub1, sub2], key=lambda x: x.pk)
+
+        self.subscription_mock.return_value.execute.return_value['items'] = [{
+            'snippet': {
+                'title': 'Another channel',
+                'description': "It's another channel",
+                'resourceId': {'channelId': second.channel_id},
+            },
+        }]
+
+        self.channel_mock.return_value.execute.return_value['items'] = [{
+            'id': second.channel_id,
+            'contentDetails': {
+                'relatedPlaylists': {'uploads': 'upload%s' % second.channel_id},
+            },
+        }]
+
+        update_subscriptions(self.user.id, last_pk=first.id)
+        self.assertEqual(self.subscription_mock.call_count, 1)
+        self.assertEqual(self.channel_mock.call_count, 1)
+
+        first.refresh_from_db()
+        self.assertEqual(first.last_update, last_week)
+        self.assertEqual(first.title, "")
+        self.assertEqual(first.description, "")
+
+        second.refresh_from_db()
+        self.assertNotEqual(second.last_update, last_week)
+        self.assertEqual(second.title, "Another channel")
+        self.assertEqual(second.description, "It's another channel")
+
+        # the update task end by deferring itself with the last PK
+        self.assertNumTasksEquals(1)
+        # make sure it doens't infinitely loop
+        self.process_task_queues()
