@@ -1,3 +1,2 @@
-factory-boy
-mock
 nose
+factory-boy
