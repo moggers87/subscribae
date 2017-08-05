@@ -10,4 +10,4 @@ Django==1.9.13
 django-session-csrf==0.7.1
 django-csp==3.3
 django-csp-reports==1.1
-djangae==0.9.10
+git+https://github.com/potatolondon/djangae@32ba63036f55b176eac0eebedbcb0ac3834e0b17#egg=djangae
