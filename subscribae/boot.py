@@ -20,6 +20,15 @@ def fix_path(include_dev_libs_path=False):
     if SITEPACKAGES_DIR not in sys.path:
         sys.path.insert(1, PROD_SITEPACKAGES_DIR)
 
+    # some quick magic to "fix" conflicts between the appengine SDK and protobuf
+    # see https://github.com/google/protobuf/issues/1296#issuecomment-264264926
+    try:
+        # protobuf might be installed globally, or not at all.
+        import google.protobuf
+    except ImportError:
+        pass
+    import google.appengine
+
 
 def get_app_config():
     """Returns the application configuration, creating it if necessary."""
