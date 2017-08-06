@@ -5,7 +5,7 @@
 <div class="subscription-list">
     {% for subscription in subscription_list %}
     <div class="subscription">
-        <p>{{ subscription.title %}</p>
+        <img src="{{ subscription.thumbnail }}" title="{{ subscription.title }}">
     </div>
     {% empty %}
     <h3>{% trans "You have no subscriptions" %}</h3>

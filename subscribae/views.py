@@ -21,7 +21,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidde
 from django.template.response import TemplateResponse
 from google.appengine.ext.deferred import deferred
 
-from subscribae.models import OauthToken
+from subscribae.models import OauthToken, Subscription
 from subscribae.utils import get_oauth_flow, new_subscriptions
 
 
@@ -34,7 +34,10 @@ def home(request):
 
 @login_required
 def overview(request):
-    return TemplateResponse(request, 'subscribae/overview.html', {})
+    context = {
+        'subscription_list': request.user.subscription_set.all(),
+    }
+    return TemplateResponse(request, 'subscribae/overview.html', context)
 
 
 @login_required
