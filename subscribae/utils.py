@@ -41,6 +41,15 @@ def get_oauth_flow(user):
     return flow
 
 
+def get_service(user_id):
+    token = OauthToken.objects.get(user_id=user_id)
+    credentials = token.get()
+    http = credentials.authorize(httplib2.Http())
+
+    service = build(API_NAME, API_VERSION, http=http)
+    return service
+
+
 def update_subscriptions(user_id, last_pk=None):
     """Updates subscriptions"""
     try:
@@ -219,12 +228,3 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                 break
     except RuntimeExceededError:
         deferred.defer(import_videos, user_id, subscription_id, playlist, page_token)
-
-
-def get_service(user_id):
-    token = OauthToken.objects.get(user_id=user_id)
-    credentials = token.get()
-    http = credentials.authorize(httplib2.Http())
-
-    service = build(API_NAME, API_VERSION, http=http)
-    return service
