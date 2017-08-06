@@ -10,7 +10,7 @@ script:
 notifications:
     irc:
         channels:
-            - "ircs://irc.megworld.co.uk:9000#inboxen"
+            - "ircs://irc.megworld.co.uk:9000#subscribae"
         use_notice: true
 
 sudo: false
