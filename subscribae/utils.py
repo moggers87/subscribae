@@ -30,7 +30,13 @@ def get_oauth_flow(user):
         redirect_uri=redirect_uri,
         login_hint=user.email,
     )
+    # we need to access the user's YT account even when they're not directly
+    # accessing the site
     flow.params['access_type'] = 'offline'
+    # make sure YT gives us a refresh token, otherwise the above line is
+    # useless, see
+    # https://github.com/google/google-api-python-client/issues/213
+    flow.params['prompt'] = 'consent'
 
     return flow
 
