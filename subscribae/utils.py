@@ -64,24 +64,30 @@ def update_subscriptions(user_id, last_pk=None):
                 upload_playlist=None,  # must fetch this from the channel data
             )
 
-        channel_list = youtube.channels() \
-            .list(id=','.join(subscriptions.keys()), part='contentDetails', maxResults=API_MAX_RESULTS) \
-            .execute()
+        ids_from_sub = subscriptions.keys()
 
-        sub_size = len(subscription_list['items'])
-        chan_size = len(channel_list['items'])
-        assert sub_size == chan_size, "Subscription list and channel list are different sizes! (%s != %s)" % (sub_size, chan_size)
+        channel_list = youtube.channels() \
+            .list(id=','.join(ids_from_sub), part='contentDetails', maxResults=API_MAX_RESULTS) \
+            .execute()
+        ids_from_chan = [channel['id'] for channel in channel_list['items']]
+
+        # there are times when a subscription has a channel id, but there
+        # isn't channel data for whatever reason, e.g. I'm subscribed to
+        # UCMzNCTNmDMBO9oueVWpuOMg but there's no data from the channel API
+        missing_channels = set(ids_from_sub) - set(ids_from_chan)
+        extra_channels = set(ids_from_chan) - set(ids_from_sub)
+        _log.info("Missing these IDs from the channel list endpoint: %s", missing_channels)
+        _log.info("Extra IDs from the channel list endpoint: %s", extra_channels)
 
         for channel in channel_list['items']:
-            subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
+            if channel['id'] in ids_from_sub:
+                subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
 
-        sub_count = 0
         for obj in subscriptions_qs:
-            if obj.channel_id not in subscriptions:
+            if obj.channel_id not in ids_from_sub:
                 # unsubscribed?
                 continue
 
-            sub_count += 1
             data = subscriptions[obj.channel_id]
             with transaction.atomic():
                 obj.refresh_from_db()
@@ -100,7 +106,6 @@ def update_subscriptions(user_id, last_pk=None):
 
             last_pk = obj.pk
 
-        assert sub_count == sub_size, "Subscription count mismatch: %s != %s" % (sub_count, sub_size)
     except RuntimeExceededError:
         pass
 
@@ -133,17 +138,24 @@ def new_subscriptions(user_id, page_token=None):
                     upload_playlist=None,  # must fetch this from the channel data
                 )
 
-            channel_list = youtube.channels() \
-                .list(id=','.join(subscriptions.keys()), part='contentDetails', maxResults=API_MAX_RESULTS) \
-                .execute()
+            ids_from_sub = subscriptions.keys()
 
-            sub_size = len(subscription_list['items'])
-            chan_size = len(channel_list['items'])
-            assert sub_size == chan_size, "Subscription list and channel list are different sizes! (%s != %s)" % (sub_size, chan_size)
-            _log.debug("Importing batch of %s subscriptions", sub_size)
+            channel_list = youtube.channels() \
+                .list(id=','.join(ids_from_sub), part='contentDetails', maxResults=API_MAX_RESULTS) \
+                .execute()
+            ids_from_chan = [channel['id'] for channel in channel_list['items']]
+
+            # there are times when a subscription has a channel id, but there
+            # isn't channel data for whatever reason, e.g. I'm subscribed to
+            # UCMzNCTNmDMBO9oueVWpuOMg but there's no data from the channel API
+            missing_channels = set(ids_from_sub) - set(ids_from_chan)
+            extra_channels = set(ids_from_chan) - set(ids_from_sub)
+            _log.info("Missing these IDs from the channel list endpoint: %s", missing_channels)
+            _log.info("Extra IDs from the channel list endpoint: %s", extra_channels)
 
             for channel in channel_list['items']:
-                subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
+                if channel['id'] in ids_from_sub:
+                    subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
 
             for data in subscriptions.itervalues():
                 key = data.pop('id')
@@ -165,17 +177,23 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
             playlistitem_list = youtube.playlistItems() \
                 .list(playlistId=playlist, part='contentDetails', pageToken=page_token, maxResults=API_MAX_RESULTS) \
                 .execute()
+            ids_from_playlist = [item['contentDetails']['videoId'] for item in playlistitem_list['items']]
 
             video_list = youtube.videos() \
-                .list(id=','.join([v['contentDetails']['videoId'] for v in playlistitem_list['items']]), part='snippet', maxResults=API_MAX_RESULTS) \
+                .list(id=','.join(ids_from_playlist), part='snippet', maxResults=API_MAX_RESULTS) \
                 .execute()
+            ids_from_video = [video['id'] for video in video_list['items']]
 
-            playlist_size = len(playlistitem_list['items'])
-            video_size = len(video_list['items'])
-            assert playlist_size == video_size, "Playlist item list and video list are different sizes! (%s != %s)" % (playlist_size, video_size)
-            _log.debug("Importing batch of %s videos", video_size)
+
+            missing_videos = set(ids_from_playlist) - set(ids_from_video)
+            extra_videos = set(ids_from_video) - set(ids_from_playlist)
+            _log.info("Missing these IDs from the video list endpoint: %s", missing_videos)
+            _log.info("Extra IDs from the video list endpoint: %s", extra_videos)
 
             for video in video_list['items']:
+                if video['id'] not in ids_from_playlist:
+                    continue
+
                 data = dict(
                     subscription_id=subscription_id,
                     user_id=user_id,
