@@ -188,6 +188,8 @@ def new_subscriptions(user_id, page_token=None):
             for channel in channel_list['items']:
                 if channel['id'] in ids_from_sub:
                     subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
+                else:
+                    del subscriptions[channel['id']]
 
             for data in subscriptions.itervalues():
                 key = data.pop('id')
