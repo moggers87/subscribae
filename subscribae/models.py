@@ -17,10 +17,13 @@
 ##
 import base64
 
-from djangae.fields import ComputedCharField, RelatedSetField
+from djangae.fields import ComputedCharField, RelatedSetField, JSONField
 from django.conf import settings
 from django.db import models
 from oauth2client.client import Credentials
+
+
+DEFAULT_SIZE = 'default'
 
 
 def create_composite_key(*args):
@@ -28,7 +31,23 @@ def create_composite_key(*args):
     return base64.urlsafe_b64encode(key)
 
 
-class Subscription(models.Model):
+class ThumbnailAbstract(models.Model):
+    thumbnails = JSONField()
+
+    def get_thumbnail(self, size=DEFAULT_SIZE):
+        if size in self.thumbnails:
+            return self.thumbnails[size]
+        elif DEFAULT_SIZE in self.thumbnails:
+            return self.thumbnails[DEFAULT_SIZE]
+        elif len(self.thumbnails) > 0:
+            return self.thumbnails.values()[0]
+        else:
+            return ""
+
+    class Meta:
+        abstract = True
+
+class Subscription(ThumbnailAbstract):
     """A subscription that belongs to a user"""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     last_update = models.DateTimeField()
@@ -38,7 +57,6 @@ class Subscription(models.Model):
     channel_id = models.CharField(max_length=200)  # snippet.resourceId.channelId
     title = models.CharField(max_length=200)  # snippet.title
     description = models.TextField()  # snippet.description
-    thumbnail = models.ImageField()  # snippet.thumbnails.default
 
     # from channel endpoint
     upload_playlist = models.CharField(max_length=200)  # contentDetails.relatedPlaylists.uploads
@@ -59,7 +77,7 @@ class Bucket(models.Model):
     last_viewed = models.DateTimeField(null=True)
 
 
-class Video(models.Model):
+class Video(ThumbnailAbstract):
     """A video"""
     subscription = models.ForeignKey(Subscription)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -70,7 +88,6 @@ class Video(models.Model):
     youtube_id = models.CharField(max_length=200)  # id
     title = models.CharField(max_length=200)  # snippet.title
     description = models.TextField()  # snippet.description
-    thumbnail = models.ImageField(null=True)  # snippet.thumbnails.default
     # maybe?
     #player = models.TextField()  # player.embedHtml
 
