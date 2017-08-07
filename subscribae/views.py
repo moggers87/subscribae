@@ -20,8 +20,10 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
+from django.views.decorators.http import require_POST
 from google.appengine.ext.deferred import deferred
 
+from subscribae.forms import BucketForm
 from subscribae.models import OauthToken, Subscription, Bucket
 from subscribae.utils import get_oauth_flow, new_subscriptions
 
@@ -38,6 +40,7 @@ def overview(request):
     context = {
         'subscription_list': request.user.subscription_set.all(),
         'bucket_list': request.user.bucket_set.all(),
+        'form': BucketForm(),
     }
     return TemplateResponse(request, 'subscribae/overview.html', context)
 
@@ -49,6 +52,17 @@ def bucket(request, bucket):
         'bucket': bucket,
     }
     return TemplateResponse(request, 'subscribae/bucket.html', context)
+
+
+@login_required
+@require_POST
+def bucket_new(request):
+    form = BucketForm(user=request.user, data=request.POST)
+    if form.is_valid():
+        bucket = form.save()
+        return HttpResponseRedirect(reverse('bucket', kwargs={'bucket': bucket.pk}))
+    else:
+        return HttpResponseRedirect(reverse('overview'))
 
 
 @login_required

@@ -11,6 +11,11 @@
     {% endfor %}
 </div>
 <div class="bucket-list">
+    <form action="{% url "bucket-new" %}" method="POST">
+        {% csrf_token %}
+        {{ form }}
+        <button>Add</button>
+    </form>
     {% for bucket in bucket_list %}
     <div class="bucket">
         <div class="title {% cycle "black" "white" %}">

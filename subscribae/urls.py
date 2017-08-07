@@ -45,6 +45,7 @@ from subscribae import views as sub_views
 urlpatterns = (
     url(r'^$', sub_views.home, name='home'),
     url(r'^overview$', sub_views.overview, name='overview'),
+    url(r'^bucket/new$', sub_views.bucket_new, name='bucket-new'),
     url(r'^bucket/(?P<bucket>.+)$', sub_views.bucket, name='bucket'),
     url(r'^subscription/(?P<subscription>.+)$', sub_views.subscription, name='subscription'),
     url(r'^video/(?P<video>.+)$', sub_views.video, name='video'),
