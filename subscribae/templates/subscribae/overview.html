@@ -4,9 +4,7 @@
 {% block content %}
 <div class="subscription-list">
     {% for subscription in subscription_list %}
-    <div class="subscription">
-        <img src="{{ subscription.thumbnail }}" title="{{ subscription.title }}">
-    </div>
+        <img src="{{ subscription.get_thumbnail }}" title="{{ subscription.title }}">
     {% empty %}
     <h3>{% trans "You have no subscriptions" %}</h3>
     <p><{% trans "Head over to Youtube and go subscribe to some" %}/p>
@@ -20,9 +18,9 @@
         </div>
         <div class="subscriptions">
             {% for subscription in bucket.subs %}
-            <p>{{ subscription.title }}</p>
+                <img src="{{ subscription.get_thumbnail }}" title="{{ subscription.title }}">
             {% empty %}
-            <p>&laquo;And what am I suppos' to do with an emp-ty case?&raquo;</p>
+                <p>&laquo;And what am I suppos' to do with an emp-ty case?&raquo;</p>
             {% endfor %}
         </div>
     </div>
