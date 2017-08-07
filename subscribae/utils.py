@@ -68,14 +68,18 @@ def get_service(user_id):
 
 
 def update_subscriptions(user_id, last_pk=None):
-    """Updates subscriptions"""
+    """Updates subscriptions
+
+    Loops over subscriptions we already have, deleting ones that no longer
+    appear in the API
+    """
     try:
         subscriptions = {}
 
         subscriptions_qs = Subscription.objects.order_by("pk").filter(user_id=user_id)
         if last_pk:
             subscriptions_qs = subscriptions_qs.filter(pk__gt=last_pk)
-        subscriptions_qs[:API_MAX_RESULTS]
+        subscriptions_qs = subscriptions_qs[:API_MAX_RESULTS]
         if len(subscriptions_qs) == 0:
             logging.debug("Subscription updates for User %s done.", user_id)
             return
@@ -153,7 +157,9 @@ def update_subscriptions(user_id, last_pk=None):
 def new_subscriptions(user_id, page_token=None):
     """Import new subscriptions into the system
 
-    Will ignore subscriptions that we already know about."""
+    Loops over subscription data from API, adding new suscriptions and updating
+    old ones
+    """
     try:
         youtube = get_service(user_id)
         while True:
