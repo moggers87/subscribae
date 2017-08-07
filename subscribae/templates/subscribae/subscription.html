@@ -1,0 +1,8 @@
+{% extends "subscribae/base.html" %}
+{% load i18n %}
+
+{% block content %}
+    <img src="{{ subscription.get_thumbnail }}" title="{{ subscription.title }}">
+    <p>{{ subscription.title }}</p>
+    <p>{{ subscription.description }}</p>
+{% endblock %}

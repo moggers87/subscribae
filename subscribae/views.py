@@ -18,10 +18,11 @@
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from google.appengine.ext.deferred import deferred
 
-from subscribae.models import OauthToken, Subscription
+from subscribae.models import OauthToken, Subscription, Bucket
 from subscribae.utils import get_oauth_flow, new_subscriptions
 
 
@@ -36,18 +37,27 @@ def home(request):
 def overview(request):
     context = {
         'subscription_list': request.user.subscription_set.all(),
+        'bucket_list': request.user.bucket_set.all(),
     }
     return TemplateResponse(request, 'subscribae/overview.html', context)
 
 
 @login_required
 def bucket(request, bucket):
-    return HttpResponse("Hello %s" % bucket)
+    bucket = get_object_or_404(Bucket, pk=bucket)
+    context = {
+        'bucket': bucket,
+    }
+    return TemplateResponse(request, 'subscribae/bucket.html', context)
 
 
 @login_required
 def subscription(request, subscription):
-    return HttpResponse("Hello %s" % subscription)
+    subscription = get_object_or_404(Subscription, pk=subscription)
+    context = {
+        'subscription': subscription,
+    }
+    return TemplateResponse(request, 'subscribae/subscription.html', context)
 
 
 @login_required

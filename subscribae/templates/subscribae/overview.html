@@ -4,7 +4,7 @@
 {% block content %}
 <div class="subscription-list">
     {% for subscription in subscription_list %}
-        <img src="{{ subscription.get_thumbnail }}" title="{{ subscription.title }}">
+    <a href="{% url "subscription" subscription=subscription.pk %}"><img src="{{ subscription.get_thumbnail }}" title="{{ subscription.title }}"></a>
     {% empty %}
     <h3>{% trans "You have no subscriptions" %}</h3>
     <p><{% trans "Head over to Youtube and go subscribe to some" %}/p>
