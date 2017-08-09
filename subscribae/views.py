@@ -32,7 +32,7 @@ OAUTH_RETURN_SESSION_KEY = 'subscribae-oauth-return-url-name'
 
 
 def home(request):
-    return HttpResponse("Hello")
+    return TemplateResponse(request, 'subscribae/home.html', {})
 
 
 @login_required

@@ -8,7 +8,7 @@
     Buckets:
     <ul>
         {% for bucket in buckets %}
-            {{ bucket.title }}
+        <li><a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a></li>
         {% empty %}
             <p>No buckets</p>
         {% endfor %}

@@ -19,11 +19,11 @@
     {% for bucket in bucket_list %}
     <div class="bucket">
         <div class="title {% cycle "black" "white" %}">
-            {{ bucket.title }}
+            <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
         </div>
         <div class="subscriptions">
             {% for subscription in bucket.subs.all %}
-                {{ subscription }}
+            {{ subscription }}
             {% empty %}
                 <p>&laquo;And what am I suppos' to do with an emp-ty case?&raquo;</p>
             {% endfor %}
