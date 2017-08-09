@@ -2,7 +2,14 @@
 {% load i18n %}
 
 {% block content %}
-    <img src="{{ subscription.get_thumbnail }}" title="{{ subscription.title }}">
+    {{ subscription }}
     <p>{{ subscription.title }}</p>
-    <p>{{ subscription.description }}</p>
+    <p><pre>{{ subscription.description }}</pre></p>
+    Buckets:
+    <ul>
+        {% for bucket in buckets %}
+            {{ bucket.title }}
+        {% empty %}
+            <p>No buckets</p>
+        {% endfor %}
 {% endblock %}

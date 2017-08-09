@@ -76,8 +76,10 @@ def bucket_new(request):
 @login_required
 def subscription(request, subscription):
     subscription = get_object_or_404(Subscription, pk=subscription)
+    buckets = Bucket.objects.filter(subs=subscription.pk)
     context = {
         'subscription': subscription,
+        'buckets': buckets,
     }
     return TemplateResponse(request, 'subscribae/subscription.html', context)
 
