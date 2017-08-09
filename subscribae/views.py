@@ -23,7 +23,7 @@ from django.template.response import TemplateResponse
 from django.views.decorators.http import require_POST
 from google.appengine.ext.deferred import deferred
 
-from subscribae.forms import BucketForm
+from subscribae.forms import BucketForm, BucketEditForm
 from subscribae.models import OauthToken, Subscription, Bucket
 from subscribae.utils import get_oauth_flow, new_subscriptions
 
@@ -48,8 +48,16 @@ def overview(request):
 @login_required
 def bucket(request, bucket):
     bucket = get_object_or_404(Bucket, pk=bucket)
+    if request.method == "POST":
+        form = BucketEditForm(instance=bucket, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("bucket", kwargs={"bucket": bucket.pk}))
+    else:
+        form = BucketEditForm(instance=bucket)
     context = {
         'bucket': bucket,
+        'form': form,
     }
     return TemplateResponse(request, 'subscribae/bucket.html', context)
 

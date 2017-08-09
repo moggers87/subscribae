@@ -23,7 +23,7 @@
         </div>
         <div class="subscriptions">
             {% for subscription in bucket.subs %}
-                <img src="{{ subscription.get_thumbnail }}" title="{{ subscription.title }}">
+                {{ subscription }}
             {% empty %}
                 <p>&laquo;And what am I suppos' to do with an emp-ty case?&raquo;</p>
             {% endfor %}
