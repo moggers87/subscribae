@@ -103,10 +103,18 @@ class ViewTestCase(TestCase):
 
     def test_bucket(self):
         response = self.client.get(reverse('bucket', kwargs={'bucket': 1}))
+        self.assertEqual(response.status_code, 404)
+
+        bucket = Bucket.objects.create(user=self.user, last_update=datetime.now())
+        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
         self.assertEqual(response.status_code, 200)
 
     def test_subscription(self):
         response = self.client.get(reverse('subscription', kwargs={'subscription': 1}))
+        self.assertEqual(response.status_code, 404)
+
+        subscription = SubscriptionFactory()
+        response = self.client.get(reverse('subscription', kwargs={'subscription': subscription.pk}))
         self.assertEqual(response.status_code, 200)
 
     def test_video(self):
@@ -118,8 +126,7 @@ class ViewTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('authorise'))
 
-        user = get_user_model().objects.get(username='1')
-        OauthToken.objects.create(user=user)
+        OauthToken.objects.create(user=self.user)
 
         response = self.client.get(reverse('sync'))
         self.assertEqual(response.status_code, 200)
@@ -167,6 +174,7 @@ class ImportVideoTasksTestCase(TestCase):
                     'snippet': {
                         'title': 'my video',
                         'description': 'this is my video',
+                        'thumbnails': {},
                     },
                 },
                 {
@@ -174,6 +182,7 @@ class ImportVideoTasksTestCase(TestCase):
                     'snippet': {
                         'title': 'my other video',
                         'description': 'this is my other video',
+                        'thumbnails': {},
                     },
                 },
             ],
@@ -284,6 +293,7 @@ class ImportSubscriptionTasksTestCase(TestCase):
                         'title': 'A channel',
                         'description': "It's a channel",
                         'resourceId': {'channelId': '123'},
+                        'thumbnails': {},
                     },
                 },
                 {
@@ -291,6 +301,7 @@ class ImportSubscriptionTasksTestCase(TestCase):
                         'title': 'Another channel',
                         'description': "It's another channel",
                         'resourceId': {'channelId': '456'},
+                        'thumbnails': {},
                     },
                 },
             ],
@@ -427,6 +438,7 @@ class ImportSubscriptionTasksTestCase(TestCase):
                 'title': 'Another channel',
                 'description': "It's another channel",
                 'resourceId': {'channelId': second.channel_id},
+                'thumbnails': {},
             },
         }]
 
