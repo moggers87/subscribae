@@ -72,6 +72,14 @@ class UserFactory(factory.django.DjangoModelFactory):
         return manager.create_user(*args, **kwargs)
 
 
+class BucketFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Bucket
+
+    user = factory.SubFactory(UserFactory)
+    last_update = factory.LazyFunction(datetime.utcnow)
+
+
 class SubscriptionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Subscription
@@ -105,7 +113,12 @@ class ViewTestCase(TestCase):
         response = self.client.get(reverse('bucket', kwargs={'bucket': 1}))
         self.assertEqual(response.status_code, 404)
 
-        bucket = Bucket.objects.create(user=self.user, last_update=datetime.now())
+        bucket = BucketFactory(title='Cheese')
+        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
+        self.assertEqual(response.status_code, 404)
+
+        bucket.user = self.user
+        bucket.save()
         response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
         self.assertEqual(response.status_code, 200)
 
@@ -118,6 +131,11 @@ class ViewTestCase(TestCase):
         response = self.client.post(reverse('bucket', kwargs={'bucket': bucket.pk}), data)
         self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
 
+        bucket.refresh_from_db()
+
+        self.assertEqual(bucket.title, 'Games')
+        self.assertEqual(bucket.subs_ids, set([subscription.pk]))
+
     def test_bucket_new(self):
         self.assertEqual(len(self.user.bucket_set.all()), 0)
         data = {
@@ -128,11 +146,19 @@ class ViewTestCase(TestCase):
         bucket = self.user.bucket_set.first()
         self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
 
+        self.assertEqual(bucket.title, 'Games')
+        self.assertEqual(bucket.subs_ids, set())
+
     def test_subscription(self):
         response = self.client.get(reverse('subscription', kwargs={'subscription': 1}))
         self.assertEqual(response.status_code, 404)
 
         subscription = SubscriptionFactory()
+        response = self.client.get(reverse('subscription', kwargs={'subscription': subscription.pk}))
+        self.assertEqual(response.status_code, 404)
+
+        subscription.user = self.user
+        subscription.save()
         response = self.client.get(reverse('subscription', kwargs={'subscription': subscription.pk}))
         self.assertEqual(response.status_code, 200)
 
@@ -210,7 +236,7 @@ class ImportVideoTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
         subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
-        bucket = Bucket.objects.create(user=user, subs=[subscription], last_update=datetime.now())
+        bucket = BucketFactory(user=user, subs=[subscription])
 
         import_videos(user.id, subscription.id, "upload123", [bucket.id])
         self.assertEqual(playlistitems_mock.call_count, 1)
@@ -256,7 +282,7 @@ class ImportVideoTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
         subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
-        bucket = Bucket.objects.create(user=user, subs=[subscription], last_update=datetime.now())
+        bucket = BucketFactory(user=user, subs=[subscription])
 
         import_videos(user.id, subscription.id, "upload123", [bucket.id])
         self.assertEqual(playlistitems_mock.call_count, 2)
@@ -284,7 +310,7 @@ class ImportVideoTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
         subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
-        bucket = Bucket.objects.create(user=user, subs=[subscription], last_update=datetime.now())
+        bucket = BucketFactory(user=user, subs=[subscription])
 
         import_videos(user.id, subscription.id, "upload123", [bucket.id])
         self.assertEqual(playlistitems_mock.call_count, 2)

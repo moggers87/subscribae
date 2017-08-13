@@ -47,7 +47,7 @@ def overview(request):
 
 @login_required
 def bucket(request, bucket):
-    bucket = get_object_or_404(Bucket, pk=bucket)
+    bucket = get_object_or_404(Bucket, pk=bucket, user=request.user)
     if request.method == "POST":
         form = BucketEditForm(instance=bucket, data=request.POST)
         if form.is_valid():
@@ -75,7 +75,7 @@ def bucket_new(request):
 
 @login_required
 def subscription(request, subscription):
-    subscription = get_object_or_404(Subscription, pk=subscription)
+    subscription = get_object_or_404(Subscription, pk=subscription, user=request.user)
     buckets = Bucket.objects.filter(subs=subscription.pk)
     context = {
         'subscription': subscription,
