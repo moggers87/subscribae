@@ -1,0 +1,15 @@
+{% extends "subscribae/base.html" %}
+{% load i18n %}
+
+{% block content %}
+    {{ subscription }}
+    <p>{{ subscription.title }}</p>
+    <p><pre>{{ subscription.description }}</pre></p>
+    Buckets:
+    <ul>
+        {% for bucket in buckets %}
+        <li><a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a></li>
+        {% empty %}
+            <p>No buckets</p>
+        {% endfor %}
+{% endblock %}

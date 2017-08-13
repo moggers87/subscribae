@@ -72,6 +72,14 @@ class UserFactory(factory.django.DjangoModelFactory):
         return manager.create_user(*args, **kwargs)
 
 
+class BucketFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Bucket
+
+    user = factory.SubFactory(UserFactory)
+    last_update = factory.LazyFunction(datetime.utcnow)
+
+
 class SubscriptionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Subscription
@@ -97,12 +105,61 @@ class ViewTestCase(TestCase):
         response = self.client.get(reverse('home'))
         self.assertEqual(response.status_code, 200)
 
+    def test_overview(self):
+        response = self.client.get(reverse('overview'))
+        self.assertEqual(response.status_code, 200)
+
     def test_bucket(self):
         response = self.client.get(reverse('bucket', kwargs={'bucket': 1}))
+        self.assertEqual(response.status_code, 404)
+
+        bucket = BucketFactory(title='Cheese')
+        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
+        self.assertEqual(response.status_code, 404)
+
+        bucket.user = self.user
+        bucket.save()
+        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
         self.assertEqual(response.status_code, 200)
+
+        subscription = SubscriptionFactory(user=self.user)
+        self.assertEqual(len(bucket.subs), 0)
+        data = {
+            'title': 'Games',
+            'subs': [subscription.pk],
+        }
+        response = self.client.post(reverse('bucket', kwargs={'bucket': bucket.pk}), data)
+        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
+
+        bucket.refresh_from_db()
+
+        self.assertEqual(bucket.title, 'Games')
+        self.assertEqual(bucket.subs_ids, set([subscription.pk]))
+
+    def test_bucket_new(self):
+        self.assertEqual(len(self.user.bucket_set.all()), 0)
+        data = {
+            'title': 'Games',
+        }
+        response = self.client.post(reverse('bucket-new'), data)
+        self.assertEqual(len(self.user.bucket_set.all()), 1)
+        bucket = self.user.bucket_set.first()
+        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
+
+        self.assertEqual(bucket.title, 'Games')
+        self.assertEqual(bucket.subs_ids, set())
 
     def test_subscription(self):
         response = self.client.get(reverse('subscription', kwargs={'subscription': 1}))
+        self.assertEqual(response.status_code, 404)
+
+        subscription = SubscriptionFactory()
+        response = self.client.get(reverse('subscription', kwargs={'subscription': subscription.pk}))
+        self.assertEqual(response.status_code, 404)
+
+        subscription.user = self.user
+        subscription.save()
+        response = self.client.get(reverse('subscription', kwargs={'subscription': subscription.pk}))
         self.assertEqual(response.status_code, 200)
 
     def test_video(self):
@@ -114,8 +171,7 @@ class ViewTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('authorise'))
 
-        user = get_user_model().objects.get(username='1')
-        OauthToken.objects.create(user=user)
+        OauthToken.objects.create(user=self.user)
 
         response = self.client.get(reverse('sync'))
         self.assertEqual(response.status_code, 200)
@@ -163,6 +219,7 @@ class ImportVideoTasksTestCase(TestCase):
                     'snippet': {
                         'title': 'my video',
                         'description': 'this is my video',
+                        'thumbnails': {},
                     },
                 },
                 {
@@ -170,6 +227,7 @@ class ImportVideoTasksTestCase(TestCase):
                     'snippet': {
                         'title': 'my other video',
                         'description': 'this is my other video',
+                        'thumbnails': {},
                     },
                 },
             ],
@@ -178,7 +236,7 @@ class ImportVideoTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
         subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
-        bucket = Bucket.objects.create(user=user, subs=[subscription], last_update=datetime.now())
+        bucket = BucketFactory(user=user, subs=[subscription])
 
         import_videos(user.id, subscription.id, "upload123", [bucket.id])
         self.assertEqual(playlistitems_mock.call_count, 1)
@@ -224,7 +282,7 @@ class ImportVideoTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
         subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
-        bucket = Bucket.objects.create(user=user, subs=[subscription], last_update=datetime.now())
+        bucket = BucketFactory(user=user, subs=[subscription])
 
         import_videos(user.id, subscription.id, "upload123", [bucket.id])
         self.assertEqual(playlistitems_mock.call_count, 2)
@@ -252,7 +310,7 @@ class ImportVideoTasksTestCase(TestCase):
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
         subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
-        bucket = Bucket.objects.create(user=user, subs=[subscription], last_update=datetime.now())
+        bucket = BucketFactory(user=user, subs=[subscription])
 
         import_videos(user.id, subscription.id, "upload123", [bucket.id])
         self.assertEqual(playlistitems_mock.call_count, 2)
@@ -280,6 +338,7 @@ class ImportSubscriptionTasksTestCase(TestCase):
                         'title': 'A channel',
                         'description': "It's a channel",
                         'resourceId': {'channelId': '123'},
+                        'thumbnails': {},
                     },
                 },
                 {
@@ -287,6 +346,7 @@ class ImportSubscriptionTasksTestCase(TestCase):
                         'title': 'Another channel',
                         'description': "It's another channel",
                         'resourceId': {'channelId': '456'},
+                        'thumbnails': {},
                     },
                 },
             ],
@@ -423,6 +483,7 @@ class ImportSubscriptionTasksTestCase(TestCase):
                 'title': 'Another channel',
                 'description': "It's another channel",
                 'resourceId': {'channelId': second.channel_id},
+                'thumbnails': {},
             },
         }]
 

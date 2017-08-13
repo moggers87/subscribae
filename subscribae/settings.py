@@ -165,7 +165,7 @@ CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com", "*.gstatic
 CSP_FONT_SRC = ("'self'", "themes.googleusercontent.com", "*.gstatic.com")
 CSP_FRAME_SRC = ("'self'", "www.google.com", "www.youtube.com", "accounts.google.com", "apis.google.com", "plus.google.com")
 CSP_SCRIPT_SRC = ("'self'", "*.googleanalytics.com", "*.google-analytics.com", "ajax.googleapis.com")
-CSP_IMG_SRC = ("'self'", "data:", "s.ytimg.com", "*.googleusercontent.com", "*.gstatic.com", "www.google-analytics.com")
+CSP_IMG_SRC = ("'self'", "https:")
 CSP_CONNECT_SRC = ("'self'", "plus.google.com", "www.google-analytics.com")
 
 

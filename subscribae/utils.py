@@ -68,14 +68,18 @@ def get_service(user_id):
 
 
 def update_subscriptions(user_id, last_pk=None):
-    """Updates subscriptions"""
+    """Updates subscriptions
+
+    Loops over subscriptions we already have, deleting ones that no longer
+    appear in the API
+    """
     try:
         subscriptions = {}
 
         subscriptions_qs = Subscription.objects.order_by("pk").filter(user_id=user_id)
         if last_pk:
             subscriptions_qs = subscriptions_qs.filter(pk__gt=last_pk)
-        subscriptions_qs[:API_MAX_RESULTS]
+        subscriptions_qs = subscriptions_qs[:API_MAX_RESULTS]
         if len(subscriptions_qs) == 0:
             logging.debug("Subscription updates for User %s done.", user_id)
             return
@@ -93,6 +97,7 @@ def update_subscriptions(user_id, last_pk=None):
                 last_update=timezone.now(),
                 title=item['snippet']['title'],
                 description=item['snippet']['description'],
+                thumbnails={size: value.get('url', '') for size, value in item['snippet']['thumbnails'].items()},
                 upload_playlist=None,  # must fetch this from the channel data
             )
 
@@ -115,9 +120,13 @@ def update_subscriptions(user_id, last_pk=None):
             if channel['id'] in ids_from_sub:
                 subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
 
+
         for obj in subscriptions_qs:
             if obj.channel_id not in ids_from_sub:
                 # unsubscribed?
+                continue
+            if obj.channel_id in missing_channels:
+                # missing data
                 continue
 
             data = subscriptions[obj.channel_id]
@@ -127,6 +136,7 @@ def update_subscriptions(user_id, last_pk=None):
                 obj.last_update = data['last_update']
                 obj.title = data['title']
                 obj.description = data['description']
+                obj.thumbnails = data['thumbnails']
                 obj.upload_playlist = data['upload_playlist']
 
                 obj.save()
@@ -147,7 +157,9 @@ def update_subscriptions(user_id, last_pk=None):
 def new_subscriptions(user_id, page_token=None):
     """Import new subscriptions into the system
 
-    Will ignore subscriptions that we already know about."""
+    Loops over subscription data from API, adding new suscriptions and updating
+    old ones
+    """
     try:
         youtube = get_service(user_id)
         while True:
@@ -167,6 +179,7 @@ def new_subscriptions(user_id, page_token=None):
                     channel_id=channel_id,
                     title=item['snippet']['title'],
                     description=item['snippet']['description'],
+                    thumbnails={size: value.get('url', '') for size, value in item['snippet']['thumbnails'].items()},
                     upload_playlist=None,  # must fetch this from the channel data
                 )
 
@@ -190,8 +203,11 @@ def new_subscriptions(user_id, page_token=None):
                     subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
 
             for data in subscriptions.itervalues():
+                if data['channel_id'] in missing_channels:
+                    continue
+
                 key = data.pop('id')
-                obj, created = Subscription.objects.get_or_create(id=key, defaults=data)
+                obj, created = Subscription.objects.update_or_create(id=key, defaults=data)
                 _log.debug("Subscription %s%s created", obj.id, "" if created else " not")
 
             if 'nextPageToken' in subscription_list:
@@ -231,6 +247,7 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                     user_id=user_id,
                     title=video['snippet']['title'],
                     description=video['snippet']['description'],
+                    thumbnails={size: value.get('url', '') for size, value in video['snippet']['thumbnails'].items()},
                     youtube_id=video['id'],
                     buckets_ids=bucket_ids,
                 )

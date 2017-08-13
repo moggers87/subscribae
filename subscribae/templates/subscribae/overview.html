@@ -1,0 +1,37 @@
+{% extends "subscribae/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="subscription-list">
+    {% for subscription in subscription_list %}
+    <a href="{% url "subscription" subscription=subscription.pk %}">{{ subscription }}</a>
+    {% empty %}
+    <h3>{% trans "You have no subscriptions" %}</h3>
+    <p><{% trans "Head over to Youtube and go subscribe to some" %}/p>
+    {% endfor %}
+</div>
+<div class="bucket-list">
+    <form action="{% url "bucket-new" %}" method="POST">
+        {% csrf_token %}
+        {{ form }}
+        <button>Add</button>
+    </form>
+    {% for bucket in bucket_list %}
+    <div class="bucket">
+        <div class="title {% cycle "black" "white" %}">
+            <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
+        </div>
+        <div class="subscriptions">
+            {% for subscription in bucket.subs.all %}
+            {{ subscription }}
+            {% empty %}
+                <p>&laquo;And what am I suppos' to do with an emp-ty case?&raquo;</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <h3>{% trans "Looks like you have no buckets!" %}</h3>
+    <p>{% trans "Would you like to create one?" %}</p>
+    {% endfor %}
+</div>
+{% endblock %}

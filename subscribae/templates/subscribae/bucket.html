@@ -1,0 +1,12 @@
+{% extends "subscribae/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<p>{{ bucket.title }}</p>
+<form action="{% url "bucket" bucket=bucket.pk %}" method="POST">
+    {% csrf_token %}
+    {{ form }}
+
+    <button>Save</button>
+</form>
+{% endblock %}

@@ -1,0 +1,9 @@
+[run]
+source = subscribae
+omit =
+    subscribae/migrations/*
+    subscribae/tests.py
+    subscribae/tests/*
+    subscribae/settings.py
+    subscribae/settings_live.py
+    subscribae/wsgi.py
