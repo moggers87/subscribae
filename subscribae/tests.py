@@ -109,6 +109,25 @@ class ViewTestCase(TestCase):
         response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
         self.assertEqual(response.status_code, 200)
 
+        subscription = SubscriptionFactory(user=self.user)
+        self.assertEqual(len(bucket.subs), 0)
+        data = {
+            'title': 'Games',
+            'subs': [subscription.pk],
+        }
+        response = self.client.post(reverse('bucket', kwargs={'bucket': bucket.pk}), data)
+        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
+
+    def test_bucket_new(self):
+        self.assertEqual(len(self.user.bucket_set.all()), 0)
+        data = {
+            'title': 'Games',
+        }
+        response = self.client.post(reverse('bucket-new'), data)
+        self.assertEqual(len(self.user.bucket_set.all()), 1)
+        bucket = self.user.bucket_set.first()
+        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
+
     def test_subscription(self):
         response = self.client.get(reverse('subscription', kwargs={'subscription': 1}))
         self.assertEqual(response.status_code, 404)
