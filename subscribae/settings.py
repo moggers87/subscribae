@@ -86,7 +86,7 @@ MIDDLEWARE_CLASSES = (
     'djangae.contrib.gauth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'csp.middleware.CSPMiddleware',
-    'session_csrf.CsrfMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -97,13 +97,13 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 "django.contrib.auth.context_processors.auth",
-                "django.core.context_processors.debug",
-                "django.core.context_processors.i18n",
-                "django.core.context_processors.media",
-                "django.core.context_processors.static",
-                "django.core.context_processors.tz",
+                "django.template.context_processors.debug",
+                "django.template.context_processors.i18n",
+                "django.template.context_processors.media",
+                "django.template.context_processors.static",
+                "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "session_csrf.context_processor"
+                "django.template.context_processors.csrf",
             ],
             'debug': True,
             'loaders': [
@@ -115,10 +115,10 @@ TEMPLATES = [
 ]
 
 SILENCED_SYSTEM_CHECKS = [
-    'security.W003', # We're using session_csrf version of CsrfMiddleware, so we can skip that check
+    'djangae.E001',  # we're using Django 1.11 session csrf feature
 ]
-from .boot import register_custom_checks
-register_custom_checks()
+
+CSRF_USE_SESSIONS = True
 
 CSP_REPORT_URI = reverse_lazy('report_csp')
 CSP_REPORTS_LOG = True

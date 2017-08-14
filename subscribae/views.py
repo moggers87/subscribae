@@ -76,7 +76,7 @@ def bucket_new(request):
 @login_required
 def subscription(request, subscription):
     subscription = get_object_or_404(Subscription, pk=subscription, user=request.user)
-    buckets = Bucket.objects.filter(subs=subscription.pk)
+    buckets = Bucket.objects.filter(subs__contains=subscription)
     context = {
         'subscription': subscription,
         'buckets': buckets,
