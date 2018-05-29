@@ -26,6 +26,7 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
 import factory
+import factory.fuzzy
 import mock
 
 from subscribae.models import Bucket, Subscription, OauthToken, create_composite_key
@@ -78,6 +79,7 @@ class BucketFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     last_update = factory.LazyFunction(datetime.utcnow)
+    title = factory.fuzzy.FuzzyText()
 
 
 class SubscriptionFactory(factory.django.DjangoModelFactory):
@@ -114,12 +116,12 @@ class ViewTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
         bucket = BucketFactory(title='Cheese')
-        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
+        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.slug}))
         self.assertEqual(response.status_code, 404)
 
         bucket.user = self.user
         bucket.save()
-        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
+        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.slug}))
         self.assertEqual(response.status_code, 200)
 
         subscription = SubscriptionFactory(user=self.user)
@@ -128,13 +130,17 @@ class ViewTestCase(TestCase):
             'title': 'Games',
             'subs': [subscription.pk],
         }
-        response = self.client.post(reverse('bucket', kwargs={'bucket': bucket.pk}), data)
-        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
+        response = self.client.post(reverse('bucket', kwargs={'bucket': bucket.slug}), data)
 
         bucket.refresh_from_db()
 
+        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.slug}))
         self.assertEqual(bucket.title, 'Games')
         self.assertEqual(bucket.subs_ids, set([subscription.pk]))
+
+        new_bucket = BucketFactory(title='Cheese', user=self.user)
+        response = self.client.post(reverse('bucket', kwargs={'bucket': new_bucket.slug}), data)
+        self.assertEqual(response.status_code, 200)
 
     def test_bucket_new(self):
         self.assertEqual(len(self.user.bucket_set.all()), 0)
@@ -144,10 +150,14 @@ class ViewTestCase(TestCase):
         response = self.client.post(reverse('bucket-new'), data)
         self.assertEqual(len(self.user.bucket_set.all()), 1)
         bucket = self.user.bucket_set.first()
-        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
+        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.slug}))
 
         self.assertEqual(bucket.title, 'Games')
         self.assertEqual(bucket.subs_ids, set())
+
+        response = self.client.post(reverse('bucket-new'), data)
+        self.assertEqual(len(self.user.bucket_set.all()), 1)
+        self.assertEqual(response.status_code, 200)
 
     def test_subscription(self):
         response = self.client.get(reverse('subscription', kwargs={'subscription': 1}))
