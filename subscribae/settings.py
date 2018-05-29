@@ -73,7 +73,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'csp',
     'cspreports',
-    'djangae.contrib.gauth.datastore',
+    'djangae.contrib.gauth_datastore',
     'djangae.contrib.security',
     'subscribae',
     # 'djangae.contrib.uniquetool',
@@ -119,6 +119,8 @@ SILENCED_SYSTEM_CHECKS = [
 ]
 
 CSRF_USE_SESSIONS = True
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 CSP_REPORT_URI = reverse_lazy('report_csp')
 CSP_REPORTS_LOG = True
