@@ -126,6 +126,10 @@ def install_requirements():
         p = subprocess.Popen(args)
         p.wait()
 
+        if p.returncode != 0:
+            print("Pip exited with non-zero return code: {}".format(p.returncode))
+            break
+
 
 if __name__ == "__main__":
 
