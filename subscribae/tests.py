@@ -386,7 +386,9 @@ class ImportSubscriptionTasksTestCase(TestCase):
         new_subscriptions(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 1)
         self.assertEqual(self.channel_mock.call_count, 1)
-        self.assertNumTasksEquals(0)
+        self.assertEqual(Subscription.objects.count(), 2)
+        # two import video tasks for the two subscriptions
+        self.assertNumTasksEquals(2)
 
         self.assertEqual(self.subscription_mock.call_args, (
             (),
@@ -397,11 +399,12 @@ class ImportSubscriptionTasksTestCase(TestCase):
             {'id': '123,456', 'part': 'contentDetails', 'maxResults': API_MAX_RESULTS}
         ))
 
-        subscriptions = Subscription.objects.all()
+        self.flush_task_queues()
 
         new_subscriptions(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 2)
         self.assertEqual(self.channel_mock.call_count, 2)
+        self.assertEqual(Subscription.objects.count(), 2)
         self.assertNumTasksEquals(0)
 
     def test_new_subscriptions_pagination(self):

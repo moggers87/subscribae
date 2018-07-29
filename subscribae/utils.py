@@ -209,6 +209,8 @@ def new_subscriptions(user_id, page_token=None):
                 key = data.pop('id')
                 obj, created = Subscription.objects.update_or_create(id=key, defaults=data)
                 _log.debug("Subscription %s%s created", obj.id, "" if created else " not")
+                if created:
+                    deferred.defer(import_videos, user_id, key, obj.upload_playlist, [], only_first_page=True)
 
             if 'nextPageToken' in subscription_list:
                 page_token = subscription_list['nextPageToken']
@@ -218,7 +220,10 @@ def new_subscriptions(user_id, page_token=None):
         deferred.defer(new_subscriptions, user_id, page_token)
 
 
-def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=None):
+def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=None, only_first_page=False):
+    if page_token is not None and only_first_page:
+        # initial import to show some videos, we don't need to do a full import of every video
+        return
     try:
         youtube = get_service(user_id)
         while True:
@@ -256,8 +261,7 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                 _log.debug("Video %s%s created", obj.id, "" if created else " not")
 
             if 'nextPageToken' in playlistitem_list:
-                break  # TODO: decide how far back we're going to go?
-                #page_token = playlistitem_list['nextPageToken']
+                page_token = playlistitem_list['nextPageToken']
             else:
                 break
     except RuntimeExceededError:
