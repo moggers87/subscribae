@@ -17,11 +17,13 @@
 ##
 import base64
 
+from djangae.db.constraints import UniquenessMixin
 from djangae.fields import ComputedCharField, RelatedSetField, JSONField
 from django.conf import settings
 from django.db import models
 from django.utils.html import escape as escape_html
 from django.utils.safestring import mark_safe
+from django.utils.text import slugify
 from oauth2client.client import Credentials
 
 
@@ -48,6 +50,7 @@ class ThumbnailAbstract(models.Model):
 
     class Meta:
         abstract = True
+
 
 class Subscription(ThumbnailAbstract):
     """A subscription that belongs to a user"""
@@ -79,16 +82,22 @@ class Subscription(ThumbnailAbstract):
 
         return mark_safe(output)
 
-class Bucket(models.Model):
+
+class Bucket(UniquenessMixin, models.Model):
     """A "bucket" that a user can put a subscription in
 
     A subscription can be in more than one bucket
     """
     subs = RelatedSetField(Subscription)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=100)
     last_update = models.DateTimeField()
-    last_viewed = models.DateTimeField(null=True)
+    last_viewed = models.DateTimeField(null=True, blank=True)
+
+    slug = ComputedCharField(lambda self: slugify(self.title, allow_unicode=True), max_length=100)
+
+    class Meta:
+        unique_together = ["user", "title"]
 
 
 class Video(ThumbnailAbstract):

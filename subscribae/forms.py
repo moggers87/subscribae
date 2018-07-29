@@ -21,7 +21,21 @@ from django.utils import timezone
 from subscribae.models import Bucket
 
 
-class BucketForm(forms.ModelForm):
+class BucketUniqueMixin(object):
+    def validate_unique(self):
+        """
+        Call the instance's validate_unique() method and update the form's
+        validation errors if any were raised.
+        """
+        exclude = self._get_validation_exclusions()
+        exclude.remove("user")
+        try:
+            self.instance.validate_unique(exclude=exclude)
+        except forms.ValidationError as e:
+            self._update_errors(e)
+
+
+class BucketForm(BucketUniqueMixin, forms.ModelForm):
     class Meta:
         model = Bucket
         fields = [
@@ -36,7 +50,7 @@ class BucketForm(forms.ModelForm):
             self.instance.last_update = timezone.now()
 
 
-class BucketEditForm(forms.ModelForm):
+class BucketEditForm(BucketUniqueMixin, forms.ModelForm):
     class Meta:
         model = Bucket
         fields = [
