@@ -237,7 +237,6 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                 .execute()
             ids_from_video = [video['id'] for video in video_list['items']]
 
-
             missing_videos = set(ids_from_playlist) - set(ids_from_video)
             extra_videos = set(ids_from_video) - set(ids_from_playlist)
             _log.info("Missing these IDs from the video list endpoint: %s", missing_videos)
@@ -257,12 +256,18 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                     buckets_ids=bucket_ids,
                 )
                 key = create_composite_key(str(user_id), video['id'])
-                obj, created = Video.objects.update_or_create(id=key, defaults=data)
+                obj, created = Video.objects.get_or_create(id=key, defaults=data)
                 _log.debug("Video %s%s created", obj.id, "" if created else " not")
+                if created:
+                    # we've already got this video, we don't need it again
+                    # TODO: we will lose videos if we run out of time and only
+                    # get half way through a page - but this deep in does it matter?
+                    return
 
             if 'nextPageToken' in playlistitem_list:
                 page_token = playlistitem_list['nextPageToken']
             else:
                 break
     except RuntimeExceededError:
-        deferred.defer(import_videos, user_id, subscription_id, playlist, page_token)
+        deferred.defer(import_videos, user_id, subscription_id, playlist, bucket_ids,
+                       page_token=page_token, only_first_page=only_first_page)

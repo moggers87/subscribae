@@ -262,7 +262,6 @@ class ImportVideoTasksTestCase(TestCase):
             {'id': 'video123,video456', 'part': 'snippet', 'maxResults': API_MAX_RESULTS}
         ))
 
-    @skip("Not implemented")
     @mock.patch('subscribae.utils.get_service')
     def test_import_videos_pagination(self, service_mock):
         class MockExecute(object):
@@ -299,11 +298,12 @@ class ImportVideoTasksTestCase(TestCase):
 
         self.assertEqual(playlistitems_mock.call_args_list,
         [
-            ((), {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': None}),
-            ((), {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': '123'}),
+            ((), {'part': 'contentDetails', 'playlistId': 'upload123',
+                  'maxResults': API_MAX_RESULTS, 'pageToken': None}),
+            ((), {'part': 'contentDetails', 'playlistId': 'upload123',
+                  'maxResults': API_MAX_RESULTS, 'pageToken': '123'}),
         ])
 
-    @skip("Not implemented")
     @mock.patch('subscribae.utils.deferred')
     @mock.patch('subscribae.utils.get_service')
     def test_import_videos_runtime_exceeded(self, service_mock, defer_mock):
@@ -326,8 +326,8 @@ class ImportVideoTasksTestCase(TestCase):
         self.assertEqual(playlistitems_mock.call_count, 2)
         self.assertEqual(defer_mock.defer.call_count, 1)
         self.assertEqual(defer_mock.defer.call_args, (
-            (import_videos, user.id, '123'),
-            {},
+            (import_videos, user.id, subscription.id, "upload123", [bucket.id]),
+            {"page_token": "123", "only_first_page": False},
         ))
 
 
