@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
-from datetime import datetime, timedelta
+from datetime import timedelta
 from exceptions import BaseException
 from unittest import skip
 import os
@@ -78,7 +78,7 @@ class BucketFactory(factory.django.DjangoModelFactory):
         model = Bucket
 
     user = factory.SubFactory(UserFactory)
-    last_update = factory.LazyFunction(datetime.utcnow)
+    last_update = factory.LazyFunction(timezone.now)
     title = factory.fuzzy.FuzzyText()
 
 
@@ -87,7 +87,7 @@ class SubscriptionFactory(factory.django.DjangoModelFactory):
         model = Subscription
 
     user = factory.SubFactory(UserFactory)
-    last_update = factory.LazyFunction(datetime.utcnow)
+    last_update = factory.LazyFunction(timezone.now)
 
 
 class ViewTestCase(TestCase):
@@ -245,7 +245,7 @@ class ImportVideoTasksTestCase(TestCase):
 
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
-        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
+        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=timezone.now())
         bucket = BucketFactory(user=user, subs=[subscription])
 
         import_videos(user.id, subscription.id, "upload123", [bucket.id])
@@ -290,7 +290,7 @@ class ImportVideoTasksTestCase(TestCase):
 
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
-        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
+        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=timezone.now())
         bucket = BucketFactory(user=user, subs=[subscription])
 
         import_videos(user.id, subscription.id, "upload123", [bucket.id])
@@ -319,7 +319,7 @@ class ImportVideoTasksTestCase(TestCase):
 
         user = get_user_model().objects.create(username='1')
         OauthToken.objects.create(user=user, data={})
-        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=datetime.now())
+        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=timezone.now())
         bucket = BucketFactory(user=user, subs=[subscription])
 
         import_videos(user.id, subscription.id, "upload123", [bucket.id])
