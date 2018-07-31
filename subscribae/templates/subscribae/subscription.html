@@ -12,4 +12,11 @@
         {% empty %}
             <p>No buckets</p>
         {% endfor %}
+    Videos:
+    <ul>
+        {% for video in subscription.video_set.all %}
+        <li>{{ video.title }}</li>
+        {% empty %}
+            <p>No Videos</p>
+        {% endfor %}
 {% endblock %}
