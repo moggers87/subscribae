@@ -258,7 +258,7 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                 key = create_composite_key(str(user_id), video['id'])
                 obj, created = Video.objects.get_or_create(id=key, defaults=data)
                 _log.debug("Video %s%s created", obj.id, "" if created else " not")
-                if created:
+                if not created:
                     # we've already got this video, we don't need it again
                     # TODO: we will lose videos if we run out of time and only
                     # get half way through a page - but this deep in does it matter?
