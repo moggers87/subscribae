@@ -227,6 +227,10 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
     try:
         youtube = get_service(user_id)
         while True:
+            # TODO: consider
+            # https://developers.google.com/youtube/v3/docs/activities/list it
+            # has things like "publishedAfter" which could be a better way of
+            # working out what we have and have not imported
             playlistitem_list = youtube.playlistItems() \
                 .list(playlistId=playlist, part='contentDetails', pageToken=page_token, maxResults=API_MAX_RESULTS) \
                 .execute()
@@ -241,6 +245,8 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
             extra_videos = set(ids_from_video) - set(ids_from_playlist)
             _log.info("Missing these IDs from the video list endpoint: %s", missing_videos)
             _log.info("Extra IDs from the video list endpoint: %s", extra_videos)
+
+            seen_before = False
 
             for video in video_list['items']:
                 if video['id'] not in ids_from_playlist:
@@ -259,12 +265,10 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                 obj, created = Video.objects.get_or_create(id=key, defaults=data)
                 _log.debug("Video %s%s created", obj.id, "" if created else " not")
                 if not created:
-                    # we've already got this video, we don't need it again
-                    # TODO: we will lose videos if we run out of time and only
-                    # get half way through a page - but this deep in does it matter?
-                    return
+                    # we've seen this video before, therefore we've already imported it
+                    seen_before = True
 
-            if 'nextPageToken' in playlistitem_list:
+            if 'nextPageToken' in playlistitem_list and not seen_before:
                 page_token = playlistitem_list['nextPageToken']
             else:
                 break
