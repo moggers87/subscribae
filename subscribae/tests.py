@@ -180,11 +180,13 @@ class ViewTestCase(TestCase):
         response = self.client.get(reverse('sync'))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('authorise'))
+        self.assertNumTasksEquals(0)
 
         OauthToken.objects.create(user=self.user)
 
         response = self.client.get(reverse('sync'))
         self.assertEqual(response.status_code, 200)
+        self.assertNumTasksEquals(1)
 
     def test_update_subscriptions_cron(self):
         response = self.client.get(reverse('update-subscriptions-cron'))
