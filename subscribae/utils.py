@@ -34,6 +34,7 @@ from subscribae.models import Bucket, Video, Subscription, OauthToken, create_co
 API_NAME = 'youtube'
 API_VERSION = 'v3'
 API_MAX_RESULTS = 10
+USER_SHARD = 500
 
 _log = logging.getLogger(__name__)
 
@@ -67,7 +68,21 @@ def get_service(user_id):
     return service
 
 
-def update_subscriptions(user_id, last_pk=None):
+def update_subscriptions(last_pk=None):
+    try:
+        qs = OauthToken.objects.order_by("pk").all()
+        if last_pk:
+            qs = qs.filter(pk__gt=last_pk)
+
+        for obj in qs.iterator():
+            deferred.defer(update_subscriptions_for_user, obj.user_id)
+            last_pk = obj.pk
+    except RuntimeExceededError:
+        deferred.defer(update_subscriptions, last_pk)
+
+
+
+def update_subscriptions_for_user(user_id, last_pk=None):
     """Updates subscriptions
 
     Loops over subscriptions we already have, deleting ones that no longer
@@ -151,7 +166,7 @@ def update_subscriptions(user_id, last_pk=None):
     except RuntimeExceededError:
         pass
 
-    deferred.defer(update_subscriptions, user_id, last_pk)
+    deferred.defer(update_subscriptions_for_user, user_id, last_pk)
 
 
 def new_subscriptions(user_id, page_token=None):

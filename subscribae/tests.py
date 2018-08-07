@@ -30,7 +30,7 @@ import factory.fuzzy
 import mock
 
 from subscribae.models import Bucket, Subscription, OauthToken, create_composite_key
-from subscribae.utils import new_subscriptions, update_subscriptions, import_videos, API_MAX_RESULTS
+from subscribae.utils import new_subscriptions, update_subscriptions_for_user, update_subscriptions, import_videos, API_MAX_RESULTS
 
 
 class MockExecute(object):
@@ -474,12 +474,12 @@ class ImportSubscriptionTasksTestCase(TestCase):
         self.process_task_queues()
         self.assertEqual(self.subscription_mock.call_count, 3)
 
-    def test_update_subscriptions(self):
+    def test_update_subscriptions_for_user(self):
         last_week = timezone.now() - timedelta(7)
         sub1 = SubscriptionFactory.create(user=self.user, channel_id="123", last_update=last_week)
         sub2 = SubscriptionFactory.create(user=self.user, channel_id="456", last_update=last_week)
 
-        update_subscriptions(self.user.id)
+        update_subscriptions_for_user(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 1)
         self.assertEqual(self.channel_mock.call_count, 1)
 
@@ -520,7 +520,7 @@ class ImportSubscriptionTasksTestCase(TestCase):
             },
         }]
 
-        update_subscriptions(self.user.id, last_pk=first.id)
+        update_subscriptions_for_user(self.user.id, last_pk=first.id)
         self.assertEqual(self.subscription_mock.call_count, 1)
         self.assertEqual(self.channel_mock.call_count, 1)
 
@@ -538,3 +538,17 @@ class ImportSubscriptionTasksTestCase(TestCase):
         self.assertNumTasksEquals(1)
         # make sure it doens't infinitely loop
         self.process_task_queues()
+
+
+class UpdateSubscriptionsTestCase(TestCase):
+    def test_update_subscriptions(self):
+        update_subscriptions()
+        self.assertNumTasksEquals(0)
+
+        user1 = UserFactory()
+        OauthToken.objects.create(user=user1)
+        user2 = UserFactory()
+        OauthToken.objects.create(user=user2)
+
+        update_subscriptions()
+        self.assertNumTasksEquals(2)
