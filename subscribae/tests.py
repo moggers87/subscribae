@@ -186,6 +186,17 @@ class ViewTestCase(TestCase):
         response = self.client.get(reverse('sync'))
         self.assertEqual(response.status_code, 200)
 
+    def test_update_subscriptions_cron(self):
+        response = self.client.get(reverse('update-subscriptions-cron'))
+        self.assertEqual(response.status_code, 403)
+        self.assertNumTasksEquals(0)
+
+        with mock.patch("djangae.environment.is_in_cron"):
+            response = self.client.get(reverse('update-subscriptions-cron'))
+            self.assertEqual(response.status_code, 200)
+            self.assertNumTasksEquals(1)
+
+
     @mock.patch('subscribae.utils.client')
     def test_oauth_start(self, client):
         client.flow_from_clientsecrets.return_value.step1_get_authorize_url.return_value = 'https://myserver/auth'

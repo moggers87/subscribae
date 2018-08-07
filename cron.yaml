@@ -1,0 +1,4 @@
+cron:
+- description: "Subscriptions update"
+  url: /cron/update_subscriptions
+  schedule: every 6 hours

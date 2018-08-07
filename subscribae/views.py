@@ -15,6 +15,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
+
+from djangae.environment import task_or_admin_only
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
@@ -25,7 +27,7 @@ from google.appengine.ext.deferred import deferred
 
 from subscribae.forms import BucketForm, BucketEditForm
 from subscribae.models import OauthToken, Subscription, Bucket
-from subscribae.utils import get_oauth_flow, new_subscriptions
+from subscribae.utils import get_oauth_flow, new_subscriptions, update_subscriptions
 
 
 OAUTH_RETURN_SESSION_KEY = 'subscribae-oauth-return-url-name'
@@ -96,6 +98,12 @@ def sync_subscription(request):
     else:
         request.session[OAUTH_RETURN_SESSION_KEY] = 'sync'
         return HttpResponseRedirect(reverse('authorise'))
+
+
+@task_or_admin_only
+def update_subscriptions_cron(request):
+    deferred.defer(update_subscriptions)
+    return HttpResponse("Update started")
 
 
 @login_required

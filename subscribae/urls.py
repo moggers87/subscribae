@@ -50,6 +50,9 @@ urlpatterns = (
     url(r'^authorise$', sub_views.oauth_start, name='authorise'),
     url(r'^oauth2callback$', sub_views.oauth_callback, name='oauth2callback'),
 
+    # crons
+    url(r'^cron/update_subscriptions$', sub_views.update_subscriptions_cron, name='update-subscriptions-cron'),
+
     url(r'^_ah/', include('djangae.urls')),
 
     url(r'^csp/', include('cspreports.urls')),
