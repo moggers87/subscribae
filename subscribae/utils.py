@@ -54,6 +54,7 @@ def get_oauth_flow(user):
     # make sure YT gives us a refresh token, otherwise the above line is
     # useless, see
     # https://github.com/google/google-api-python-client/issues/213
+    # https://github.com/google/oauth2client/issues/453
     flow.params['prompt'] = 'consent'
 
     return flow
