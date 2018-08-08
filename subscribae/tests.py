@@ -493,8 +493,9 @@ class ImportSubscriptionTasksTestCase(TestCase):
         self.assertEqual(sub2.title, "Another channel")
         self.assertEqual(sub2.description, "It's another channel")
 
-        # the update task end by deferring itself with the last PK
-        self.assertNumTasksEquals(1)
+        # the update task end by deferring itself with the last PK, plus two
+        # import_video calls
+        self.assertNumTasksEquals(3)
         # make sure it doens't infinitely loop
         self.process_task_queues()
 
@@ -534,8 +535,9 @@ class ImportSubscriptionTasksTestCase(TestCase):
         self.assertEqual(second.title, "Another channel")
         self.assertEqual(second.description, "It's another channel")
 
-        # the update task end by deferring itself with the last PK
-        self.assertNumTasksEquals(1)
+        # the update task end by deferring itself with the last PK, plus one
+        # import_video calls
+        self.assertNumTasksEquals(2)
         # make sure it doens't infinitely loop
         self.process_task_queues()
 

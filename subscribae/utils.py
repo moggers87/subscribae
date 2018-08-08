@@ -158,8 +158,7 @@ def update_subscriptions_for_user(user_id, last_pk=None):
 
             bucket_ids = Bucket.objects.filter(subs__contains=obj).values_list('pk', flat=True)
             bucket_ids = list(bucket_ids)
-            if len(bucket_ids) > 0:
-                deferred.defer(import_videos, user_id, key, obj.upload_playlist, bucket_ids)
+            deferred.defer(import_videos, user_id, obj.pk, obj.upload_playlist, bucket_ids)
 
             last_pk = obj.pk
 
