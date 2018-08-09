@@ -554,3 +554,32 @@ class UpdateSubscriptionsTestCase(TestCase):
 
         update_subscriptions()
         self.assertNumTasksEquals(2)
+
+    def test_update_subscriptions_last_pk(self):
+        user1 = UserFactory()
+        OauthToken.objects.create(pk=1, user=user1)
+        user2 = UserFactory()
+        OauthToken.objects.create(pk=2, user=user2)
+
+        update_subscriptions(last_pk=1)
+        self.assertNumTasksEquals(1)
+
+        self.flush_task_queues()
+        update_subscriptions(last_pk=2)
+        self.assertNumTasksEquals(0)
+
+    @mock.patch('subscribae.utils.deferred')
+    def test_update_subscriptions_runtime_exceeded(self, defer_mock):
+        user1 = UserFactory()
+        oauth1 = OauthToken.objects.create(pk=1, user=user1)
+        user2 = UserFactory()
+        oauth2 = OauthToken.objects.create(pk=2, user=user2)
+
+        defer_mock.defer.side_effect = MockExecute([RuntimeExceededError(), None])
+
+        update_subscriptions()
+        self.assertEqual(defer_mock.defer.call_count, 2)
+        self.assertEqual(defer_mock.defer.call_args_list, [
+            ((update_subscriptions_for_user, oauth1.pk), {}),
+            ((update_subscriptions, None), {}),  # defered task was not sent off, so we need to start from the first user again
+        ])
