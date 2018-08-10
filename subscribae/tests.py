@@ -344,9 +344,9 @@ class ImportVideoTasksTestCase(TestCase):
         ))
 
 
-class ImportSubscriptionTasksTestCase(TestCase):
+class NewSubscriptionTestCase(TestCase):
     def setUp(self):
-        super(ImportSubscriptionTasksTestCase, self).setUp()
+        super(NewSubscriptionTestCase, self).setUp()
 
         self.service_patch = mock.patch('subscribae.utils.get_service')
         self.service_mock = self.service_patch.start()
@@ -462,6 +462,56 @@ class ImportSubscriptionTasksTestCase(TestCase):
         self.process_task_queues()
         self.assertEqual(self.subscription_mock.call_count, 3)
 
+class UpdateSubscriptionsForUsersTestCase(TestCase):
+    def setUp(self):
+        super(UpdateSubscriptionsForUsersTestCase, self).setUp()
+
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.subscription_mock = self.service_mock.return_value.subscriptions.return_value.list
+        self.channel_mock = self.service_mock.return_value.channels.return_value.list
+
+        self.subscription_mock.return_value.execute.return_value = {
+            'items': [
+                {
+                    'snippet': {
+                        'title': 'A channel',
+                        'description': "It's a channel",
+                        'resourceId': {'channelId': '123'},
+                        'thumbnails': {},
+                    },
+                },
+                {
+                    'snippet': {
+                        'title': 'Another channel',
+                        'description': "It's another channel",
+                        'resourceId': {'channelId': '456'},
+                        'thumbnails': {},
+                    },
+                },
+            ],
+        }
+
+        self.channel_mock.return_value.execute.return_value = {
+            'items': [
+                {
+                    'id': '123',
+                    'contentDetails': {
+                        'relatedPlaylists': {'uploads': 'upload123'},
+                    },
+                },
+                {
+                    'id': '456',
+                    'contentDetails': {
+                        'relatedPlaylists': {'uploads': 'upload456'},
+                    },
+                },
+            ],
+        }
+
+        self.user = UserFactory.create()
+        OauthToken.objects.create(user=self.user, data={})
     def test_update_subscriptions_for_user(self):
         last_week = timezone.now() - timedelta(7)
         sub1 = SubscriptionFactory.create(user=self.user, channel_id="123", last_update=last_week)
