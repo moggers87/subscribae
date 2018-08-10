@@ -421,18 +421,6 @@ class ImportSubscriptionTasksTestCase(TestCase):
         self.assertNumTasksEquals(0)
 
     def test_new_subscriptions_pagination(self):
-        class MockExecute(object):
-            def __init__(self, return_values):
-                self.return_values = return_values[:]
-                self.return_values.reverse()
-
-            def __call__(self, *args, **kwargs):
-                value = self.return_values.pop()
-                if isinstance(value, Exception):
-                    raise value
-                else:
-                    return value
-
         self.subscription_mock.return_value.execute = MockExecute([
             {
                 'items': [],
