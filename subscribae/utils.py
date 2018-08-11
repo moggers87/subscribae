@@ -283,7 +283,7 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                     # we've seen this video before, therefore we've already imported it
                     seen_before = True
 
-            if 'nextPageToken' in playlistitem_list and not seen_before:
+            if 'nextPageToken' in playlistitem_list and not seen_before and not only_first_page:
                 page_token = playlistitem_list['nextPageToken']
             else:
                 break

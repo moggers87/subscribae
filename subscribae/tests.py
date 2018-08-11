@@ -29,7 +29,7 @@ import factory
 import factory.fuzzy
 import mock
 
-from subscribae.models import Bucket, Subscription, OauthToken, create_composite_key
+from subscribae.models import Bucket, Subscription, OauthToken, Video, create_composite_key
 from subscribae.utils import new_subscriptions, update_subscriptions_for_user, update_subscriptions, import_videos, API_MAX_RESULTS
 
 
@@ -275,20 +275,16 @@ class ImportVideoTasksTestCase(TestCase):
             {'id': 'video123,video456', 'part': 'snippet', 'maxResults': API_MAX_RESULTS}
         ))
 
+        self.assertEqual(Video.objects.count(), 2)
+        video1 = Video.objects.get(youtube_id="video123")
+        self.assertEqual(video1.title, "my video")
+        self.assertEqual(video1.description, "this is my video")
+        video2 = Video.objects.get(youtube_id="video456")
+        self.assertEqual(video2.title, "my other video")
+        self.assertEqual(video2.description, "this is my other video")
+
     @mock.patch('subscribae.utils.get_service')
     def test_import_videos_pagination(self, service_mock):
-        class MockExecute(object):
-            def __init__(self, return_values):
-                self.return_values = return_values[:]
-                self.return_values.reverse()
-
-            def __call__(self, *args, **kwargs):
-                value = self.return_values.pop()
-                if isinstance(value, Exception):
-                    raise value
-                else:
-                    return value
-
         playlistitems_mock = service_mock.return_value.playlistItems.return_value.list
 
         playlistitems_mock.return_value.execute = MockExecute([
@@ -342,6 +338,108 @@ class ImportVideoTasksTestCase(TestCase):
             (import_videos, user.id, subscription.id, "upload123", [bucket.id]),
             {"page_token": "123", "only_first_page": False},
         ))
+
+    @mock.patch('subscribae.utils.get_service')
+    def test_import_videos_only_first_page(self, service_mock):
+        playlistitems_mock = service_mock.return_value.playlistItems.return_value.list
+
+        playlistitems_mock.return_value.execute = MockExecute([
+            {
+                'items': [],
+                'nextPageToken': '123',
+            },
+            {
+                'items': [],
+            },
+        ])
+
+        user = get_user_model().objects.create(username='1')
+        OauthToken.objects.create(user=user, data={})
+        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=timezone.now())
+        bucket = BucketFactory(user=user, subs=[subscription])
+
+        import_videos(user.id, subscription.id, "upload123", [bucket.id], only_first_page=True)
+        self.assertEqual(playlistitems_mock.call_count, 1)
+
+        self.assertEqual(playlistitems_mock.call_args_list,
+        [
+            ((), {'part': 'contentDetails', 'playlistId': 'upload123',
+                  'maxResults': API_MAX_RESULTS, 'pageToken': None}),
+        ])
+
+    @mock.patch('subscribae.utils.get_service')
+    def test_import_videos_only_first_page_and_page_token(self, service_mock):
+        service_mock
+
+        user = get_user_model().objects.create(username='1')
+        OauthToken.objects.create(user=user, data={})
+        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=timezone.now())
+
+        import_videos(user.id, subscription.id, "upload123", [], page_token="123", only_first_page=True)
+        self.assertEqual(service_mock.call_count, 0)
+
+    @mock.patch('subscribae.utils.deferred')
+    @mock.patch('subscribae.utils.get_service')
+    def test_import_videos_already_got(self, service_mock, defer_mock):
+        playlistitems_mock = service_mock.return_value.playlistItems.return_value.list
+        videos_mock = service_mock.return_value.videos.return_value.list
+
+        playlistitems_mock.return_value.execute.return_value = {
+            'items': [
+                {'contentDetails': {'videoId': 'video123'}},
+                {'contentDetails': {'videoId': 'video456'}},
+            ],
+            'nextPageToken': '123',
+        }
+        videos_mock.return_value.execute.return_value = {
+            'items': [
+                {
+                    'id': 'video123',
+                    'snippet': {
+                        'title': 'my video',
+                        'description': 'this is my video',
+                        'thumbnails': {},
+                    },
+                },
+                {
+                    'id': 'video456',
+                    'snippet': {
+                        'title': 'my other video',
+                        'description': 'this is my other video',
+                        'thumbnails': {},
+                    },
+                },
+            ],
+        }
+
+        user = get_user_model().objects.create(username='1')
+        OauthToken.objects.create(user=user, data={})
+        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=timezone.now())
+        bucket = BucketFactory(user=user, subs=[subscription])
+
+        Video.objects.create(user=user, subscription=subscription, youtube_id="video456")
+
+        import_videos(user.id, subscription.id, "upload123", [bucket.id])
+        self.assertEqual(playlistitems_mock.call_count, 1)
+        self.assertEqual(videos_mock.call_count, 1)
+        self.assertEqual(defer_mock.call_count, 0)
+
+        self.assertEqual(playlistitems_mock.call_args, (
+            (),
+            {'playlistId': 'upload123', 'part': 'contentDetails', 'maxResults': API_MAX_RESULTS, 'pageToken': None}
+        ))
+        self.assertEqual(videos_mock.call_args, (
+            (),
+            {'id': 'video123,video456', 'part': 'snippet', 'maxResults': API_MAX_RESULTS}
+        ))
+
+        self.assertEqual(Video.objects.count(), 2)
+        video1 = Video.objects.get(youtube_id="video123")
+        self.assertEqual(video1.title, "my video")
+        self.assertEqual(video1.description, "this is my video")
+        video2 = Video.objects.get(youtube_id="video456")
+        self.assertEqual(video2.title, "")
+        self.assertEqual(video2.description, "")
 
 
 class NewSubscriptionTestCase(TestCase):
