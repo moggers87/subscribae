@@ -74,6 +74,7 @@ INSTALLED_APPS = (
     'djangae.contrib.gauth_datastore',
     'djangae.contrib.security',
     'subscribae',
+    'subscribae.admin',
     # 'djangae.contrib.uniquetool',
 )
 
