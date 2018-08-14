@@ -24,7 +24,7 @@ from google.appengine.runtime import DeadlineExceededError as RuntimeExceededErr
 import mock
 
 from subscribae.models import OauthToken
-from subscribae.utils import update_subscriptions_for_user, update_subscriptions
+from subscribae.utils import update_subscriptions_for_user, update_subscriptions, import_videos
 from subscribae.tests.utils import MockExecute, UserFactory, SubscriptionFactory
 
 
@@ -78,6 +78,9 @@ class UpdateSubscriptionsForUsersTestCase(TestCase):
 
         self.user = UserFactory.create()
         OauthToken.objects.create(user=self.user, data={})
+
+    def tearDown(self):
+        mock.patch.stopall()
 
     def test_update_subscriptions_for_user(self):
         last_week = timezone.now() - timedelta(7)
@@ -145,6 +148,43 @@ class UpdateSubscriptionsForUsersTestCase(TestCase):
         self.assertNumTasksEquals(2)
         # make sure it doens't infinitely loop
         self.process_task_queues()
+
+    @mock.patch('subscribae.utils.deferred')
+    def test_update_subscriptions_for_user_with_runtime_exceeded_error(self, defer_mock):
+        defer_mock.defer.side_effect = MockExecute([RuntimeExceededError(), None])
+
+        last_week = timezone.now() - timedelta(7)
+        sub1 = SubscriptionFactory.create(user=self.user, channel_id="123", last_update=last_week)
+        sub2 = SubscriptionFactory.create(user=self.user, channel_id="456", last_update=last_week)
+        first, second = sorted([sub1, sub2], key=lambda x: x.pk)
+
+        update_subscriptions_for_user(self.user.id)
+        self.assertEqual(self.subscription_mock.call_count, 1)
+        self.assertEqual(self.channel_mock.call_count, 1)
+        self.assertEqual(defer_mock.defer.call_count, 2)
+
+        first.refresh_from_db()
+        second.refresh_from_db()
+
+        self.assertEqual(defer_mock.defer.call_args_list[0], ((import_videos, self.user.id, first.pk, first.upload_playlist, []), {}))
+        self.assertEqual(defer_mock.defer.call_args_list[1], ((update_subscriptions_for_user, self.user.id, None), {}))
+
+        self.assertNotEqual(first.last_update, last_week)
+        self.assertEqual(first.title, "Another channel")
+        self.assertEqual(first.description, "It's another channel")
+
+        self.assertEqual(second.last_update, last_week)
+        self.assertEqual(second.title, "")
+        self.assertEqual(second.description, "")
+
+    def test_missing_oauth_token(self):
+        OauthToken.objects.get(user_id=self.user.id).delete()
+        last_week = timezone.now() - timedelta(7)
+        sub1 = SubscriptionFactory.create(user=self.user, channel_id="123", last_update=last_week)
+        sub2 = SubscriptionFactory.create(user=self.user, channel_id="456", last_update=last_week)
+        self.service_patch.stop()
+
+        update_subscriptions_for_user(self.user.id)
 
 
 class UpdateSubscriptionsTestCase(TestCase):

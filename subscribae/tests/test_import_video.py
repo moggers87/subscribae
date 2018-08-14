@@ -243,3 +243,10 @@ class ImportVideoTasksTestCase(TestCase):
         video2 = Video.objects.get(youtube_id="video456")
         self.assertEqual(video2.title, "")
         self.assertEqual(video2.description, "")
+
+    def test_missing_oauth_token(self):
+        user = get_user_model().objects.create(username='1')
+        subscription = Subscription.objects.create(user=user, channel_id="123", last_update=timezone.now())
+        bucket = BucketFactory(user=user, subs=[subscription])
+
+        import_videos(user.id, subscription.id, "upload123", [bucket.id])

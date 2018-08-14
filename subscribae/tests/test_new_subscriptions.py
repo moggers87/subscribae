@@ -76,6 +76,9 @@ class NewSubscriptionTestCase(TestCase):
         self.user = UserFactory.create()
         OauthToken.objects.create(user=self.user, data={})
 
+    def tearDown(self):
+        mock.patch.stopall()
+
     def test_new_subscriptions(self):
         new_subscriptions(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 1)
@@ -141,3 +144,9 @@ class NewSubscriptionTestCase(TestCase):
         # run the task
         self.process_task_queues()
         self.assertEqual(self.subscription_mock.call_count, 3)
+
+    def test_missing_oauth_token(self):
+        OauthToken.objects.get(user_id=self.user.id).delete()
+        self.service_patch.stop()
+
+        new_subscriptions(self.user.id)

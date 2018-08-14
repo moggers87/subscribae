@@ -100,7 +100,10 @@ def update_subscriptions_for_user(user_id, last_pk=None):
             logging.debug("Subscription updates for User %s done.", user_id)
             return
 
-        youtube = get_service(user_id)
+        try:
+            youtube = get_service(user_id)
+        except OauthToken.DoesNotExist:
+            return
 
         subscription_list = youtube.subscriptions() \
             .list(mine=True, forChannelId=','.join([obj.channel_id for obj in subscriptions_qs]), part='snippet', maxResults=API_MAX_RESULTS) \
@@ -176,7 +179,11 @@ def new_subscriptions(user_id, page_token=None):
     old ones
     """
     try:
-        youtube = get_service(user_id)
+        try:
+            youtube = get_service(user_id)
+        except OauthToken.DoesNotExist:
+            return
+
         while True:
             subscriptions = {}
 
@@ -240,7 +247,11 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
         # initial import to show some videos, we don't need to do a full import of every video
         return
     try:
-        youtube = get_service(user_id)
+        try:
+            youtube = get_service(user_id)
+        except OauthToken.DoesNotExist:
+            return
+
         while True:
             # TODO: consider
             # https://developers.google.com/youtube/v3/docs/activities/list it
