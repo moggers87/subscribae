@@ -10,6 +10,7 @@ funcsigs==1.0.2           # via mock
 ipaddress==1.0.22         # via faker
 mock==2.0.0
 pbr==4.0.3                # via mock
+pillow==5.2.0
 python-dateutil==2.7.3    # via faker
 six==1.11.0               # via faker, mock, python-dateutil
 unidecode==1.0.22         # via faker
