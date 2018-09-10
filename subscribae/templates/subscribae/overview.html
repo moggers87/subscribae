@@ -4,7 +4,9 @@
 {% block content %}
 <div class="subscription-list">
     {% for subscription in subscription_list %}
-    <a href="{% url "subscription" subscription=subscription.pk %}">{{ subscription }}</a>
+    <a href="{% url "subscription" subscription=subscription.pk %}">
+        {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
+    </a>
     {% empty %}
     <h3>{% trans "You have no subscriptions" %}</h3>
     <p><{% trans "Head over to Youtube and go subscribe to some" %}</p>
@@ -23,7 +25,7 @@
         </div>
         <div class="subscriptions">
             {% for subscription in bucket.subs.all %}
-            {{ subscription }}
+                {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
             {% empty %}
                 <p>&laquo;And what am I suppos' to do with an emp-ty case?&raquo;</p>
             {% endfor %}

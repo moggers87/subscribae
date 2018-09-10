@@ -9,4 +9,18 @@
 
     <button>Save</button>
 </form>
+<div id="subscriptions">
+{% for subscription in bucket.subs.all %}
+    <a href="{% url "subscription" subscription=subscription.pk %}">
+        {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
+    </a>
+{% endfor %}
+</div>
+<div class="videos">
+    <ul>
+    {% for video in video_list %}
+        <li>{{ video.title }}</li>
+    {% endfor %}
+    </ul>
+</div>
 {% endblock %}

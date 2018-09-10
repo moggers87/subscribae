@@ -22,7 +22,6 @@ from djangae.fields import ComputedCharField, RelatedSetField, JSONField
 from django.conf import settings
 from django.db import models
 from django.utils.html import escape as escape_html
-from django.utils.safestring import mark_safe
 from oauth2client.client import Credentials
 
 
@@ -68,18 +67,6 @@ class Subscription(ThumbnailAbstract):
     # calculate id based on user ID + channel ID so we can get by keys later
     id = ComputedCharField(lambda self: create_composite_key(str(self.user_id), self.channel_id), primary_key=True, max_length=200)
 
-    def __unicode__(self):
-        # probably awful, but I can't be bothered with messing around with
-        # ChoiceMultiple whatever widgets and getting them to expose the
-        # instance of each choice
-        output = u"""
-        <img src="{img_src}" title="{title}">
-        """.format(
-            title=escape_html(self.title),
-            img_src=self.get_thumbnail(),
-        )
-
-        return mark_safe(output)
     class Meta:
         ordering = ["title"]
 

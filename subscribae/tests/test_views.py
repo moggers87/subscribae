@@ -63,7 +63,7 @@ class ViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         subscription = SubscriptionFactory(user=self.user)
-        self.assertEqual(len(bucket.subs), 0)
+        self.assertEqual(len(bucket.subs_ids), 0)
         data = {
             'title': 'Games',
             'subs': [subscription.pk],

@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-    {{ subscription }}
+    {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
     <p>{{ subscription.title }}</p>
     <p><pre>{{ subscription.description }}</pre></p>
     Buckets:
@@ -12,6 +12,7 @@
         {% empty %}
             <p>No buckets</p>
         {% endfor %}
+    </ul>
     Videos:
     <ul>
         {% for video in subscription.video_set.all %}
@@ -19,4 +20,5 @@
         {% empty %}
             <p>No Videos</p>
         {% endfor %}
+    </ul>
 {% endblock %}
