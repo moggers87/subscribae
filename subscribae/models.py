@@ -80,6 +80,8 @@ class Subscription(ThumbnailAbstract):
         )
 
         return mark_safe(output)
+    class Meta:
+        ordering = ["title"]
 
 
 class Bucket(UniquenessMixin, models.Model):
@@ -95,6 +97,7 @@ class Bucket(UniquenessMixin, models.Model):
 
     class Meta:
         unique_together = ["user", "title"]
+        ordering = ["title"]
 
 
 class Video(ThumbnailAbstract):

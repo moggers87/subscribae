@@ -32,3 +32,18 @@ indexes:
   properties:
   - name: app
   - name: name
+
+- kind: subscribae_bucket
+  properties:
+  - name: subs_ids
+  - name: title
+
+- kind: subscribae_bucket
+  properties:
+  - name: user_id
+  - name: title
+
+- kind: subscribae_subscription
+  properties:
+  - name: user_id
+  - name: title
