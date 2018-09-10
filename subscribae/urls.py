@@ -34,10 +34,8 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib.staticfiles.views import serve
 
-from django.contrib import admin
-admin.autodiscover()
-
 from subscribae import views as sub_views
+
 
 urlpatterns = (
     url(r'^$', sub_views.home, name='home'),
@@ -58,6 +56,8 @@ urlpatterns = (
     url(r'^csp/', include('cspreports.urls')),
 
     url(r'^auth/', include('djangae.contrib.gauth.urls')),
+
+    url(r'^admin/', include('subscribae.admin.urls', namespace='admin')),
 )
 
 if settings.DEBUG:
