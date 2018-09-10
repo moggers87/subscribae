@@ -18,7 +18,7 @@
 
 import os
 
-from djangae.test import TestCase
+from djangae.test import TestCase, inconsistent_db
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 import mock
@@ -54,12 +54,12 @@ class ViewTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
         bucket = BucketFactory(title='Cheese')
-        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.slug}))
+        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
         self.assertEqual(response.status_code, 404)
 
         bucket.user = self.user
         bucket.save()
-        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.slug}))
+        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
         self.assertEqual(response.status_code, 200)
 
         subscription = SubscriptionFactory(user=self.user)
@@ -68,16 +68,16 @@ class ViewTestCase(TestCase):
             'title': 'Games',
             'subs': [subscription.pk],
         }
-        response = self.client.post(reverse('bucket', kwargs={'bucket': bucket.slug}), data)
+        response = self.client.post(reverse('bucket', kwargs={'bucket': bucket.pk}), data)
 
         bucket.refresh_from_db()
 
-        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.slug}))
+        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
         self.assertEqual(bucket.title, 'Games')
         self.assertEqual(bucket.subs_ids, set([subscription.pk]))
 
         new_bucket = BucketFactory(title='Cheese', user=self.user)
-        response = self.client.post(reverse('bucket', kwargs={'bucket': new_bucket.slug}), data)
+        response = self.client.post(reverse('bucket', kwargs={'bucket': new_bucket.pk}), data)
         self.assertEqual(response.status_code, 200)
 
     def test_bucket_new(self):
@@ -88,7 +88,7 @@ class ViewTestCase(TestCase):
         response = self.client.post(reverse('bucket-new'), data)
         self.assertEqual(len(self.user.bucket_set.all()), 1)
         bucket = self.user.bucket_set.first()
-        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.slug}))
+        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
 
         self.assertEqual(bucket.title, 'Games')
         self.assertEqual(bucket.subs_ids, set())
@@ -96,6 +96,12 @@ class ViewTestCase(TestCase):
         response = self.client.post(reverse('bucket-new'), data)
         self.assertEqual(len(self.user.bucket_set.all()), 1)
         self.assertEqual(response.status_code, 200)
+
+    def test_bucket_new_inconsistent(self):
+        with inconsistent_db():
+            bucket = BucketFactory(title='Cheese', user=self.user)
+            response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
+            self.assertEqual(response.status_code, 200)
 
     def test_subscription(self):
         response = self.client.get(reverse('subscription', kwargs={'subscription': 1}))

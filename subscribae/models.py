@@ -23,7 +23,6 @@ from django.conf import settings
 from django.db import models
 from django.utils.html import escape as escape_html
 from django.utils.safestring import mark_safe
-from django.utils.text import slugify
 from oauth2client.client import Credentials
 
 
@@ -93,8 +92,6 @@ class Bucket(UniquenessMixin, models.Model):
     title = models.CharField(max_length=100)
     last_update = models.DateTimeField()
     last_viewed = models.DateTimeField(null=True, blank=True)
-
-    slug = ComputedCharField(lambda self: slugify(self.title, allow_unicode=True), max_length=100)
 
     class Meta:
         unique_together = ["user", "title"]

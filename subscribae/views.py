@@ -48,12 +48,12 @@ def overview(request):
 
 @login_required
 def bucket(request, bucket):
-    bucket = get_object_or_404(Bucket, slug=bucket, user=request.user)
+    bucket = get_object_or_404(Bucket, pk=bucket, user=request.user)
     if request.method == "POST":
         form = BucketEditForm(instance=bucket, data=request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse("bucket", kwargs={"bucket": bucket.slug}))
+            return HttpResponseRedirect(reverse("bucket", kwargs={"bucket": bucket.pk}))
     else:
         form = BucketEditForm(instance=bucket)
     context = {
@@ -69,7 +69,7 @@ def bucket_new(request):
     form = BucketForm(user=request.user, data=request.POST)
     if form.is_valid():
         bucket = form.save()
-        return HttpResponseRedirect(reverse('bucket', kwargs={'bucket': bucket.slug}))
+        return HttpResponseRedirect(reverse('bucket', kwargs={'bucket': bucket.pk}))
 
     return TemplateResponse(request, 'subscribae/bucket-new.html', {"form": form})
 
