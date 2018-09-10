@@ -48,6 +48,7 @@ class ImportVideoTasksTestCase(TestCase):
                         'title': 'my video',
                         'description': 'this is my video',
                         'thumbnails': {},
+                        'publishedAt': '1997-07-16T19:20:30.45Z',
                     },
                 },
                 {
@@ -56,6 +57,7 @@ class ImportVideoTasksTestCase(TestCase):
                         'title': 'my other video',
                         'description': 'this is my other video',
                         'thumbnails': {},
+                        'publishedAt': '1997-07-16T19:20:30.45Z',
                     },
                 },
             ],
@@ -202,6 +204,7 @@ class ImportVideoTasksTestCase(TestCase):
                         'title': 'my video',
                         'description': 'this is my video',
                         'thumbnails': {},
+                        'publishedAt': '1997-07-16T19:20:30.45Z',
                     },
                 },
                 {
@@ -210,6 +213,7 @@ class ImportVideoTasksTestCase(TestCase):
                         'title': 'my other video',
                         'description': 'this is my other video',
                         'thumbnails': {},
+                        'publishedAt': '1997-07-16T19:20:30.45Z',
                     },
                 },
             ],
@@ -220,7 +224,7 @@ class ImportVideoTasksTestCase(TestCase):
         subscription = Subscription.objects.create(user=user, channel_id="123", last_update=timezone.now())
         bucket = BucketFactory(user=user, subs=[subscription])
 
-        Video.objects.create(user=user, subscription=subscription, youtube_id="video456")
+        Video.objects.create(user=user, subscription=subscription, youtube_id="video456", published_at=timezone.now())
 
         import_videos(user.id, subscription.id, "upload123", [bucket.id])
         self.assertEqual(playlistitems_mock.call_count, 1)

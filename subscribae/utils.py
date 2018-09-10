@@ -283,6 +283,7 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                     user_id=user_id,
                     title=video['snippet']['title'],
                     description=video['snippet']['description'],
+                    published_at=video['snippet']['publishedAt'],
                     thumbnails={size: value.get('url', '') for size, value in video['snippet']['thumbnails'].items()},
                     youtube_id=video['id'],
                     buckets_ids=bucket_ids,

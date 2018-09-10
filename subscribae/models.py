@@ -98,8 +98,7 @@ class Video(ThumbnailAbstract):
     youtube_id = models.CharField(max_length=200)  # id
     title = models.CharField(max_length=200)  # snippet.title
     description = models.TextField()  # snippet.description
-    # maybe?
-    #player = models.TextField()  # player.embedHtml
+    published_at = models.DateTimeField()
 
     # calculate id based on user ID + video ID so we can get by keys later
     id = ComputedCharField(lambda self: create_composite_key(str(self.user_id), self.youtube_id), primary_key=True, max_length=200)
