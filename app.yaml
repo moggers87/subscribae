@@ -4,6 +4,8 @@ runtime: python27
 api_version: 1
 threadsafe: true
 
+default_expiration: "366d"
+
 handlers:
 
 - url: /_ah/(clearsessions|mapreduce|queue|warmup|start|stop).*

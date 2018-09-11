@@ -1,0 +1,5 @@
+    src_files:
+        - subscribae/static/js/*.js
+    spec_files:
+      - "**/*[Ss]pec.js"
+    spec_dir: spec/javascripts
