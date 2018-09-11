@@ -39,18 +39,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-from djangae.settings_base import * #Set up some AppEngine specific stuff
+import os
+
+from djangae.settings_base import * # noqa
 from django.core.urlresolvers import reverse_lazy
 
+from .boot import get_app_config
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
-
-from .boot import get_app_config
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_app_config().secret_key
 
@@ -63,7 +61,7 @@ DJANGAE_CREATE_UNKNOWN_USER = False
 # Application definition
 
 INSTALLED_APPS = (
-    'djangae', # Djangae needs to come before django apps in django 1.7 and above
+    'djangae',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'djangae.contrib.contenttypes',
@@ -162,10 +160,11 @@ CSP_DEFAULT_SRC = ("'self'", "*.gstatic.com")
 # `unsafe-inline` in settings_live.py
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com", "*.gstatic.com")
 CSP_FONT_SRC = ("'self'", "themes.googleusercontent.com", "*.gstatic.com")
-CSP_FRAME_SRC = ("'self'", "www.google.com", "www.youtube.com", "accounts.google.com", "apis.google.com", "plus.google.com")
+CSP_FRAME_SRC = ("'self'", "www.google.com", "www.youtube.com", "accounts.google.com", "apis.google.com",
+                 "plus.google.com")
 CSP_SCRIPT_SRC = ("'self'", "*.googleanalytics.com", "*.google-analytics.com", "ajax.googleapis.com")
 CSP_IMG_SRC = ("'self'", "https:")
 CSP_CONNECT_SRC = ("'self'", "plus.google.com", "www.google-analytics.com")
 
 
-from djangae.contrib.gauth.settings import *
+from djangae.contrib.gauth.settings import *  # noqa

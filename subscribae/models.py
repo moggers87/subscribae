@@ -21,7 +21,6 @@ from djangae.db.constraints import UniquenessMixin
 from djangae.fields import ComputedCharField, RelatedSetField, JSONField
 from django.conf import settings
 from django.db import models
-from django.utils.html import escape as escape_html
 from oauth2client.client import Credentials
 
 
@@ -65,7 +64,8 @@ class Subscription(ThumbnailAbstract):
     upload_playlist = models.CharField(max_length=200)  # contentDetails.relatedPlaylists.uploads
 
     # calculate id based on user ID + channel ID so we can get by keys later
-    id = ComputedCharField(lambda self: create_composite_key(str(self.user_id), self.channel_id), primary_key=True, max_length=200)
+    id = ComputedCharField(lambda self: create_composite_key(str(self.user_id), self.channel_id),
+                           primary_key=True, max_length=200)
 
     class Meta:
         ordering = ["title"]
@@ -101,7 +101,8 @@ class Video(ThumbnailAbstract):
     published_at = models.DateTimeField()
 
     # calculate id based on user ID + video ID so we can get by keys later
-    id = ComputedCharField(lambda self: create_composite_key(str(self.user_id), self.youtube_id), primary_key=True, max_length=200)
+    id = ComputedCharField(lambda self: create_composite_key(str(self.user_id), self.youtube_id),
+                           primary_key=True, max_length=200)
 
     class Meta:
         ordering = ["published_at"]

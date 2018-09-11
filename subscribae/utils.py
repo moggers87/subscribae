@@ -82,7 +82,6 @@ def update_subscriptions(last_pk=None):
         deferred.defer(update_subscriptions, last_pk)
 
 
-
 def update_subscriptions_for_user(user_id, last_pk=None):
     """Updates subscriptions
 
@@ -106,8 +105,9 @@ def update_subscriptions_for_user(user_id, last_pk=None):
             return
 
         subscription_list = youtube.subscriptions() \
-            .list(mine=True, forChannelId=','.join([obj.channel_id for obj in subscriptions_qs]), part='snippet', maxResults=API_MAX_RESULTS) \
-            .execute()
+            .list(mine=True,
+                  forChannelId=','.join([obj.channel_id for obj in subscriptions_qs]),
+                  part='snippet', maxResults=API_MAX_RESULTS).execute()
 
         for item in subscription_list['items']:
             channel_id = item['snippet']['resourceId']['channelId']
@@ -135,10 +135,9 @@ def update_subscriptions_for_user(user_id, last_pk=None):
         _log.info("Missing these IDs from the channel list endpoint: %s", missing_channels)
         _log.info("Extra IDs from the channel list endpoint: %s", extra_channels)
 
-        for channel in channel_list['items']:
-            if channel['id'] in ids_from_sub:
-                subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
-
+        for chn in channel_list['items']:
+            if chn['id'] in ids_from_sub:
+                subscriptions[chn['id']]['upload_playlist'] = chn['contentDetails']['relatedPlaylists']['uploads']
 
         for obj in subscriptions_qs:
             if obj.channel_id not in ids_from_sub:
@@ -220,9 +219,9 @@ def new_subscriptions(user_id, page_token=None):
             _log.info("Missing these IDs from the channel list endpoint: %s", missing_channels)
             _log.info("Extra IDs from the channel list endpoint: %s", extra_channels)
 
-            for channel in channel_list['items']:
-                if channel['id'] in ids_from_sub:
-                    subscriptions[channel['id']]['upload_playlist'] = channel['contentDetails']['relatedPlaylists']['uploads']
+            for chn in channel_list['items']:
+                if chn['id'] in ids_from_sub:
+                    subscriptions[chn['id']]['upload_playlist'] = chn['contentDetails']['relatedPlaylists']['uploads']
 
             for data in subscriptions.itervalues():
                 if data['channel_id'] in missing_channels:

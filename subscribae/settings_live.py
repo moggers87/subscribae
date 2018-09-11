@@ -29,10 +29,11 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
-from subscribae.settings import *
+
+from subscribae.settings import *  # noqa: F403
 
 SESSION_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = 2592000 #30 days
+SECURE_HSTS_SECONDS = 2592000  # 30 days
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -53,13 +54,13 @@ DEBUG = False
 
 # Remove unsafe-inline from CSP_STYLE_SRC. It's there in default to allow
 # Django error pages in DEBUG mode render necessary styles
-if "'unsafe-inline'" in CSP_STYLE_SRC:
-    CSP_STYLE_SRC = list(CSP_STYLE_SRC)
-    CSP_STYLE_SRC.remove("'unsafe-inline'")
-    CSP_STYLE_SRC = tuple(CSP_STYLE_SRC)
+if "'unsafe-inline'" in CSP_STYLE_SRC:  # noqa: F405
+    CSP_STYLE_SRC = list(CSP_STYLE_SRC)  # noqa: F405
+    CSP_STYLE_SRC.remove("'unsafe-inline'")  # noqa: F405
+    CSP_STYLE_SRC = tuple(CSP_STYLE_SRC)  # noqa: F405
 
 # Add the cached template loader for the Django template system (not for Jinja)
-for template in TEMPLATES:
+for template in TEMPLATES:  # noqa: F405
     template['OPTIONS']['debug'] = False
     if template['BACKEND'] == 'django.template.backends.django.DjangoTemplates':
         # Wrap the normal loaders with the cached loader

@@ -55,10 +55,10 @@ def fix_path(include_dev_libs_path=False):
     # see https://github.com/google/protobuf/issues/1296#issuecomment-264264926
     try:
         # protobuf might be installed globally, or not at all.
-        import google.protobuf
+        import google.protobuf  # noqa
     except ImportError:
         pass
-    import google.appengine
+    import google.appengine  # noqa
 
 
 def get_app_config():

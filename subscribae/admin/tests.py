@@ -171,7 +171,7 @@ class UserAddTestCase(TestCase):
         user = get_user_model().objects.get(email="test2@example.com")
         self.assertEqual(user.is_active, True)
 
-        self.assertRedirects(response, "%s?new_user=%s" %(reverse("admin:user-index"), user.pk))
+        self.assertRedirects(response, "%s?new_user=%s" % (reverse("admin:user-index"), user.pk))
 
     def test_post_invalid_data(self):
         data = {"email": "test2@@example.com", "is_active": True}
@@ -188,7 +188,8 @@ class UserEditTestCase(TestCase):
         os.environ['USER_EMAIL'] = 'test@example.com'
         os.environ['USER_ID'] = '1'
         os.environ['USER_IS_ADMIN'] = '1'
-        self.user = get_user_model().objects.create(username='1', email='test@example.com', is_superuser=True, is_active=True)
+        self.user = get_user_model().objects.create(username='1', email='test@example.com',
+                                                    is_superuser=True, is_active=True)
 
     def tearDown(self):
         del os.environ['USER_EMAIL']

@@ -15,10 +15,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
-from django.conf import settings
-from django.conf.urls import include, url
-from django.conf.urls.static import static
-from django.contrib.staticfiles.views import serve
+
+from django.conf.urls import url
 
 from subscribae.admin import views
 

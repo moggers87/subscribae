@@ -19,10 +19,7 @@
 from datetime import datetime
 
 from djangae.test import TestCase
-from django.utils import timezone
-from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
 from pytz import UTC
-import mock
 
 from subscribae.models import Bucket, Subscription, Video
 from subscribae.tests.utils import BucketFactory, SubscriptionFactory, VideoFactory
