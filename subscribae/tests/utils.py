@@ -21,7 +21,7 @@ from django.utils import timezone
 import factory
 import factory.fuzzy
 
-from subscribae.models import Bucket, Subscription
+from subscribae.models import Bucket, Subscription, Video
 
 
 class MockExecute(object):
@@ -79,3 +79,14 @@ class SubscriptionFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     last_update = factory.LazyFunction(timezone.now)
+
+
+class VideoFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Video
+
+    user = factory.SubFactory(UserFactory)
+    subscription = factory.SubFactory(SubscriptionFactory)
+
+    title = factory.fuzzy.FuzzyText()
+    published_at = factory.LazyFunction(timezone.now)

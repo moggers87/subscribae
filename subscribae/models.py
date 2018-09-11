@@ -103,6 +103,9 @@ class Video(ThumbnailAbstract):
     # calculate id based on user ID + video ID so we can get by keys later
     id = ComputedCharField(lambda self: create_composite_key(str(self.user_id), self.youtube_id), primary_key=True, max_length=200)
 
+    class Meta:
+        ordering = ["published_at"]
+
 
 class OauthToken(models.Model):
     """Oauth tokens for a specific user"""
