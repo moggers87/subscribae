@@ -54,6 +54,8 @@ SECRET_KEY = get_app_config().secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+ASSETS_DEBUG = DEBUG
+ASSETS_AUTO_BUILD = DEBUG
 
 # Despite Djangae docs saying this is false by default :)
 DJANGAE_CREATE_UNKNOWN_USER = False
@@ -67,6 +69,7 @@ INSTALLED_APPS = (
     'djangae.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
+    'django_assets',
     'csp',
     'cspreports',
     'djangae.contrib.gauth_datastore',
@@ -153,6 +156,16 @@ OAUTH_SCOPES = [
 # Using a route that is not caught by appengines routing in app.yaml
 STATIC_URL = '/static-dev/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'django_assets.finders.AssetsFinder',
+)
+
+# STATIC_ROOT isn't uploaded to the same place as application data is, but we
+# need to access the manifest file to create the correct URLs in our templates
+ASSETS_MANIFEST = "file:{}".format(os.path.join(BASE_DIR, ".webassets-manifest"))
+ASSETS_CACHE = False
 
 # sensible default CSP settings, feel free to modify them
 CSP_DEFAULT_SRC = ("'self'", "*.gstatic.com")

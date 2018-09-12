@@ -51,6 +51,8 @@ SECURE_REDIRECT_EXEMPT = [
 ]
 
 DEBUG = False
+ASSETS_DEBUG = DEBUG
+ASSETS_AUTO_BUILD = DEBUG
 
 # Remove unsafe-inline from CSP_STYLE_SRC. It's there in default to allow
 # Django error pages in DEBUG mode render necessary styles

@@ -23,3 +23,7 @@ indent_size = 4
 
 # CSS, SCSS
 [*.{css,scss}]
+
+# Makefile
+[Makefile]
+indent_style = tab

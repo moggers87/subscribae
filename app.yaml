@@ -29,8 +29,9 @@ skip_files:
     - manage.py
     - README.md
     - install_deps
-    - requirements.txt
+    - requirements\*
     - sitepackages/dev*
     - \.storage.*
     - \.git
     - (.*)\.pyc
+    - node_modules

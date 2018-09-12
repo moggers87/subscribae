@@ -1,6 +1,10 @@
+{% load assets %}
 <!DOCTYPE html>
 <html>
     <head>
+        {% assets "main_js" %}
+            <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+        {% endassets %}
     </head>
     <body>
         <a href="{% url "overview" %}">Overview</a>
