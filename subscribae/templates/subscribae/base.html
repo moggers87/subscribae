@@ -1,4 +1,4 @@
-{% load assets %}
+{% load assets staticfiles i18n %}
 <!DOCTYPE html>
 <html>
     <head>
@@ -10,5 +10,7 @@
         <a href="{% url "overview" %}">Overview</a>
         <hr>
         {% block content %}{% endblock %}
+        <hr>
+        <img src="{% static "troll.png" %}" alt="{% trans "A picture of a face." %}">
     </body>
 </html>

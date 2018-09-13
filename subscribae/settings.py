@@ -161,6 +161,8 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'django_assets.finders.AssetsFinder',
 )
+STATICFILES_STORAGE = 'subscribae.storage.ManifestOutsideOfStaticFilesStorage'
+STATIC_MANIGEST_PATH = os.path.join(BASE_DIR, ".staticmanifest.json")
 
 # STATIC_ROOT isn't uploaded to the same place as application data is, but we
 # need to access the manifest file to create the correct URLs in our templates
