@@ -1,6 +1,6 @@
 {
     "private": true,
     "dependencies": {
-        "uglify-js": "3.3.24"
+        "uglify-js": "^3.4.9"
     }
 }

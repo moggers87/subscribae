@@ -1,5 +1,5 @@
 application: subscribae
-version: 1
+version: debug
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -35,3 +35,7 @@ skip_files:
     - \.git
     - (.*)\.pyc
     - node_modules
+    - package.json
+    - package-lock.json
+    - Makefile
+    - tox.ini
