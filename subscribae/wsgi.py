@@ -24,10 +24,10 @@ https://docs.djangoproject.com/en/1.9/howto/deployment/wsgi/
 from subscribae.boot import fix_path
 fix_path()
 
-import os
-from django.core.wsgi import get_wsgi_application
-from djangae.environment import is_production_environment
-from djangae.wsgi import DjangaeApplication
+import os  # noqa
+from django.core.wsgi import get_wsgi_application  # noqa
+from djangae.environment import is_production_environment  # noqa
+from djangae.wsgi import DjangaeApplication  # noqa
 
 settings = "subscribae.settings_live" if is_production_environment() else "subscribae.settings"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings)

@@ -13,6 +13,10 @@ oauth_secrets.json
 !/.travis.yml
 !/.coveragerc
 
+# npm
+
+node_modules
+
 # C extensions
 *.so
 
@@ -54,3 +58,6 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# static assets
+static

@@ -39,23 +39,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-from djangae.settings_base import * #Set up some AppEngine specific stuff
+import os
+
+from djangae.settings_base import * # noqa
 from django.core.urlresolvers import reverse_lazy
 
+from .boot import get_app_config
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
-
-from .boot import get_app_config
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_app_config().secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+ASSETS_DEBUG = DEBUG
+ASSETS_AUTO_BUILD = DEBUG
 
 # Despite Djangae docs saying this is false by default :)
 DJANGAE_CREATE_UNKNOWN_USER = False
@@ -63,12 +63,13 @@ DJANGAE_CREATE_UNKNOWN_USER = False
 # Application definition
 
 INSTALLED_APPS = (
-    'djangae', # Djangae needs to come before django apps in django 1.7 and above
+    'djangae',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'djangae.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
+    'django_assets',
     'csp',
     'cspreports',
     'djangae.contrib.gauth_datastore',
@@ -155,6 +156,18 @@ OAUTH_SCOPES = [
 # Using a route that is not caught by appengines routing in app.yaml
 STATIC_URL = '/static-dev/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'django_assets.finders.AssetsFinder',
+)
+STATICFILES_STORAGE = 'subscribae.storage.ManifestOutsideOfStaticFilesStorage'
+STATIC_MANIGEST_PATH = os.path.join(BASE_DIR, ".staticmanifest.json")
+
+# STATIC_ROOT isn't uploaded to the same place as application data is, but we
+# need to access the manifest file to create the correct URLs in our templates
+ASSETS_MANIFEST = "file:{}".format(os.path.join(BASE_DIR, ".webassets-manifest"))
+ASSETS_CACHE = False
 
 # sensible default CSP settings, feel free to modify them
 CSP_DEFAULT_SRC = ("'self'", "*.gstatic.com")
@@ -162,10 +175,11 @@ CSP_DEFAULT_SRC = ("'self'", "*.gstatic.com")
 # `unsafe-inline` in settings_live.py
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com", "*.gstatic.com")
 CSP_FONT_SRC = ("'self'", "themes.googleusercontent.com", "*.gstatic.com")
-CSP_FRAME_SRC = ("'self'", "www.google.com", "www.youtube.com", "accounts.google.com", "apis.google.com", "plus.google.com")
+CSP_FRAME_SRC = ("'self'", "www.google.com", "www.youtube.com", "accounts.google.com", "apis.google.com",
+                 "plus.google.com")
 CSP_SCRIPT_SRC = ("'self'", "*.googleanalytics.com", "*.google-analytics.com", "ajax.googleapis.com")
 CSP_IMG_SRC = ("'self'", "https:")
 CSP_CONNECT_SRC = ("'self'", "plus.google.com", "www.google-analytics.com")
 
 
-from djangae.contrib.gauth.settings import *
+from djangae.contrib.gauth.settings import *  # noqa

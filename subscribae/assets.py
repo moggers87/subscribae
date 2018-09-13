@@ -16,14 +16,21 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django.conf.urls import url
+import os
 
-from subscribae.admin import views
+from django.conf import settings
+from django_assets import Bundle, register
+from webassets.filter import get_filter
 
 
-urlpatterns = (
-    url(r'^$', views.index, name='index'),
-    url(r'^users/$', views.user_index, name='user-index'),
-    url(r'^users/add_user/$', views.user_add, name='user-add'),
-    url(r'^users/edit_user/(?P<user_id>[a-zA-Z0-9\.]+)/$', views.user_edit, name='user-edit'),
+node_modules = os.path.join(settings.BASE_DIR, "node_modules")
+ugly = get_filter("uglifyjs", binary=os.path.join(node_modules, ".bin", "uglifyjs"),
+                  extra_args=["--comments", "/^!/", "-m", "-c"])
+
+
+js = Bundle(
+    "js/test.js",
+    filters=(ugly,),
+    output="compiled/js/test.%(version)s.js",
 )
+register("main_js", js)

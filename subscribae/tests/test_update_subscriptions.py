@@ -166,8 +166,10 @@ class UpdateSubscriptionsForUsersTestCase(TestCase):
         first.refresh_from_db()
         second.refresh_from_db()
 
-        self.assertEqual(defer_mock.defer.call_args_list[0], ((import_videos, self.user.id, first.pk, first.upload_playlist, []), {}))
-        self.assertEqual(defer_mock.defer.call_args_list[1], ((update_subscriptions_for_user, self.user.id, None), {}))
+        self.assertEqual(defer_mock.defer.call_args_list[0],
+                         ((import_videos, self.user.id, first.pk, first.upload_playlist, []), {}))
+        self.assertEqual(defer_mock.defer.call_args_list[1],
+                         ((update_subscriptions_for_user, self.user.id, None), {}))
 
         self.assertNotEqual(first.last_update, last_week)
         self.assertEqual(first.title, "Another channel")
@@ -180,10 +182,11 @@ class UpdateSubscriptionsForUsersTestCase(TestCase):
     def test_missing_oauth_token(self):
         OauthToken.objects.get(user_id=self.user.id).delete()
         last_week = timezone.now() - timedelta(7)
-        sub1 = SubscriptionFactory.create(user=self.user, channel_id="123", last_update=last_week)
-        sub2 = SubscriptionFactory.create(user=self.user, channel_id="456", last_update=last_week)
+        SubscriptionFactory.create(user=self.user, channel_id="123", last_update=last_week)
+        SubscriptionFactory.create(user=self.user, channel_id="456", last_update=last_week)
         self.service_patch.stop()
 
+        # should raise no exceptions
         update_subscriptions_for_user(self.user.id)
 
 
@@ -226,5 +229,6 @@ class UpdateSubscriptionsTestCase(TestCase):
         self.assertEqual(defer_mock.defer.call_count, 2)
         self.assertEqual(defer_mock.defer.call_args_list, [
             ((update_subscriptions_for_user, oauth1.pk), {}),
-            ((update_subscriptions, None), {}),  # defered task was not sent off, so we need to start from the first user again
+            # defered task was not sent off, so we need to start from the first user again
+            ((update_subscriptions, None), {}),
         ])
