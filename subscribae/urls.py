@@ -34,22 +34,22 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib.staticfiles.views import serve
 
-from subscribae import views as sub_views
+from subscribae.views import misc, oauth, tasks
 
 
 urlpatterns = (
-    url(r'^$', sub_views.home, name='home'),
-    url(r'^overview$', sub_views.overview, name='overview'),
-    url(r'^bucket/new$', sub_views.bucket_new, name='bucket-new'),
-    url(r'^bucket/(?P<bucket>.+)$', sub_views.bucket, name='bucket'),
-    url(r'^subscription/(?P<subscription>.+)$', sub_views.subscription, name='subscription'),
-    url(r'^video/(?P<video>.+)$', sub_views.video, name='video'),
-    url(r'^sync$', sub_views.sync_subscription, name='sync'),
-    url(r'^authorise$', sub_views.oauth_start, name='authorise'),
-    url(r'^oauth2callback$', sub_views.oauth_callback, name='oauth2callback'),
+    url(r'^$', misc.home, name='home'),
+    url(r'^overview$', misc.overview, name='overview'),
+    url(r'^bucket/new$', misc.bucket_new, name='bucket-new'),
+    url(r'^bucket/(?P<bucket>.+)$', misc.bucket, name='bucket'),
+    url(r'^subscription/(?P<subscription>.+)$', misc.subscription, name='subscription'),
+    url(r'^video/(?P<video>.+)$', misc.video, name='video'),
+    url(r'^sync$', misc.sync_subscription, name='sync'),
+    url(r'^authorise$', oauth.oauth_start, name='authorise'),
+    url(r'^oauth2callback$', oauth.oauth_callback, name='oauth2callback'),
 
     # crons
-    url(r'^cron/update_subscriptions$', sub_views.update_subscriptions_cron, name='update-subscriptions-cron'),
+    url(r'^cron/update_subscriptions$', tasks.update_subscriptions_cron, name='update-subscriptions-cron'),
 
     url(r'^_ah/', include('djangae.urls')),
 

@@ -150,6 +150,8 @@ OAUTH_SCOPES = [
     'https://www.googleapis.com/auth/youtube.readonly',
 ]
 
+OAUTH_RETURN_SESSION_KEY = 'subscribae-oauth-return-url-name'
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
