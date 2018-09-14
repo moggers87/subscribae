@@ -34,7 +34,7 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib.staticfiles.views import serve
 
-from subscribae.views import misc, oauth, tasks
+from subscribae.views import api, misc, oauth, tasks
 
 
 urlpatterns = (
@@ -46,6 +46,9 @@ urlpatterns = (
     url(r'^sync$', misc.sync_subscription, name='sync'),
     url(r'^authorise$', oauth.oauth_start, name='authorise'),
     url(r'^oauth2callback$', oauth.oauth_callback, name='oauth2callback'),
+
+    # api
+    url(r'^api/video/(?P<bucket>.+)$', api.video, name='video-api'),
 
     # crons
     url(r'^cron/update_subscriptions$', tasks.update_subscriptions_cron, name='update-subscriptions-cron'),

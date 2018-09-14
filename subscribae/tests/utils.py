@@ -89,4 +89,6 @@ class VideoFactory(factory.django.DjangoModelFactory):
     subscription = factory.SubFactory(SubscriptionFactory)
 
     title = factory.fuzzy.FuzzyText()
+    description = factory.fuzzy.FuzzyText()
+    youtube_id = factory.fuzzy.FuzzyText()
     published_at = factory.LazyFunction(timezone.now)
