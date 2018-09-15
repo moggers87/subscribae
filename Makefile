@@ -36,3 +36,7 @@ static-live: install-deps
 .PHONY: upload
 upload: static-live
 	./appcfg.py -V "$(shell git describe --dirty)" update .
+
+.PHONY: clean-pyc
+clean-pyc:
+	find . -name \*.pyc -delete
