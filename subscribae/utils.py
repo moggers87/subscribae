@@ -23,6 +23,7 @@ from djangae.db import transaction
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from google.appengine.ext.deferred import deferred
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
 from oauth2client import client
@@ -282,7 +283,7 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                     user_id=user_id,
                     title=video['snippet']['title'],
                     description=video['snippet']['description'],
-                    published_at=video['snippet']['publishedAt'],
+                    published_at=parse_datetime(video['snippet']['publishedAt']),
                     thumbnails={size: value.get('url', '') for size, value in video['snippet']['thumbnails'].items()},
                     youtube_id=video['id'],
                     buckets_ids=bucket_ids,
