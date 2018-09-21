@@ -29,6 +29,7 @@ ugly = get_filter("uglifyjs", binary=os.path.join(node_modules, ".bin", "uglifyj
 
 
 js = Bundle(
+    "thirdparty/jquery/dist/jquery.js",
     "js/test.js",
     filters=(ugly,),
     output="compiled/js/test.%(version)s.js",

@@ -166,6 +166,11 @@ STATICFILES_FINDERS = (
 STATICFILES_STORAGE = 'subscribae.storage.ManifestOutsideOfStaticFilesStorage'
 STATIC_MANIGEST_PATH = os.path.join(BASE_DIR, ".staticmanifest.json")
 
+STATICFILES_DIRS = [
+    ("thirdparty", os.path.join(BASE_DIR, "node_modules")),
+]
+
+
 # STATIC_ROOT isn't uploaded to the same place as application data is, but we
 # need to access the manifest file to create the correct URLs in our templates
 ASSETS_MANIFEST = "file:{}".format(os.path.join(BASE_DIR, ".webassets-manifest"))
