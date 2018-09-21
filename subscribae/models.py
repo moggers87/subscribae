@@ -70,6 +70,9 @@ class Subscription(ThumbnailAbstract):
     class Meta:
         ordering = ["title"]
 
+    def __unicode__(self):
+        return self.title
+
 
 class Bucket(UniquenessMixin, models.Model):
     """A "bucket" that a user can put a subscription in
