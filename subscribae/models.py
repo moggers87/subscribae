@@ -112,6 +112,10 @@ class Video(ThumbnailAbstract):
     class Meta:
         ordering = ["ordering_key"]
 
+    @property
+    def subscription_title(self):
+        return self.subscription.title
+
 
 class OauthToken(models.Model):
     """Oauth tokens for a specific user"""

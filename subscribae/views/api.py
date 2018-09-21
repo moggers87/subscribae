@@ -30,6 +30,7 @@ VIDEO_API_MAP = {
     "title": "title",
     "description": "description",
     "published": "published_at",
+    "subscription": "subscription_title",
 }
 
 
