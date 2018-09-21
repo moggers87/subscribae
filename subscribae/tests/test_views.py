@@ -116,10 +116,6 @@ class ViewTestCase(TestCase):
         response = self.client.get(reverse('subscription', kwargs={'subscription': subscription.pk}))
         self.assertEqual(response.status_code, 200)
 
-    def test_video(self):
-        response = self.client.get(reverse('video', kwargs={'video': 1}))
-        self.assertEqual(response.status_code, 200)
-
     def test_sync(self):
         response = self.client.get(reverse('sync'))
         self.assertEqual(response.status_code, 302)

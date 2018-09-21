@@ -43,7 +43,6 @@ urlpatterns = (
     url(r'^bucket/new$', misc.bucket_new, name='bucket-new'),
     url(r'^bucket/(?P<bucket>.+)$', misc.bucket, name='bucket'),
     url(r'^subscription/(?P<subscription>.+)$', misc.subscription, name='subscription'),
-    url(r'^video/(?P<video>.+)$', misc.video, name='video'),
     url(r'^sync$', misc.sync_subscription, name='sync'),
     url(r'^authorise$', oauth.oauth_start, name='authorise'),
     url(r'^oauth2callback$', oauth.oauth_callback, name='oauth2callback'),

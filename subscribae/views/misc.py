@@ -83,11 +83,6 @@ def subscription(request, subscription):
 
 
 @login_required
-def video(request, video):
-    return HttpResponse("Hello %s" % video)
-
-
-@login_required
 def sync_subscription(request):
     if OauthToken.objects.filter(user_id=request.user.id).exists():
         deferred.defer(new_subscriptions, request.user.id)
