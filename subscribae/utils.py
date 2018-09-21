@@ -247,6 +247,7 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
         # initial import to show some videos, we don't need to do a full import of every video
         return
     try:
+        _log.info("Adding videos to buckets: %s", bucket_ids)
         try:
             youtube = get_service(user_id)
         except OauthToken.DoesNotExist:
