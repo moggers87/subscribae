@@ -5,6 +5,7 @@
         {% assets "main_js" %}
             <script type="text/javascript" src="{{ ASSET_URL }}"></script>
         {% endassets %}
+        {% block head %}{% endblock %}
     </head>
     <body>
         <a href="{% url "overview" %}">Overview</a>

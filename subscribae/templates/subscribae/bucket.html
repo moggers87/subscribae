@@ -1,6 +1,10 @@
 {% extends "subscribae/base.html" %}
 {% load i18n %}
 
+{% block head %}
+    <script type="text/javascript" src="https://www.youtube.com/iframe_api" async></script>
+{% endblock %}
+
 {% block content %}
 <p>{{ bucket.title }}</p>
 <form action="{% url "bucket" bucket=bucket.pk %}" method="POST">
@@ -16,11 +20,5 @@
     </a>
 {% endfor %}
 </div>
-<div class="videos">
-    <ul>
-    {% for video in video_list %}
-        <li>{{ video.title }}</li>
-    {% endfor %}
-    </ul>
-</div>
+<div id="player" data-api-url="{% url "video-api" bucket=bucket.pk %}"></div>
 {% endblock %}
