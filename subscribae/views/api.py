@@ -18,6 +18,7 @@
 
 from djangae.db import transaction
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
 from django.http import JsonResponse, Http404
 
 from subscribae.models import Video, create_composite_key
@@ -89,4 +90,6 @@ def video(request, bucket):
 
         videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP, before, after)
 
-        return JsonResponse({"videos": videos})
+        next_url = "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket}), last)
+
+        return JsonResponse({"videos": videos, "next": next_url})
