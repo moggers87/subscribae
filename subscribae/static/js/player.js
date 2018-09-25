@@ -19,19 +19,60 @@
 function onYouTubeIframeAPIReady() {
     'use strict';
     (function($, yt) {
-        var apiUrl, player;
+        var player, apiUrl;
+        var queue = [];
+        var $titleObj = $("#details-box .title");
+        var $descObj = $("#details-box .description");
 
-        function onPlayerReady(event) {
-            player.playVideo({videoId: "Vyjzj9DA3u4"});
+        function fetchVideos(callback) {
+            $.ajax(apiUrl, {
+                success: function(data, textStatus, jqXHR) {
+                    apiUrl = data.next;
+                    callback(data.videos);
+                }
+            });
+        }
+
+        function addVideos(videos) {
+            Array.prototype.push.apply(queue, videos);
+        }
+
+        function popVideo() {
+            return queue.shift();
+        }
+
+        function setMeta(video) {
+            $titleObj.text(video.title);
+            $descObj.text(video.description);
+        }
+
+        function onPlayerState(event) {
+            if (event.data == yt.PlayerState.ENDED) {
+                var video = popVideo();
+                event.target.cueVideoById({videoId: video.id});
+                setMeta(video);
+                event.target.playVideo();
+            }
         }
 
         apiUrl = $("#player").data("api-url");
-        player = new yt.Player('player', {
-            height: 390,
-            width: 640,
-            events: {
-                "onReady": onPlayerReady
-            }
+        fetchVideos(function(data) {
+            var video;
+
+            addVideos(data);
+
+            video = popVideo();
+            setMeta(video);
+            // player bugs out if we don't provide it with an initial video
+            player = new yt.Player('player', {
+                height: 390,
+                width: 640,
+                videoId: video.id,
+                events: {
+                    "onStateChange": onPlayerState
+                }
+            });
+
         });
     })(jQuery, YT);
-};
+}
