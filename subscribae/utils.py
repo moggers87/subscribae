@@ -204,7 +204,7 @@ def new_subscriptions(user_id, page_token=None):
                     upload_playlist=None,  # must fetch this from the channel data
                 )
 
-            ids_from_sub = subscriptions.keys()
+            ids_from_sub = sorted(subscriptions.keys())
 
             channel_list = youtube.channels() \
                 .list(id=','.join(ids_from_sub), part='contentDetails', maxResults=API_MAX_RESULTS) \
