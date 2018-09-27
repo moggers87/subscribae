@@ -1,5 +1,5 @@
 .PHONY: tests
-tests:
+tests: static-dev clean-pyc
 	./manage.py test
 
 .PHONY: install-pip-deps
@@ -27,6 +27,11 @@ update-npm-deps:
 
 .PHONY: update-deps
 update-deps: update-dev-deps update-prod-deps update-npm-deps
+
+.PHONY: static-dev
+static-dev: install-deps
+	./manage.py collectstatic --no-input --clear
+	./manage.py assets build
 
 .PHONY: static-live
 static-live: install-deps
