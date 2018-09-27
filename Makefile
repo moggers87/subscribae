@@ -30,7 +30,7 @@ update-deps: update-dev-deps update-prod-deps update-npm-deps
 
 .PHONY: static-dev
 static-dev: install-deps
-	./manage.py collectstatic --no-input --clear
+	./manage.py collectstatic --no-input --clear -v0
 	./manage.py assets build
 
 .PHONY: static-live
