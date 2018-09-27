@@ -1,3 +1,5 @@
+GIT_VERSION := $(shell git describe --dirty)
+
 .PHONY: tests
 tests: static-dev clean-pyc
 	./manage.py test
@@ -40,7 +42,8 @@ static-live: install-deps
 
 .PHONY: upload
 upload: static-live
-	./appcfg.py -V "$(shell git describe --dirty)" update .
+	./appcfg.py -V "$(GIT_VERSION)" update .
+	echo "https://$(GIT_VERSION)-dot-subscribae.appspot.com/"
 
 .PHONY: clean-pyc
 clean-pyc:
