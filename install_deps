@@ -122,7 +122,7 @@ def install_requirements():
 
         # install all the required third party libs into the target directory
         print(pip_msg.format(filename=os.path.basename(requirements), target=target))
-        args = ["pip", "install", "-r", requirements, "-t", target, "-I"]
+        args = ["pip", "-q", "install", "-r", requirements, "-t", target, "-I"]
         p = subprocess.Popen(args)
         p.wait()
 
