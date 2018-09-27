@@ -24,7 +24,7 @@ from django.core.urlresolvers import reverse
 import mock
 
 from subscribae.models import Video
-from subscribae.views.api import queryset_to_json, video
+from subscribae.views.api import queryset_to_json
 from subscribae.test import gae_login, gae_logout
 from subscribae.tests.utils import BucketFactory, VideoFactory
 
@@ -63,15 +63,21 @@ class VideoApiTestCase(TestCase):
 
     def test_get(self):
         video = VideoFactory(user=self.user, buckets=[BucketFactory(user=self.user)])
-        response = self.client.get(reverse("video-api", kwargs={"bucket": video.buckets.first().pk}))
+        bucket = video.buckets.first()
+
+        response = self.client.get(reverse("video-api", kwargs={"bucket": bucket.pk}))
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
-        self.assertEqual(data, {"videos": [{
-            "id": video.youtube_id,
-            "title": video.title,
-            "description": video.description,
-            "published": datetime_to_js_iso(video.published_at),
-        }]})
+        self.assertEqual(data, {
+            "next": "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket.pk}), video.ordering_key),
+            "videos": [{
+                "id": video.youtube_id,
+                "title": video.title,
+                "description": video.description,
+                "published": datetime_to_js_iso(video.published_at),
+                "subscription": "",
+            }],
+        })
 
     def test_post_not_found(self):
         data = {}
@@ -110,7 +116,7 @@ class QuerySetToJsonTestCase(TestCase):
 
     @mock.patch("subscribae.views.api.API_PAGE_SIZE", 2)
     def test_page_size(self):
-        videos = VideoFactory.create_batch(3)
+        VideoFactory.create_batch(3)
 
         qs = Video.objects.all()
         items, _, _ = queryset_to_json(qs, "pk", {"id": "id"})
@@ -146,14 +152,14 @@ class QuerySetToJsonTestCase(TestCase):
         self.assertEqual(items[0]["bob"], video.title)
 
     def test_property_map_value_error(self):
-        video = VideoFactory()
+        VideoFactory()
 
         qs = Video.objects.all()
         with self.assertRaises(ValueError):
             queryset_to_json(qs, "pk", (("id", "id"), ("title", "title")))
 
     def test_ordering(self):
-        videos = VideoFactory.create_batch(3)
+        VideoFactory.create_batch(3)
 
         qs = Video.objects.all()
         forward, _, _ = queryset_to_json(qs, "pk", {"id": "id"})

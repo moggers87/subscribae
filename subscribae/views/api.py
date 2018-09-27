@@ -90,6 +90,10 @@ def video(request, bucket):
 
         videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP, before, after)
 
-        next_url = "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket}), last)
+        data = {"videos": videos}
 
-        return JsonResponse({"videos": videos, "next": next_url})
+        if len(videos) > 0:
+            next_url = "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket}), last)
+            data["next"] = next_url
+
+        return JsonResponse(data)

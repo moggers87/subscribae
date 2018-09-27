@@ -261,7 +261,8 @@ class ImportVideoTasksTestCase(TestCase):
         self.assertEqual(video2.description, "")
         self.assertNotEqual(video2.published_at, datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC))
         self.assertNotEqual(video2.ordering_key,
-                         create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)), "video456"))
+                            create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)),
+                                                 "video456"))
 
     def test_missing_oauth_token(self):
         user = get_user_model().objects.create(username='1')
