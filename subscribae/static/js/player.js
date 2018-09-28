@@ -16,9 +16,13 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+
 function onYouTubeIframeAPIReady() {
     'use strict';
     (function($, yt) {
+        var QUEUE_IS_SMALL = 5;
+
         var player, apiUrl;
         var queue = [];
         var $titleObj = $("#details-box .title");
@@ -27,7 +31,7 @@ function onYouTubeIframeAPIReady() {
         function fetchVideos(callback) {
             $.ajax(apiUrl, {
                 success: function(data, textStatus, jqXHR) {
-                    apiUrl = data.next;
+                    apiUrl = data.next ? data.next : apiUrl;
                     callback(data.videos);
                 }
             });
@@ -46,12 +50,28 @@ function onYouTubeIframeAPIReady() {
             $descObj.text(video.description);
         }
 
+        function noVideo() {
+            $titleObj.text("No more videos");
+            $descObj.text("Sorry, looks like you've watched everything!");
+        }
+
         function onPlayerState(event) {
             if (event.data == yt.PlayerState.ENDED) {
+                if (queue.length < QUEUE_IS_SMALL) {
+                    // TODO: there's a chance that this will populate the queue
+                    // after popVideo has run and returned undef. We should
+                    // probably try and recover from that state.
+                    fetchVideos(addVideos);
+                }
+
                 var video = popVideo();
-                event.target.cueVideoById({videoId: video.id});
-                setMeta(video);
-                event.target.playVideo();
+                if (video !== undefined) {
+                    event.target.cueVideoById({videoId: video.id});
+                    setMeta(video);
+                    event.target.playVideo();
+                } else {
+                    noVideo();
+                }
             }
         }
 
@@ -62,17 +82,21 @@ function onYouTubeIframeAPIReady() {
             addVideos(data);
 
             video = popVideo();
-            setMeta(video);
-            // player bugs out if we don't provide it with an initial video
-            player = new yt.Player('player', {
-                height: 390,
-                width: 640,
-                videoId: video.id,
-                events: {
-                    "onStateChange": onPlayerState
-                }
-            });
 
+            if (video !== undefined) {
+                setMeta(video);
+                // player bugs out if we don't provide it with an initial video
+                player = new yt.Player('player', {
+                    height: 390,
+                    width: 640,
+                    videoId: video.id,
+                    events: {
+                        "onStateChange": onPlayerState
+                    }
+                });
+            } else {
+                noVideo();
+            }
         });
     })(jQuery, YT);
 }
