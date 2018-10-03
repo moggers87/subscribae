@@ -150,6 +150,8 @@ OAUTH_SCOPES = [
     'https://www.googleapis.com/auth/youtube.readonly',
 ]
 
+OAUTH_RETURN_SESSION_KEY = 'subscribae-oauth-return-url-name'
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
@@ -164,6 +166,11 @@ STATICFILES_FINDERS = (
 STATICFILES_STORAGE = 'subscribae.storage.ManifestOutsideOfStaticFilesStorage'
 STATIC_MANIGEST_PATH = os.path.join(BASE_DIR, ".staticmanifest.json")
 
+STATICFILES_DIRS = [
+    ("thirdparty", os.path.join(BASE_DIR, "node_modules")),
+]
+
+
 # STATIC_ROOT isn't uploaded to the same place as application data is, but we
 # need to access the manifest file to create the correct URLs in our templates
 ASSETS_MANIFEST = "file:{}".format(os.path.join(BASE_DIR, ".webassets-manifest"))
@@ -173,13 +180,12 @@ ASSETS_CACHE = False
 CSP_DEFAULT_SRC = ("'self'", "*.gstatic.com")
 # Inline styles are unsafe, but Django error pages use them. We later remove
 # `unsafe-inline` in settings_live.py
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com", "*.gstatic.com")
-CSP_FONT_SRC = ("'self'", "themes.googleusercontent.com", "*.gstatic.com")
-CSP_FRAME_SRC = ("'self'", "www.google.com", "www.youtube.com", "accounts.google.com", "apis.google.com",
-                 "plus.google.com")
-CSP_SCRIPT_SRC = ("'self'", "*.googleanalytics.com", "*.google-analytics.com", "ajax.googleapis.com")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+CSP_FONT_SRC = ("'self'",)
+CSP_FRAME_SRC = ("'self'", "https://www.youtube.com")
+CSP_SCRIPT_SRC = ("'self'", "https://www.youtube.com", "https://s.ytimg.com")
 CSP_IMG_SRC = ("'self'", "https:")
-CSP_CONNECT_SRC = ("'self'", "plus.google.com", "www.google-analytics.com")
+CSP_CONNECT_SRC = ("'self'",)
 
 
 from djangae.contrib.gauth.settings import *  # noqa

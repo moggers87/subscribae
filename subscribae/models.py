@@ -70,6 +70,9 @@ class Subscription(ThumbnailAbstract):
     class Meta:
         ordering = ["title"]
 
+    def __unicode__(self):
+        return self.title
+
 
 class Bucket(UniquenessMixin, models.Model):
     """A "bucket" that a user can put a subscription in
@@ -103,9 +106,15 @@ class Video(ThumbnailAbstract):
     # calculate id based on user ID + video ID so we can get by keys later
     id = ComputedCharField(lambda self: create_composite_key(str(self.user_id), self.youtube_id),
                            primary_key=True, max_length=200)
+    ordering_key = ComputedCharField(lambda self: create_composite_key(self.published_at.isoformat(" "),
+                                     self.youtube_id), max_length=200)
 
     class Meta:
-        ordering = ["published_at"]
+        ordering = ["ordering_key"]
+
+    @property
+    def subscription_title(self):
+        return self.subscription.title
 
 
 class OauthToken(models.Model):

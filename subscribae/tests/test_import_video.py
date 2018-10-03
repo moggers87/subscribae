@@ -25,7 +25,7 @@ from google.appengine.runtime import DeadlineExceededError as RuntimeExceededErr
 from pytz import UTC
 import mock
 
-from subscribae.models import Subscription, OauthToken, Video
+from subscribae.models import Subscription, OauthToken, Video, create_composite_key
 from subscribae.utils import import_videos, API_MAX_RESULTS
 from subscribae.tests.utils import MockExecute, BucketFactory
 
@@ -90,10 +90,14 @@ class ImportVideoTasksTestCase(TestCase):
         self.assertEqual(video1.title, "my video")
         self.assertEqual(video1.description, "this is my video")
         self.assertEqual(video1.published_at, datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC))
+        self.assertEqual(video1.ordering_key,
+                         create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)), "video123"))
         video2 = Video.objects.get(youtube_id="video456")
         self.assertEqual(video2.title, "my other video")
         self.assertEqual(video2.description, "this is my other video")
         self.assertEqual(video2.published_at, datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC))
+        self.assertEqual(video2.ordering_key,
+                         create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)), "video456"))
 
     @mock.patch('subscribae.utils.get_service')
     def test_import_videos_pagination(self, service_mock):
@@ -250,10 +254,15 @@ class ImportVideoTasksTestCase(TestCase):
         self.assertEqual(video1.title, "my video")
         self.assertEqual(video1.description, "this is my video")
         self.assertEqual(video1.published_at, datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC))
+        self.assertEqual(video1.ordering_key,
+                         create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)), "video123"))
         video2 = Video.objects.get(youtube_id="video456")
         self.assertEqual(video2.title, "")
         self.assertEqual(video2.description, "")
         self.assertNotEqual(video2.published_at, datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC))
+        self.assertNotEqual(video2.ordering_key,
+                            create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)),
+                                                 "video456"))
 
     def test_missing_oauth_token(self):
         user = get_user_model().objects.create(username='1')

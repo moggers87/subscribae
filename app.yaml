@@ -35,7 +35,11 @@ skip_files:
     - \.git
     - (.*)\.pyc
     - node_modules
+    - static/thirdparty
     - package.json
     - package-lock.json
     - Makefile
     - tox.ini
+    - \.tox
+    - \.coverage(.*)
+    - htmlcov

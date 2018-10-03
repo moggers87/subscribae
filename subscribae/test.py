@@ -18,20 +18,21 @@
 
 import os
 
-from django.conf import settings
-from django_assets import Bundle, register
-from webassets.filter import get_filter
+
+def gae_login(user):
+    # TODO consider mocking rather than changing the environment
+    os.environ['USER_EMAIL'] = user.email
+    os.environ['USER_ID'] = user.username
 
 
-node_modules = os.path.join(settings.BASE_DIR, "node_modules")
-ugly = get_filter("uglifyjs", binary=os.path.join(node_modules, ".bin", "uglifyjs"),
-                  extra_args=["--comments", "/^!/", "-m", "-c"])
+def gae_logout():
+    # TODO consider mocking rather than changing the environment
+    try:
+        del os.environ['USER_EMAIL']
+    except KeyError:
+        pass
 
-
-js = Bundle(
-    "thirdparty/jquery/dist/jquery.js",
-    "js/player.js",
-    filters=(ugly,),
-    output="compiled/js/test.%(version)s.js",
-)
-register("main_js", js)
+    try:
+        del os.environ['USER_ID']
+    except KeyError:
+        pass

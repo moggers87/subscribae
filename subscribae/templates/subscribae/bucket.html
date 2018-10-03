@@ -1,14 +1,17 @@
 {% extends "subscribae/base.html" %}
 {% load i18n %}
 
+{% block head %}
+    <script type="text/javascript" src="https://www.youtube.com/iframe_api" async></script>
+{% endblock %}
+
 {% block content %}
 <p>{{ bucket.title }}</p>
-<form action="{% url "bucket" bucket=bucket.pk %}" method="POST">
-    {% csrf_token %}
-    {{ form }}
-
-    <button>Save</button>
-</form>
+<div id="player-box">
+    <div id="player" data-api-url="{% url "video-api" bucket=bucket.pk %}"></div>
+    <div id="playlist"></div>
+    <div id="details-box"><h3 class="title"></h3><p class="description"></p></div>
+</div>
 <div id="subscriptions">
 {% for subscription in bucket.subs.all %}
     <a href="{% url "subscription" subscription=subscription.pk %}">
@@ -16,11 +19,10 @@
     </a>
 {% endfor %}
 </div>
-<div class="videos">
-    <ul>
-    {% for video in video_list %}
-        <li>{{ video.title }}</li>
-    {% endfor %}
-    </ul>
-</div>
+<form action="{% url "bucket" bucket=bucket.pk %}" method="POST">
+    {% csrf_token %}
+    {{ form }}
+
+    <button>Save</button>
+</form>
 {% endblock %}

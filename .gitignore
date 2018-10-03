@@ -12,6 +12,8 @@ oauth_secrets.json
 !/.editorconfig
 !/.travis.yml
 !/.coveragerc
+!/.jshintignore
+!/.jshintrc
 
 # npm
 

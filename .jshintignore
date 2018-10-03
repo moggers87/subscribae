@@ -1,0 +1,5 @@
+.git
+htmlcov
+node_modules
+/static
+/sitepackages

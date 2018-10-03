@@ -1,6 +1,6 @@
 ##
 #    Subscribae
-#    Copyright (C) 2018  Matt Molyneaux <moggers87+git@moggers87.co.uk>
+#    Copyright (C) 2016  Matt Molyneaux <moggers87+git@moggers87.co.uk>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -16,22 +16,14 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-import os
+from djangae.environment import task_or_admin_only
+from django.http import HttpResponse
+from google.appengine.ext.deferred import deferred
 
-from django.conf import settings
-from django_assets import Bundle, register
-from webassets.filter import get_filter
-
-
-node_modules = os.path.join(settings.BASE_DIR, "node_modules")
-ugly = get_filter("uglifyjs", binary=os.path.join(node_modules, ".bin", "uglifyjs"),
-                  extra_args=["--comments", "/^!/", "-m", "-c"])
+from subscribae.utils import update_subscriptions
 
 
-js = Bundle(
-    "thirdparty/jquery/dist/jquery.js",
-    "js/player.js",
-    filters=(ugly,),
-    output="compiled/js/test.%(version)s.js",
-)
-register("main_js", js)
+@task_or_admin_only
+def update_subscriptions_cron(request):
+    deferred.defer(update_subscriptions)
+    return HttpResponse("Update started")

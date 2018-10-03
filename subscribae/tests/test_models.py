@@ -21,7 +21,7 @@ from datetime import datetime
 from djangae.test import TestCase
 from pytz import UTC
 
-from subscribae.models import Bucket, Subscription, Video
+from subscribae.models import Bucket, Subscription, Video, create_composite_key
 from subscribae.tests.utils import BucketFactory, SubscriptionFactory, VideoFactory
 
 
@@ -51,9 +51,10 @@ class ModelTestCase(TestCase):
         )
 
     def test_default_video_ordering(self):
-        VideoFactory(published_at=datetime(1997, 8, 16, 19, 20, 30, 450000, tzinfo=UTC))
-        VideoFactory(published_at=datetime(1997, 6, 16, 19, 20, 30, 450000, tzinfo=UTC))
-        VideoFactory(published_at=datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC))
+        VideoFactory(published_at=datetime(1997, 8, 16, 19, 20, 30, 450000, tzinfo=UTC), youtube_id="1")
+        VideoFactory(published_at=datetime(1997, 6, 16, 19, 20, 30, 450000, tzinfo=UTC), youtube_id="4")
+        VideoFactory(published_at=datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC), youtube_id="2")
+        VideoFactory(published_at=datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC), youtube_id="3")
 
         videos = Video.objects.all()
 
@@ -62,6 +63,17 @@ class ModelTestCase(TestCase):
             [
                 datetime(1997, 6, 16, 19, 20, 30, 450000, tzinfo=UTC),
                 datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC),
+                datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC),
                 datetime(1997, 8, 16, 19, 20, 30, 450000, tzinfo=UTC),
+            ]
+        )
+
+        self.assertEqual(
+            [i.ordering_key for i in videos],
+            [
+                create_composite_key(str(datetime(1997, 6, 16, 19, 20, 30, 450000, tzinfo=UTC)), "4"),
+                create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)), "2"),
+                create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)), "3"),
+                create_composite_key(str(datetime(1997, 8, 16, 19, 20, 30, 450000, tzinfo=UTC)), "1"),
             ]
         )
