@@ -1,0 +1,1 @@
+{% if wrap_label %}<label{% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %} class="control control-inline checkbox">{% endif %}{% include "django/forms/widgets/input.html" %}{% if wrap_label %} <span class="control-indicator"></span><span class="control-label">{{ widget.label }}</span></label>{% endif %}

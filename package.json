@@ -1,7 +1,15 @@
 {
     "private": true,
     "dependencies": {
+        "caniuse-db": "^1.0.30000890",
+        "caniuse-lite": "^1.0.30000890",
+        "cssnano": "^4.1.4",
         "jquery": "^3.3.1",
+        "postcss": "^7.0.5",
+        "postcss-cli": "^6.0.0",
+        "postcss-cssnext": "^2.11.0",
+        "postcss-import": "^9.1.0",
+        "turretcss": "^4.1.4",
         "uglify-js": "^3.4.9"
     }
 }

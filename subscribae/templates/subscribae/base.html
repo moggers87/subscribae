@@ -1,17 +1,30 @@
 {% load assets staticfiles i18n %}
 <!DOCTYPE html>
-<html>
+<html lang="{{ LANGUAGE_CODE }}">
     <head>
         {% assets "main_js" %}
             <script type="text/javascript" src="{{ ASSET_URL }}"></script>
         {% endassets %}
+        {% assets "main_css" %}
+            <link href="{{ ASSET_URL }}" rel="stylesheet" type="text/css" />
+        {% endassets %}
         {% block head %}{% endblock %}
     </head>
     <body>
-        <a href="{% url "overview" %}">Overview</a>
-        <hr>
-        {% block content %}{% endblock %}
-        <hr>
-        <img src="{% static "helpful-icon.png" %}" alt="{% trans "A picture of a dog barking." %}">
+        <nav class="nav-inline">
+            {% include "subscribae/includes/logo.svg" %}
+            {# label must be a sibling after checkbox to allow styling of label based on checkbox focus #}
+            <input type="checkbox" id="nav-collapse-1">
+            <label for="nav-collapse-1" role="button" class="nav-toggle margin-right-xs border border-radius">
+                <span class="screen-reader">{% trans "Toggle navigation" %}</span>
+                {% include "subscribae/includes/drop-down.svg" %}
+            </label>
+            <ul>
+                <li><a href="{% url "overview" %}">
+                    <span>Overview</span>
+                </a></li>
+            </ul>
+        </nav>
+        <div class="container gutter-vertical">{% block content %}{% endblock %}</div>
     </body>
 </html>

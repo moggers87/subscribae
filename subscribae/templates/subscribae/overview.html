@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-<div class="subscription-list">
+<div class="subscription-list side-scroll gutter-vertical">
     {% for subscription in subscription_list %}
     <a href="{% url "subscription" subscription=subscription.pk %}">
         {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
@@ -12,28 +12,42 @@
     <p><{% trans "Head over to Youtube and go subscribe to some" %}</p>
     {% endfor %}
 </div>
-<div class="bucket-list">
+<div class="gutter-vertical">
     <form action="{% url "bucket-new" %}" method="POST">
         {% csrf_token %}
         {{ form }}
-        <button>Add</button>
+        <button class="button button-primary">{% trans "Create new bucket" %}</button>
     </form>
-    {% for bucket in bucket_list %}
-    <div class="bucket">
-        <div class="title {% cycle "black" "white" %}">
-            <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
+</div>
+<div class="bucket-list gutter-vertical">
+    <div class="side-scroll flex flex-row flex-1-0-auto">
+        {% for bucket in bucket_list %}
+        <div class="bucket border border-color-secondary border-radius margin-right-xs">
+            <div class="title font-weight-semibold gutter-vertical">
+                <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
+            </div>
+            <div class="gutter">
+                <div class="subscriptions side-scroll">
+                    {% for subscription in bucket.subs.all %}
+                        {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
+                    {% empty %}
+                    <p class="undo-scroll">&laquo;{% trans "And what am I suppos' to do with an emp-ty case?" context "Quote from the 5th Element"%}&raquo;</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="videos gutter">
+                {% for video in bucket.video_set.all|slice:"10" %}
+                    <div class="flex flex-row margin-top-xs">
+                        <img class="margin-right-xs" src="">
+                        <p class="title">{{ video.title }}</p>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-        <div class="subscriptions">
-            {% for subscription in bucket.subs.all %}
-                {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
-            {% empty %}
-                <p>&laquo;And what am I suppos' to do with an emp-ty case?&raquo;</p>
-            {% endfor %}
-        </div>
+        {% empty %}
+        <h3>{% trans "Looks like you have no buckets!" %}</h3>
+        <p>{% trans "Would you like to create one?" %}</p>
+        {% endfor %}
     </div>
-    {% empty %}
-    <h3>{% trans "Looks like you have no buckets!" %}</h3>
-    <p>{% trans "Would you like to create one?" %}</p>
-    {% endfor %}
 </div>
 {% endblock %}

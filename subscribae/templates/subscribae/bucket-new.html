@@ -5,8 +5,7 @@
 <p>{% trans "New Bucket" %}</p>
 <form action="{% url "bucket-new" %}" method="POST">
     {% csrf_token %}
-    {{ form }}
-
-    <button>Save</button>
+    {% include "subscribae/includes/form.html" with form=form %}
+    <button class="button button-primary">Save</button>
 </form>
 {% endblock %}

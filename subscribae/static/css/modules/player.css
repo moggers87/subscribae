@@ -1,0 +1,16 @@
+#player {
+    width: 100%;
+    height: 80vh;
+}
+
+#player svg.logo {
+    & .bg {
+        fill: var(--secondary-900);
+        fill-opacity: 1.0;
+    }
+
+    & .fg {
+        fill: var(--primary);
+        fill-opacity: 1.0;
+    }
+}

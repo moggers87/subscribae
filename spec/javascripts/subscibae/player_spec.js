@@ -25,10 +25,14 @@ describe("The player", function() {
         beforeEach(function() {
             this.html = $(`
                 <div id="fixture">
-                    <div id="player" data-api-url="https://example.com/"></div>
-                    <div id="details-box">
-                        <div class="title"></div>
-                        <div class="description"></div>
+                    <div id="player-box"
+                        data-no-video-title="No more videos"
+                        data-no-video-description="Sorry, looks like you've watched everything!">
+                        <div id="player" data-api-url="https://example.com/"></div>
+                        <div id="details-box">
+                            <div class="title"></div>
+                            <div class="description"></div>
+                        </div>
                     </div>
                 </div>
             `);
