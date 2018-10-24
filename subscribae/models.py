@@ -21,6 +21,7 @@ from djangae.db.constraints import UniquenessMixin
 from djangae.fields import ComputedCharField, RelatedSetField, JSONField
 from django.conf import settings
 from django.db import models
+from django.template.loader import get_template
 from oauth2client.client import Credentials
 
 
@@ -71,7 +72,11 @@ class Subscription(ThumbnailAbstract):
         ordering = ["title"]
 
     def __unicode__(self):
-        return self.title
+        tmpl = get_template("subscribae/models/subscription.html")
+        return tmpl.render({"object": self})
+
+    def __repr__(self):
+        return "<Subscription {}>".format(self.title.encode("utf-8", "ignore"))
 
 
 class Bucket(UniquenessMixin, models.Model):

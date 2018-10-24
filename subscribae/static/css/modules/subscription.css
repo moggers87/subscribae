@@ -1,0 +1,14 @@
+.subscription-thumbnail-default {
+    height: var(--subscription-thumbnail-size);
+    width: var(--subscription-thumbnail-size);
+}
+
+.subscription-thumbnail {
+    width: var(--subscription-thumbnail-size);
+}
+
+.subscription-thumbnail p {
+    overflow-wrap: break-word;
+    white-space: normal;
+    hyphens: auto;
+}

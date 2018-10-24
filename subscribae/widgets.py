@@ -16,19 +16,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django.forms import ModelForm
-from django.contrib.auth import get_user_model
-
-from subscribae.forms import ErrorClassMixin
+from django import forms
 
 
-class UserAddForm(ErrorClassMixin, ModelForm):
-    class Meta:
-        model = get_user_model()
-        fields = ["email", "is_active"]
-
-
-class UserEditForm(ErrorClassMixin, ModelForm):
-    class Meta:
-        model = get_user_model()
-        fields = ["is_active"]
+class SubscriptionInBucket(forms.CheckboxSelectMultiple):
+    template_name = 'subscribae/forms/widgets/sub_multi.html'
+    option_template_name = 'subscribae/forms/widgets/sub_option.html'

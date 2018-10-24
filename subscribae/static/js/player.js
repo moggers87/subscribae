@@ -28,6 +28,10 @@ function onYouTubeIframeAPIReady() {
         var $titleObj = $("#details-box .title");
         var $descObj = $("#details-box .description");
 
+        var $playerBox = $("#player-box");
+        var noVideoTitle = $playerBox.data("no-video-title");
+        var noVideoDescription = $playerBox.data("no-video-description");
+
         function fetchVideos(callback) {
             $.ajax(apiUrl, {
                 success: function(data, textStatus, jqXHR) {
@@ -51,8 +55,8 @@ function onYouTubeIframeAPIReady() {
         }
 
         function noVideo() {
-            $titleObj.text("No more videos");
-            $descObj.text("Sorry, looks like you've watched everything!");
+            $titleObj.text(noVideoTitle);
+            $descObj.text(noVideoDescription);
         }
 
         function onPlayerState(event) {
@@ -87,8 +91,6 @@ function onYouTubeIframeAPIReady() {
                 setMeta(video);
                 // player bugs out if we don't provide it with an initial video
                 player = new yt.Player('player', {
-                    height: 390,
-                    width: 640,
                     videoId: video.id,
                     events: {
                         "onStateChange": onPlayerState

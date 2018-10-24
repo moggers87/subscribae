@@ -1,7 +1,8 @@
 GIT_VERSION := $(shell git describe --dirty)
 
 .PHONY: tests
-tests: static-dev clean-pyc
+tests: clean-pyc install-deps
+	$(MAKE) static-dev
 	./manage.py test
 
 .PHONY: install-pip-deps
@@ -31,9 +32,10 @@ update-npm-deps:
 update-deps: update-dev-deps update-prod-deps update-npm-deps
 
 .PHONY: static-dev
-static-dev: install-deps
+static-dev:
 	./manage.py collectstatic --no-input --clear -v0
 	./manage.py assets build
+	touch subscribae/wsgi.py
 
 .PHONY: static-live
 static-live: install-deps

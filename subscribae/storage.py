@@ -25,6 +25,11 @@ from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 
 class ManifestOutsideOfStaticFilesStorage(ManifestStaticFilesStorage):
     manifest_name = settings.STATIC_MANIGEST_PATH
+    patterns = (
+        ("*.css", (
+            r"""(url\(['"]{0,1}\s*(.*?)["']{0,1}\))""",
+        )),
+    )
 
     def read_manifest(self):
         try:

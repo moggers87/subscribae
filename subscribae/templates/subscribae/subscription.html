@@ -3,22 +3,28 @@
 
 {% block content %}
     {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
-    <p>{{ subscription.title }}</p>
-    <p><pre>{{ subscription.description }}</pre></p>
-    Buckets:
-    <ul>
-        {% for bucket in buckets %}
-        <li><a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a></li>
-        {% empty %}
-            <p>No buckets</p>
-        {% endfor %}
-    </ul>
-    Videos:
-    <ul>
-        {% for video in subscription.video_set.all %}
-        <li>{{ video.title }}</li>
-        {% empty %}
-            <p>No Videos</p>
-        {% endfor %}
-    </ul>
+    <div id="details-box" class="gutter-vertical">
+        <h1 class="title">{{ subscription.title }}</h1>
+        <p class="description">{{ subscription.description }}</p>
+    </div>
+    <div class="gutter-vertical">
+        Buckets:
+        <ul>
+            {% for bucket in buckets %}
+            <li><a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a></li>
+            {% empty %}
+                <p>No buckets</p>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="gutter-vertical">
+        Videos:
+        <ul>
+            {% for video in subscription.video_set.all %}
+            <li>{{ video.title }}</li>
+            {% empty %}
+                <p>No Videos</p>
+            {% endfor %}
+        </ul>
+    </div>
 {% endblock %}

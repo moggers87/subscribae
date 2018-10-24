@@ -1,0 +1,105 @@
+@import './turret.css';
+
+@import './modules/nav.css';
+@import './modules/bucket.css';
+@import './modules/player.css';
+@import './modules/subscription.css';
+
+:root {
+    --font-family-system: sans-serif;
+    --font-family-sans-serif: sans-serif;
+    --font-family-serif: serif;
+    --font-family-monospace: monospace;
+
+    --subscription-thumbnail-size: 88px;
+
+    --video-thumbnail-width: 120px;
+    --video-thumbnail-height: 90px;
+
+    /* Colours chosen via:
+     * https://webaim.org/resources/contrastchecker/
+     * https://www.color-blindness.com/color-name-hue/
+     * http://colormind.io/bootstrap/#
+     * https://colorschemedesigner.com/csd-3.5/
+     * find some colours that you like and contrast well, then find the name of
+     * the colour and use the "official" RGB to get something that is less
+     * muddy
+    `*/
+    --dark-colour: color(#262335 shade(50%));  /* steel gray */
+    --main-colour: color(#960018 lightness(70%));  /* carmine */
+    --light-colour: #FFF0F0; /* snow */
+
+    --color: var(--light-colour);
+    --background: var(--dark-colour);
+
+    --primary: var(--main-colour);
+    --primary-hover: var(--primary-100);
+    --primary-active: var(--primary-200);
+
+    --secondary: color(var(--main-colour) hue(-30));
+    --secondary-hover: var(--secondary-100);
+    --secondary-active: var(--secondary-200);
+
+    --tertiary: color(var(--main-colour) hue(+30));
+    --tertiary-hover: var(--tertiary-100);
+    --tertiary-active: var(--tertiary-200);
+
+    --error: color(var(--main-colour) hue(0) lightness(60%));
+    --error-hover: var(--error-100);
+    --error-active: var(--error-200);
+
+    --warning: color(var(--main-colour) hue(220) lightness(60%));
+    --warning-hover: var(--warning-100);
+    --warning-active: var(--warning-200);
+
+    --info: color(var(--main-colour) hue(180) lightness(60%));
+    --info-hover: var(--info-100);
+    --info-active: var(--info-200);
+
+    --success: color(var(--main-colour) hue(140) lightness(60%));
+    --success-hover: var(--success-100);
+    --success-active: var(--success-200);
+
+    --button-color: var(--light-colour);
+    --button-hover-background: color(var(--button-background) tint(30%));
+    --button-active-background: color(var(--button-background) tint(40%));
+
+    --button-primary-color: var(--dark-colour);
+    --button-secondary-color: var(--dark-colour);
+    --button-tertiary-color: var(--dark-colour);
+    --button-error-color: var(--dark-colour);
+    --button-warning-color: var(--dark-colour);
+    --button-info-color: var(--dark-colour);
+    --button-success-color: var(--dark-colour);
+
+    --form-error: {
+        color: var(--error) !important;
+        border-color: var(--error) !important;
+    }
+
+    --nav-height: 45px;
+}
+
+.side-scroll {
+    overflow-x: scroll;
+    white-space: nowrap;
+
+    & .undo-scroll {
+        white-space: normal;
+    }
+}
+
+fieldset.side-scroll {
+    min-width: 0;
+    max-with: 100%;
+}
+
+#details-box .description {
+    white-space: pre-wrap;
+}
+
+label.error {
+    & ~ input {
+        @apply --form-error;
+    }
+}

@@ -55,7 +55,7 @@ SECRET_KEY = get_app_config().secret_key
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 ASSETS_DEBUG = DEBUG
-ASSETS_AUTO_BUILD = DEBUG
+ASSETS_AUTO_BUILD = False
 
 # Despite Djangae docs saying this is false by default :)
 DJANGAE_CREATE_UNKNOWN_USER = False
@@ -69,6 +69,7 @@ INSTALLED_APPS = (
     'djangae.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
+    'django.forms',
     'django_assets',
     'csp',
     'cspreports',
@@ -111,6 +112,8 @@ TEMPLATES = [
         },
     },
 ]
+
+FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 SILENCED_SYSTEM_CHECKS = [
     'djangae.E001',  # we're using Django 1.11 session csrf feature

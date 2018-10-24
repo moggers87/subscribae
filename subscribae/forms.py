@@ -19,6 +19,7 @@ from django import forms
 from django.utils import timezone
 
 from subscribae.models import Bucket
+from subscribae.widgets import SubscriptionInBucket
 
 
 class BucketUniqueMixin(object):
@@ -35,7 +36,11 @@ class BucketUniqueMixin(object):
             self._update_errors(e)
 
 
-class BucketForm(BucketUniqueMixin, forms.ModelForm):
+class ErrorClassMixin(object):
+    error_css_class = "error"
+
+
+class BucketForm(ErrorClassMixin, BucketUniqueMixin, forms.ModelForm):
     class Meta:
         model = Bucket
         fields = [
@@ -50,7 +55,7 @@ class BucketForm(BucketUniqueMixin, forms.ModelForm):
             self.instance.last_update = timezone.now()
 
 
-class BucketEditForm(BucketUniqueMixin, forms.ModelForm):
+class BucketEditForm(ErrorClassMixin, BucketUniqueMixin, forms.ModelForm):
     class Meta:
         model = Bucket
         fields = [
@@ -58,7 +63,7 @@ class BucketEditForm(BucketUniqueMixin, forms.ModelForm):
             "subs",
         ]
         widgets = {
-            "subs": forms.CheckboxSelectMultiple,
+            "subs": SubscriptionInBucket,
         }
 
     def __init__(self, **kwargs):
