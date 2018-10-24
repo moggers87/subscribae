@@ -18,11 +18,11 @@ install-deps: install-pip-deps install-npm-deps
 
 .PHONY: update-prod-deps
 update-prod-deps:
-	pip-compile --output-file requirements/prod.txt requirements/prod.in
+	pip-compile -U --output-file requirements/prod.txt requirements/prod.in
 
 .PHONY: update-dev-deps
 update-dev-deps:
-	pip-compile --output-file requirements/dev.txt requirements/dev.in
+	pip-compile -U --output-file requirements/dev.txt requirements/dev.in
 
 .PHONY: update-npm-deps
 update-npm-deps:
