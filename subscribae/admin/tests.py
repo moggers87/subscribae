@@ -205,12 +205,21 @@ class UserEditTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_post(self):
-        data = {"is_active": False}
-        response = self.client.post(reverse("admin:user-edit", kwargs={"user_id": self.user.id}), data)
+        user = get_user_model().objects.create(username='2', email='other@example.com',
+                                                    is_active=True)
+        data = {"active": 0}
+        response = self.client.post(reverse("admin:user-edit", kwargs={"user_id": user.id}), data)
         self.assertRedirects(response, reverse("admin:user-index"))
 
-        self.user.refresh_from_db()
-        self.assertEqual(self.user.is_active, False)
+        user.refresh_from_db()
+        self.assertEqual(user.is_active, False)
+
+        data = {"active": 1}
+        response = self.client.post(reverse("admin:user-edit", kwargs={"user_id": user.id}), data)
+        self.assertRedirects(response, reverse("admin:user-index"))
+
+        user.refresh_from_db()
+        self.assertEqual(user.is_active, True)
 
     def test_404_post(self):
         response = self.client.post(reverse("admin:user-edit", kwargs={"user_id": "123"}), {})

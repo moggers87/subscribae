@@ -192,3 +192,7 @@ CSP_CONNECT_SRC = ("'self'",)
 
 
 from djangae.contrib.gauth.settings import *  # noqa
+
+AUTHENTICATION_BACKENDS = (
+    'subscribae.backends.SubscribaeUserBackend',
+)
