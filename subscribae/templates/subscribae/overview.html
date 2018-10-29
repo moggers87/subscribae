@@ -38,7 +38,7 @@
             <div class="videos gutter">
                 {% for video in bucket.video_set.all|slice:"10" %}
                     <div class="flex flex-row margin-top-xs">
-                        <img class="margin-right-xs" src="">
+                        <img class="margin-right-xs" src="{{ video.get_thumbnail }}">
                         <p class="title">{{ video.title }}</p>
                     </div>
                 {% endfor %}
