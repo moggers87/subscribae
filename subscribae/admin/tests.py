@@ -204,17 +204,20 @@ class UserEditTestCase(TestCase):
         response = self.client.get(reverse("admin:user-edit", kwargs={"user_id": self.user.id}))
         self.assertEqual(response.status_code, 200)
 
-    def test_post(self):
+    def test_post_active_unset(self):
         user = get_user_model().objects.create(username='2', email='other@example.com',
-                                                    is_active=True)
-        data = {"active": 0}
+                                               is_active=True)
+        data = {}
         response = self.client.post(reverse("admin:user-edit", kwargs={"user_id": user.id}), data)
         self.assertRedirects(response, reverse("admin:user-index"))
 
         user.refresh_from_db()
         self.assertEqual(user.is_active, False)
 
-        data = {"active": 1}
+    def test_post_active_set(self):
+        user = get_user_model().objects.create(username='2', email='other@example.com',
+                                               is_active=False)
+        data = {"is_active": "1"}
         response = self.client.post(reverse("admin:user-edit", kwargs={"user_id": user.id}), data)
         self.assertRedirects(response, reverse("admin:user-index"))
 
