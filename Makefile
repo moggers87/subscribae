@@ -1,7 +1,8 @@
 GIT_VERSION := $(shell git describe --dirty)
 
 .PHONY: tests
-tests: clean-pyc install-deps
+tests: install-deps
+	$(MAKE) clean-pyc
 	$(MAKE) static-dev
 	./manage.py test
 
