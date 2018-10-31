@@ -100,7 +100,7 @@ def user_edit(request, user_id):
     if request.method == "POST":
         form = UserEditForm(instance=user, data=request.POST)
         if form.is_valid():
-            user = form.save()
+            form.save()
             return HttpResponseRedirect(reverse('admin:user-index'))
     else:
         form = UserEditForm(instance=user)
