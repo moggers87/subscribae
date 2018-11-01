@@ -25,6 +25,7 @@ function onYouTubeIframeAPIReady() {
 
         var player, apiUrl;
         var queue = [];
+        var queueIndex = 0;
         var $titleObj = $("#details-box .title");
         var $descObj = $("#details-box .description");
 
@@ -46,7 +47,7 @@ function onYouTubeIframeAPIReady() {
         }
 
         function popVideo() {
-            return queue.shift();
+            return queue[queueIndex++];
         }
 
         function setMeta(video) {
@@ -61,7 +62,7 @@ function onYouTubeIframeAPIReady() {
 
         function onPlayerState(event) {
             if (event.data == yt.PlayerState.ENDED) {
-                if (queue.length < QUEUE_IS_SMALL) {
+                if ((queue.length - queueIndex) < QUEUE_IS_SMALL) {
                     // TODO: there's a chance that this will populate the queue
                     // after popVideo has run and returned undef. We should
                     // probably try and recover from that state.
