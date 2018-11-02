@@ -119,8 +119,9 @@ class Video(ThumbnailAbstract):
         ordering = ["ordering_key"]
 
     @property
-    def subscription_title(self):
-        return self.subscription.title
+    def html_snippet(self):
+        tmpl = get_template("subscribae/includes/videos.html")
+        return tmpl.render({"video": self})
 
 
 class OauthToken(models.Model):

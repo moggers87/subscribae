@@ -75,7 +75,7 @@ class VideoApiTestCase(TestCase):
                 "title": video.title,
                 "description": video.description,
                 "published": datetime_to_js_iso(video.published_at),
-                "subscription": "",
+                "html_snippet": video.html_snippet,
             }],
         })
 
