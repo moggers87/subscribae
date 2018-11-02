@@ -28,6 +28,7 @@ function onYouTubeIframeAPIReady() {
         var queueIndex = 0;
         var $titleObj = $("#details-box .title");
         var $descObj = $("#details-box .description");
+        var $playlistObj = $("#playlist");
 
         var $playerBox = $("#player-box");
         var noVideoTitle = $playerBox.data("no-video-title");
@@ -44,6 +45,10 @@ function onYouTubeIframeAPIReady() {
 
         function addVideos(videos) {
             Array.prototype.push.apply(queue, videos);
+            $playlistObj.append(videos.map(function(vid) {
+                return vid.html_snippet;
+            }));
+
         }
 
         function popVideo() {

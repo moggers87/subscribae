@@ -29,6 +29,7 @@ describe("The player", function() {
                         data-no-video-title="No more videos"
                         data-no-video-description="Sorry, looks like you've watched everything!">
                         <div id="player" data-api-url="https://example.com/"></div>
+                        <div id="playlist-box"><div id="playlist"></div></div>
                         <div id="details-box">
                             <div class="title"></div>
                             <div class="description"></div>
@@ -78,11 +79,20 @@ describe("The player", function() {
             });
 
             it("should set the title and description correctly", function() {
-                this.ajaxFunc({"videos": [{id: "123", title: "hello title", description: "hello description"}]});
+                this.ajaxFunc({"videos": [{id: "123", title: "hello title", description: "hello description", html_snippet: "<p>Hello</p>"}]});
 
                 expect(window.YT.Player.calls.count()).toBe(1);
                 expect($(".title").text()).toBe("hello title");
                 expect($(".description").text()).toBe("hello description");
+            });
+
+            it("should set populate the playlist", function() {
+                expect($("#playlist").children().length).toBe(0)
+                this.ajaxFunc({"videos": [{id: "123", title: "hello title", description: "hello description", html_snippet: "<p>Hello</p>"}]});
+
+                expect(window.YT.Player.calls.count()).toBe(1);
+                expect($("#playlist").children().length).toBe(1);
+                expect($("#playlist").children().text()).toBe("Hello");
             });
 
             it("should work even if there are no videos", function() {
@@ -95,8 +105,8 @@ describe("The player", function() {
             describe("and the queue is populated", function() {
                 beforeEach(function() {
                     this.ajaxFunc({"videos": [
-                        {id: "123", title: "first", description: "first"},
-                        {id: "456", title: "second", description: "second"},
+                        {id: "123", title: "first", description: "first", html_snippet: "<p>first</p>"},
+                        {id: "456", title: "second", description: "second", html_snippet: "<p>second</p>"},
                     ]});
                     var playerStateEnd = 123;
                     this.fakeEvent = {data: playerStateEnd, target: {
