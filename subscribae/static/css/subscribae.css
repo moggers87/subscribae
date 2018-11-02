@@ -82,16 +82,23 @@
     --nav-height: 45px;
 }
 
-.side-scroll {
+.x-scroll {
     overflow-x: scroll;
     white-space: nowrap;
 
-    & .undo-scroll {
-        white-space: normal;
-    }
 }
 
-fieldset.side-scroll {
+.y-scroll {
+    overflow-y: scroll;
+    white-space: nowrap;
+
+}
+
+.undo-scroll {
+    white-space: normal;
+}
+
+fieldset.x-scroll {
     min-width: 0;
     max-with: 100%;
 }

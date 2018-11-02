@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-<div class="subscription-list side-scroll gutter-vertical">
+<div class="subscription-list x-scroll gutter-vertical">
     {% for subscription in subscription_list %}
     <a href="{% url "subscription" subscription=subscription.pk %}">
         {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
@@ -20,14 +20,14 @@
     </form>
 </div>
 <div class="bucket-list gutter-vertical">
-    <div class="side-scroll flex flex-row flex-1-0-auto">
+    <div class="x-scroll flex flex-row flex-1-0-auto">
         {% for bucket in bucket_list %}
         <div class="bucket border border-color-secondary border-radius margin-right-xs">
             <div class="title font-weight-semibold gutter-vertical">
                 <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
             </div>
             <div class="gutter">
-                <div class="subscriptions side-scroll">
+                <div class="subscriptions x-scroll">
                     {% for subscription in bucket.subs.all %}
                         {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
                     {% empty %}
@@ -36,7 +36,7 @@
                 </div>
             </div>
             <div class="videos gutter">
-                {% for video in bucket.video_set.all|slice:"10" %}{% include "subscribae/includes/videos.html" with video=vdieo %}{% endfor %}
+                {% for video in bucket.video_set.all|slice:"10" %}{% include "subscribae/includes/videos.html" with video=video %}{% endfor %}
             </div>
         </div>
         {% empty %}

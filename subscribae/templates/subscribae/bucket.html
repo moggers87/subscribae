@@ -13,7 +13,7 @@
     <div id="player" data-api-url="{% url "video-api" bucket=bucket.pk %}">
         {% include "subscribae/includes/logo.svg" %}
     </div>
-    <div id="playlist"></div>
+    <div id="playlist-box"><div id="playlist" class="y-scroll"></div></div>
     <div id="details-box"><h3 class="title"></h3><p class="description"></p></div>
 </div>
 <form action="{% url "bucket" bucket=bucket.pk %}" method="POST">
