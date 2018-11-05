@@ -20,9 +20,11 @@
                 {% include "subscribae/includes/drop-down.svg" %}
             </label>
             <ul>
-                <li><a href="{% url "overview" %}">
-                    <span>Overview</span>
-                </a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url "overview" %}">
+                        <span>Overview</span>
+                    </a></li>
+                {% endif %}
             </ul>
         </nav>
         <div class="container gutter-vertical">{% block content %}{% endblock %}</div>
