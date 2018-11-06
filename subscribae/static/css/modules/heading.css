@@ -1,0 +1,26 @@
+.heading {
+    text-align: center;
+
+    & h1 {
+        font-family: var(--font-family-monospace);
+        margin: 0;
+        font-size: 10vw;
+        word-wrap: break-word;
+
+        @media (--s-up) {
+            letter-spacing: 10vw;
+            margin-left: 10vw;
+        }
+    }
+    & svg.logo {
+        & .bg {
+            fill: var(--secondary-900);
+            fill-opacity: 1.0;
+        }
+
+        & .fg {
+            fill: var(--primary);
+            fill-opacity: 1.0;
+        }
+    }
+}

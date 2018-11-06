@@ -90,3 +90,7 @@ def sync_subscription(request):
     else:
         request.session[settings.OAUTH_RETURN_SESSION_KEY] = 'sync'
         return HttpResponseRedirect(reverse('authorise'))
+
+
+def styleguide(request):
+    return TemplateResponse(request, 'subscribae/styleguide.html', {})

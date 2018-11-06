@@ -1,7 +1,8 @@
 @import './turret.css';
 
-@import './modules/nav.css';
 @import './modules/bucket.css';
+@import './modules/heading.css';
+@import './modules/nav.css';
 @import './modules/player.css';
 @import './modules/subscription.css';
 
@@ -102,4 +103,8 @@ label.error {
     & ~ input {
         @apply --form-error;
     }
+}
+
+svg.logo {
+    max-height: 100%;
 }
