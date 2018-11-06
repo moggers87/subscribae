@@ -103,6 +103,7 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.template.context_processors.csrf",
+                "subscribae.context_processors.site_config",
             ],
             'debug': True,
             'loaders': [

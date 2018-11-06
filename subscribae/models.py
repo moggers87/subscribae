@@ -21,6 +21,7 @@ from djangae.db.constraints import UniquenessMixin
 from djangae.fields import ComputedCharField, RelatedSetField, JSONField
 from django.conf import settings
 from django.db import models
+from django.template import Template, Context
 from django.template.loader import get_template
 from oauth2client.client import Credentials
 
@@ -129,3 +130,18 @@ class OauthToken(models.Model):
 
     def get(self):
         return Credentials.new_from_json(self.data)
+
+
+class SiteConfig(models.Model):
+    """
+    Site specific configuration
+
+    Because storing this in a settings.ini and redploying any time you want to
+    change a settings is horrid
+    """
+    site_name = models.CharField(default="cool.example.com", max_length=200)
+    footer_text = models.TextField(default="Someone forgot to fill out the footer!")
+
+    def render_footer(self):
+        tmpl = Template(self.footer_text)
+        return tmpl.render(Context({"object": self}))

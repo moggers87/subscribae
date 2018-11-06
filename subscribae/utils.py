@@ -29,13 +29,18 @@ from google.appengine.runtime import DeadlineExceededError as RuntimeExceededErr
 from oauth2client import client
 import httplib2
 
-from subscribae.models import Bucket, Video, Subscription, OauthToken, create_composite_key
+from subscribae.models import Bucket, Video, Subscription, OauthToken, SiteConfig, create_composite_key
 
 
 API_NAME = 'youtube'
 API_VERSION = 'v3'
 API_MAX_RESULTS = 10
 USER_SHARD = 500
+
+# "random" id (it's actually my birthday)
+SITE_CONFIG_ID = 19871022
+
+_CONFIG = None
 
 _log = logging.getLogger(__name__)
 
@@ -303,3 +308,12 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
     except RuntimeExceededError:
         deferred.defer(import_videos, user_id, subscription_id, playlist, bucket_ids,
                        page_token=page_token, only_first_page=only_first_page)
+
+
+def get_site_config():
+    global _CONFIG
+
+    if _CONFIG is None:
+        _CONFIG, _ = SiteConfig.objects.get_or_create(id=SITE_CONFIG_ID)
+
+    return _CONFIG

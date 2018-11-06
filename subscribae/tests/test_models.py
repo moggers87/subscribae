@@ -21,7 +21,7 @@ from datetime import datetime
 from djangae.test import TestCase
 from pytz import UTC
 
-from subscribae.models import Bucket, Subscription, Video, create_composite_key
+from subscribae.models import Bucket, Subscription, Video, SiteConfig, create_composite_key
 from subscribae.tests.utils import BucketFactory, SubscriptionFactory, VideoFactory
 
 
@@ -77,3 +77,10 @@ class ModelTestCase(TestCase):
                 create_composite_key(str(datetime(1997, 8, 16, 19, 20, 30, 450000, tzinfo=UTC)), "1"),
             ]
         )
+
+    def test_footer_render(self):
+        conf = SiteConfig()
+        conf.footer_text = """{{ object.site_name }}"""
+
+        output = conf.render_footer()
+        self.assertEqual(output, "cool.example.com")
