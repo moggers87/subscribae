@@ -17,6 +17,7 @@
 ##
 
 from djangae.test import TestCase
+from django.core.cache import cache
 import mock
 
 from subscribae import utils, context_processors
@@ -24,12 +25,6 @@ from subscribae.models import SiteConfig
 
 
 class SiteConfigTestCase(TestCase):
-    def setUp(self):
-        utils._CONFIG = None
-
-    def tearDown(self):
-        utils._CONFIG = None
-
     def test_get_config_creates(self):
         self.assertEqual(SiteConfig.objects.count(), 0)
         utils.get_site_config()
@@ -46,7 +41,7 @@ class SiteConfigTestCase(TestCase):
         self.assertNotEqual(conf.id, new_conf.id)
 
     def test_get_config_uses_module_cache(self):
-        utils._CONFIG = "somethingthatsnotamodelobject"
+        cache.set(utils.SITE_CONFIG_CACHE_KEY, "somethingthatsnotamodelobject")
         conf = utils.get_site_config()
 
         self.assertEqual(conf, "somethingthatsnotamodelobject")

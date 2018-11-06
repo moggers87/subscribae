@@ -21,12 +21,13 @@ import logging
 
 from djangae.db.consistency import ensure_instance_consistent
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
 from django.template.response import TemplateResponse
 
 from subscribae.admin.forms import UserAddForm, UserEditForm, SiteConfigForm
-from subscribae.utils import get_site_config
+from subscribae.utils import get_site_config, SITE_CONFIG_CACHE_KEY
 
 
 _log = logging.getLogger(__name__)
@@ -117,6 +118,7 @@ def site_config(request):
         form = SiteConfigForm(instance=config, data=request.POST)
         if form.is_valid():
             form.save()
+            cache.delete(SITE_CONFIG_CACHE_KEY)
             return HttpResponseRedirect(reverse('admin:index'))
     else:
         form = SiteConfigForm(instance=config)

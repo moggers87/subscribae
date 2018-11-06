@@ -21,6 +21,7 @@ import os
 from apiclient.discovery import build
 from djangae.db import transaction
 from django.conf import settings
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -40,7 +41,7 @@ USER_SHARD = 500
 # "random" id (it's actually my birthday)
 SITE_CONFIG_ID = 19871022
 
-_CONFIG = None
+SITE_CONFIG_CACHE_KEY = "subscribae-site-config-%s" % SITE_CONFIG_ID
 
 _log = logging.getLogger(__name__)
 
@@ -311,9 +312,9 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
 
 
 def get_site_config():
-    global _CONFIG
+    config = cache.get(SITE_CONFIG_CACHE_KEY)
+    if config is None:
+        config, _ = SiteConfig.objects.get_or_create(id=SITE_CONFIG_ID)
+        cache.set(SITE_CONFIG_CACHE_KEY, config)
 
-    if _CONFIG is None:
-        _CONFIG, _ = SiteConfig.objects.get_or_create(id=SITE_CONFIG_ID)
-
-    return _CONFIG
+    return config
