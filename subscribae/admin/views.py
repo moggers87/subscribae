@@ -25,7 +25,8 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
 from django.template.response import TemplateResponse
 
-from subscribae.admin.forms import UserAddForm, UserEditForm
+from subscribae.admin.forms import UserAddForm, UserEditForm, SiteConfigForm
+from subscribae.utils import get_site_config
 
 
 _log = logging.getLogger(__name__)
@@ -106,3 +107,18 @@ def user_edit(request, user_id):
         form = UserEditForm(instance=user)
 
     return TemplateResponse(request, 'admin/user_edit.html', {"form": form})
+
+
+@admin_for_superusers
+def site_config(request):
+    config = get_site_config()
+
+    if request.method == "POST":
+        form = SiteConfigForm(instance=config, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('admin:index'))
+    else:
+        form = SiteConfigForm(instance=config)
+
+    return TemplateResponse(request, 'admin/site_config.html', {"form": form})

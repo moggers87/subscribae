@@ -5,6 +5,7 @@
     <body>
         <a href="{% url "admin:index" %}">Admin</a>
         <a href="{% url "admin:user-index" %}">Users</a>
+        <a href="{% url "admin:site-config" %}">Site</a>
         <hr>
         {% block content %}{% endblock %}
     </body>
