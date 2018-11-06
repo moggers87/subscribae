@@ -21,10 +21,21 @@ import os
 from djangae.test import TestCase, inconsistent_db
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse
 
-from subscribae.admin.views import admin_for_superusers, user_index, user_add, user_edit, index, USER_PAGE_SIZE
+from subscribae.admin.views import (
+    USER_PAGE_SIZE,
+    admin_for_superusers,
+    index,
+    site_config,
+    user_add,
+    user_edit,
+    user_index,
+)
+from subscribae.models import SiteConfig
+from subscribae.utils import SITE_CONFIG_CACHE_KEY
 
 
 class AdminForSuperusersTestCase(TestCase):
@@ -231,3 +242,42 @@ class UserEditTestCase(TestCase):
     def test_404_get(self):
         response = self.client.get(reverse("admin:user-edit", kwargs={"user_id": "123"}))
         self.assertEqual(response.status_code, 404)
+
+
+class SiteConfigTestCase(TestCase):
+    def setUp(self):
+        super(SiteConfigTestCase, self).setUp()
+        # TODO consider mocking rather than changing the environment
+        os.environ['USER_EMAIL'] = 'test@example.com'
+        os.environ['USER_ID'] = '1'
+        os.environ['USER_IS_ADMIN'] = '1'
+        self.user = get_user_model().objects.create(username='1', email='test@example.com', is_superuser=True)
+
+    def tearDown(self):
+        del os.environ['USER_EMAIL']
+        del os.environ['USER_ID']
+        del os.environ['USER_IS_ADMIN']
+        super(SiteConfigTestCase, self).tearDown()
+
+    def test_decorator(self):
+        self.assertEqual(site_config._subscribae_decorators, [admin_for_superusers])
+
+    def test_get(self):
+        cache.set(SITE_CONFIG_CACHE_KEY, SiteConfig())
+
+        response = self.client.get(reverse("admin:site-config"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(cache.get(SITE_CONFIG_CACHE_KEY), None)
+
+    def test_post(self):
+        cache.set(SITE_CONFIG_CACHE_KEY, SiteConfig())
+
+        data = {"site_name": "bob.com", "footer_text": "{{ object.site_name }}"}
+        response = self.client.post(reverse("admin:site-config"), data)
+        obj = SiteConfig.objects.get()
+
+        self.assertEqual(cache.get(SITE_CONFIG_CACHE_KEY), None)
+        self.assertRedirects(response, reverse("admin:index"))
+        self.assertEqual(obj.site_name, "bob.com")
+        self.assertEqual(obj.footer_text, "{{ object.site_name }}")
+        self.assertEqual(obj.render_footer(), "bob.com")

@@ -20,6 +20,7 @@ from django.forms import ModelForm
 from django.contrib.auth import get_user_model
 
 from subscribae.forms import ErrorClassMixin
+from subscribae.models import SiteConfig
 
 
 class UserAddForm(ErrorClassMixin, ModelForm):
@@ -32,3 +33,9 @@ class UserEditForm(ErrorClassMixin, ModelForm):
     class Meta:
         model = get_user_model()
         fields = ["is_active"]
+
+
+class SiteConfigForm(ErrorClassMixin, ModelForm):
+    class Meta:
+        model = SiteConfig
+        fields = ["site_name", "footer_text"]

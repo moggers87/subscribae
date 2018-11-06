@@ -16,15 +16,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django.conf.urls import url
-
-from subscribae.admin import views
+from subscribae.utils import get_site_config
 
 
-urlpatterns = (
-    url(r'^$', views.index, name='index'),
-    url(r'^users/$', views.user_index, name='user-index'),
-    url(r'^users/add_user/$', views.user_add, name='user-add'),
-    url(r'^users/edit_user/(?P<user_id>[a-zA-Z0-9\.]+)/$', views.user_edit, name='user-edit'),
-    url(r'^site/$', views.site_config, name='site-config'),
-)
+def site_config(request):
+    return {"site_config": get_site_config()}
