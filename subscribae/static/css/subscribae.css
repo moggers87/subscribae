@@ -18,6 +18,8 @@
     --video-thumbnail-width: 120px;
     --video-thumbnail-height: 90px;
 
+    --playlist-height: 80vh;
+
     /* Colours chosen via:
      * https://webaim.org/resources/contrastchecker/
      * https://www.color-blindness.com/color-name-hue/
@@ -83,15 +85,29 @@
 }
 
 .x-scroll {
-    overflow-x: scroll;
-    white-space: nowrap;
+    & .right, & .left {
+        & button {
+            height: 100%;
+        }
+    }
 
+    & .scroller {
+        overflow-x: hidden;
+        white-space: nowrap;
+    }
 }
 
 .y-scroll {
-    overflow-y: scroll;
-    white-space: nowrap;
+    & .up, & .down {
+        & button {
+            width: 100%;
+        }
+    }
 
+    & .scroller {
+        overflow-y: hidden;
+        white-space: nowrap;
+    }
 }
 
 .undo-scroll {

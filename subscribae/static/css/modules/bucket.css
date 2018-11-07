@@ -30,6 +30,10 @@
 }
 
 .videos {
+    & div:first-child {
+        margin-top: 0;
+    }
+
     & .title {
         white-space: normal;
         hyphens: auto;
