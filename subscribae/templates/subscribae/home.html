@@ -1,8 +1,9 @@
 {% extends "subscribae/base.html" %}
 
-{% block content %}
+{% block container %}
 <div class="heading">
-    <h1>{{ site_config.site_name }}</h1>
-    {% include "subscribae/includes/logo.svg" %}
+    <div class="container wide-container gutter-vertical">
+        <h1>{{ site_config.site_name }}</h1>
+    </div>
 </div>
 {% endblock %}

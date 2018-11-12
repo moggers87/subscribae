@@ -27,7 +27,9 @@
                 {% endif %}
             </ul>
         </nav>
-        <div class="container gutter-vertical">{% block content %}{% endblock %}</div>
+        {% block container %}
+            <div class="container gutter-vertical">{% block content %}{% endblock %}</div>
+        {% endblock %}
         <div class="footer container">{{ site_config.render_footer }}</div>
     </body>
 </html>

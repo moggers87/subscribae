@@ -1,5 +1,24 @@
 .heading {
     text-align: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+
+    @media (--xs) {
+        background-image: url('/static/imgs/tapes-720.png');
+    }
+
+    @media (--m-down) {
+        background-image: url('/static/imgs/tapes-1080.png');
+    }
+
+    @media (--l-down) {
+        background-image: url('/static/imgs/tapes-1620.png');
+    }
+
+    @media (--xl) {
+        background-image: url('/static/imgs/tapes-2160.png');
+    }
 
     & h1 {
         font-family: var(--font-family-monospace);
@@ -10,17 +29,6 @@
         @media (--s-up) {
             letter-spacing: 10vw;
             margin-left: 10vw;
-        }
-    }
-    & svg.logo {
-        & .bg {
-            fill: var(--secondary-900);
-            fill-opacity: 1.0;
-        }
-
-        & .fg {
-            fill: var(--primary);
-            fill-opacity: 1.0;
         }
     }
 }

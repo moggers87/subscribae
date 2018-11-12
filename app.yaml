@@ -43,3 +43,4 @@ skip_files:
     - \.tox
     - \.coverage(.*)
     - htmlcov
+    - original_images
