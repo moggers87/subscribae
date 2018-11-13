@@ -109,3 +109,7 @@ label.error {
 svg.logo {
     max-height: 100%;
 }
+
+.wide-container {
+    max-width: unset;
+}
