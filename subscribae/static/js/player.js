@@ -29,16 +29,24 @@ function onYouTubeIframeAPIReady() {
         var $titleObj = $("#details-box .title");
         var $descObj = $("#details-box .description");
         var $playlistObj = $("#playlist");
+        var queueLocked = false;
 
         var $playerBox = $("#player-box");
         var noVideoTitle = $playerBox.data("no-video-title");
         var noVideoDescription = $playerBox.data("no-video-description");
 
         function fetchVideos(callback) {
+            if (queueLocked) {
+                return;
+            }
+
+            queueLocked = true;
+
             $.ajax(apiUrl, {
                 success: function(data, textStatus, jqXHR) {
                     apiUrl = data.next ? data.next : apiUrl;
                     callback(data.videos);
+                    queueLocked = false;
                 }
             });
         }
@@ -108,3 +116,38 @@ function onYouTubeIframeAPIReady() {
         });
     })(jQuery, YT);
 }
+
+(function($){
+    'use strict';
+    document.addEventListener("DOMContentLoaded", function(event) {
+        var $upButton = $("#playlist-box .up button");
+        var $downButton = $("#playlist-box .down button");
+
+        var stepPx = -90;
+        var playListScroll = 0;
+
+        function scrollPlaylist() {
+            var currentOffset = stepPx * playListScroll;
+            if (currentOffset > 0) {
+                currentOffset = 0;
+            }
+            var $items = $("#playlist-box .scroller > div");
+
+            $items.css("transform", "translateY(" + currentOffset + "px)");
+        }
+
+        $upButton.click(function(e) {
+            if (playListScroll === 0) {
+                return;
+            }
+            playListScroll--;
+            scrollPlaylist();
+        });
+
+        $downButton.click(function(e) {
+            playListScroll++;
+            scrollPlaylist();
+
+        });
+    });
+})(jQuery);
