@@ -29,7 +29,11 @@ describe("The player", function() {
                         data-no-video-title="No more videos"
                         data-no-video-description="Sorry, looks like you've watched everything!">
                         <div id="player" data-api-url="https://example.com/"></div>
-                        <div id="playlist-box"><div id="playlist"></div></div>
+                        <div id="playlist-box">
+                            <div class="up"><button></button></div>
+                            <div class="scroller"><div id="playlist"></div></div>
+                            <div class="down"><button></button></div>
+                        </div>
                         <div id="details-box">
                             <div class="title"></div>
                             <div class="description"></div>
@@ -56,7 +60,61 @@ describe("The player", function() {
             expect(typeof(window.jQuery.ajax.calls.first().args[1].success)).toBe("function");
         });
 
-        describe("and the data has been fetched", function() {
+        describe("the queue scrolls", function() {
+            beforeEach(function() {
+                var $queueItems = $(`
+                    <div><img height="90px"><p>Hello</p></div>
+                    <div><img height="90px"><p>Hello</p></div>
+                    <div><img height="90px"><p>Hello</p></div>
+                    <div><img height="90px"><p>Hello</p></div>
+                    <div><img height="90px"><p>Hello</p></div>
+                    <div><img height="90px"><p>Hello</p></div>
+                    <div><img height="90px"><p>Hello</p></div>
+                `);
+                this.html.find("#playlist").css("max-height", "100px").append($queueItems);
+                this.html.find(".scroller").css("overflow-y", "hidden");
+
+                // re-trigger DOMContentLoaded
+                var ev = document.createEvent('Event');
+                ev.initEvent('DOMContentLoaded', true, true);
+                window.document.dispatchEvent(ev);
+            });
+
+            it("should scroll up", function() {
+                $(".up button").click();
+                expect($(".scroller > div").css("transform")).toBe("none");
+
+                // scroll down
+                $(".down button").click();
+                $(".down button").click();
+
+                $(".up button").click();
+                expect($(".scroller > div").css("transform")).toBe("matrix(1, 0, 0, 1, 0, -90)");
+
+                $(".up button").click();
+                expect($(".scroller > div").css("transform")).toBe("matrix(1, 0, 0, 1, 0, 0)");
+
+                $(".up button").click();
+                $(".up button").click();
+                $(".up button").click();
+                expect($(".scroller > div").css("transform")).toBe("matrix(1, 0, 0, 1, 0, 0)");
+            });
+
+            it("should scroll down", function() {
+                $(".down button").click();
+                expect($(".scroller > div").css("transform")).toBe("matrix(1, 0, 0, 1, 0, -90)");
+
+                $(".down button").click();
+                expect($(".scroller > div").css("transform")).toBe("matrix(1, 0, 0, 1, 0, -129)");
+
+                $(".down button").click();
+                $(".down button").click();
+                $(".down button").click();
+                expect($(".scroller > div").css("transform")).toBe("matrix(1, 0, 0, 1, 0, -129)");
+            });
+        });
+
+        describe("the data has been fetched", function() {
             beforeEach(function() {
                 onYouTubeIframeAPIReady();
                 this.ajaxFunc = window.jQuery.ajax.calls.first().args[1].success;
@@ -87,7 +145,7 @@ describe("The player", function() {
             });
 
             it("should set populate the playlist", function() {
-                expect($("#playlist").children().length).toBe(0)
+                expect($("#playlist").children().length).toBe(0);
                 this.ajaxFunc({"videos": [{id: "123", title: "hello title", description: "hello description", html_snippet: "<p>Hello</p>"}]});
 
                 expect(window.YT.Player.calls.count()).toBe(1);

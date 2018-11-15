@@ -123,17 +123,21 @@ function onYouTubeIframeAPIReady() {
         var $upButton = $("#playlist-box .up button");
         var $downButton = $("#playlist-box .down button");
 
-        var stepPx = -90;
+        var stepPx = 90;
         var playListScroll = 0;
 
         function scrollPlaylist() {
             var currentOffset = stepPx * playListScroll;
-            if (currentOffset > 0) {
-                currentOffset = 0;
-            }
             var $items = $("#playlist-box .scroller > div");
+            var maxOffset = $items[0].scrollHeight - $items[0].offsetHeight;
 
-            $items.css("transform", "translateY(" + currentOffset + "px)");
+            if (currentOffset < 0) {
+                currentOffset = 0;
+            } else if (currentOffset > maxOffset) {
+                currentOffset = maxOffset;
+            }
+
+            $items.css("transform", "translateY(" + (currentOffset * -1) + "px)");
         }
 
         $upButton.click(function(e) {
