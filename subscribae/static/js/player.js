@@ -66,6 +66,11 @@ function onYouTubeIframeAPIReady() {
         function setMeta(video) {
             $titleObj.text(video.title);
             $descObj.text(video.description);
+            $playlistObj.children("div").removeClass("current-video");
+            var $queueItem = $playlistObj.children("div:nth-child(" + queueIndex + ")").addClass("current-video");
+
+            $playlistObj.scrollTop($playlistObj.scrollTop() + ($queueItem.position().top - $playlistObj.position().top));
+
         }
 
         function noVideo() {

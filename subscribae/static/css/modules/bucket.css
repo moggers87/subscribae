@@ -30,10 +30,6 @@
 }
 
 .videos {
-    & div:first-child {
-        margin-top: 0;
-    }
-
     & .title {
         white-space: normal;
         hyphens: auto;
@@ -48,5 +44,9 @@
         height: var(--video-thumbnail-height);
         width: var(--video-thumbnail-width);
         flex-shrink: 0;
+    }
+
+    & .gutter {
+        padding: 0.5rem;
     }
 }

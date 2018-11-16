@@ -34,3 +34,7 @@
 #playlist {
     max-height: var(--playlist-height);
 }
+
+.current-video {
+    background-color: color(var(--dark-colour) tint(30%));
+}
