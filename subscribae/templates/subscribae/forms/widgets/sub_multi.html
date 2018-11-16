@@ -1,10 +1,8 @@
 <fieldset id="{{ widget.attrs.id }}" class="x-scroll flex flex-row">
     <legend>{{ widget.name }}</legend>
-    <div class="left"><button></button></div>
     <div class="scroller">
         {% for group, options, index in widget.optgroups %}
             {% for option in options %}{% include option.template_name with widget=option %}{% endfor %}
         {% endfor %}
     </div>
-    <div class="right"><button></button></div>
 </fieldset>

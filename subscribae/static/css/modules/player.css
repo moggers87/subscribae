@@ -27,6 +27,10 @@
     min-height: var(--playlist-height);
 }
 
+#playlist-box .scroller {
+    overflow-y: scroll;
+}
+
 #playlist {
-    max-height: calc(var(--playlist-height) - calc(2 * var(--button-height)));
+    max-height: var(--playlist-height);
 }

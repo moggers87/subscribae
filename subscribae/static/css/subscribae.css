@@ -85,12 +85,6 @@
 }
 
 .x-scroll {
-    & .right, & .left {
-        & button {
-            height: 100%;
-        }
-    }
-
     & .scroller {
         overflow-x: hidden;
         white-space: nowrap;
@@ -98,12 +92,6 @@
 }
 
 .y-scroll {
-    & .up, & .down {
-        & button {
-            width: 100%;
-        }
-    }
-
     & .scroller {
         overflow-y: hidden;
         white-space: nowrap;

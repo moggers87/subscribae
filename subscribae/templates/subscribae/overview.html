@@ -3,7 +3,6 @@
 
 {% block content %}
 <div class="subscription-list x-scroll gutter-vertical flex flex-row">
-    <div class="left"><button></button></div>
     <div class="scroller">
         {% for subscription in subscription_list %}
         <a href="{% url "subscription" subscription=subscription.pk %}">
@@ -14,7 +13,6 @@
         <p><{% trans "Head over to Youtube and go subscribe to some" %}</p>
         {% endfor %}
     </div>
-    <div class="right"><button></button></div>
 </div>
 <div class="gutter-vertical">
     <form action="{% url "bucket-new" %}" method="POST">
@@ -32,7 +30,6 @@
             </div>
             <div class="gutter">
                 <div class="subscriptions x-scroll flex flex-row">
-                    <div class="left"><button></button></div>
                     <div class="scroller">
                         {% for subscription in bucket.subs.all %}
                             {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
@@ -40,7 +37,6 @@
                         <p class="undo-scroll">&laquo;{% trans "And what am I suppos' to do with an emp-ty case?" context "Quote from the 5th Element"%}&raquo;</p>
                         {% endfor %}
                     </div>
-                    <div class="right"><button></button></div>
                 </div>
             </div>
             <div class="videos gutter">
