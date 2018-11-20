@@ -1,6 +1,8 @@
-<fieldset id="{{ widget.attrs.id }}" class="side-scroll">
+<fieldset id="{{ widget.attrs.id }}" class="x-scroll flex flex-row">
     <legend>{{ widget.name }}</legend>
-    {% for group, options, index in widget.optgroups %}
-        {% for option in options %}{% include option.template_name with widget=option %}{% endfor %}
-    {% endfor %}
+    <div class="scroller">
+        {% for group, options, index in widget.optgroups %}
+            {% for option in options %}{% include option.template_name with widget=option %}{% endfor %}
+        {% endfor %}
+    </div>
 </fieldset>

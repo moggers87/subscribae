@@ -2,15 +2,17 @@
 {% load i18n %}
 
 {% block content %}
-<div class="subscription-list side-scroll gutter-vertical">
-    {% for subscription in subscription_list %}
-    <a href="{% url "subscription" subscription=subscription.pk %}">
-        {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
-    </a>
-    {% empty %}
-    <h3>{% trans "You have no subscriptions" %}</h3>
-    <p><{% trans "Head over to Youtube and go subscribe to some" %}</p>
-    {% endfor %}
+<div class="subscription-list x-scroll gutter-vertical flex flex-row">
+    <div class="scroller">
+        {% for subscription in subscription_list %}
+        <a href="{% url "subscription" subscription=subscription.pk %}">
+            {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
+        </a>
+        {% empty %}
+        <h3>{% trans "You have no subscriptions" %}</h3>
+        <p><{% trans "Head over to Youtube and go subscribe to some" %}</p>
+        {% endfor %}
+    </div>
 </div>
 <div class="gutter-vertical">
     <form action="{% url "bucket-new" %}" method="POST">
@@ -20,28 +22,25 @@
     </form>
 </div>
 <div class="bucket-list gutter-vertical">
-    <div class="side-scroll flex flex-row flex-1-0-auto">
+    <div class="x-scroll flex flex-row flex-1-0-auto">
         {% for bucket in bucket_list %}
         <div class="bucket border border-color-secondary border-radius margin-right-xs">
             <div class="title font-weight-semibold gutter-vertical">
                 <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
             </div>
             <div class="gutter">
-                <div class="subscriptions side-scroll">
-                    {% for subscription in bucket.subs.all %}
-                        {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
-                    {% empty %}
-                    <p class="undo-scroll">&laquo;{% trans "And what am I suppos' to do with an emp-ty case?" context "Quote from the 5th Element"%}&raquo;</p>
-                    {% endfor %}
+                <div class="subscriptions x-scroll flex flex-row">
+                    <div class="scroller">
+                        {% for subscription in bucket.subs.all %}
+                            {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
+                        {% empty %}
+                        <p class="undo-scroll">&laquo;{% trans "And what am I suppos' to do with an emp-ty case?" context "Quote from the 5th Element"%}&raquo;</p>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
             <div class="videos gutter">
-                {% for video in bucket.video_set.all|slice:"10" %}
-                    <div class="flex flex-row margin-top-xs">
-                        <img class="margin-right-xs" src="{{ video.get_thumbnail }}">
-                        <p class="title">{{ video.title }}</p>
-                    </div>
-                {% endfor %}
+                {% for video in bucket.video_set.all|slice:"10" %}{% include "subscribae/includes/videos.html" with video=video %}{% endfor %}
             </div>
         </div>
         {% empty %}

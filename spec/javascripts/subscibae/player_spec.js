@@ -29,6 +29,9 @@ describe("The player", function() {
                         data-no-video-title="No more videos"
                         data-no-video-description="Sorry, looks like you've watched everything!">
                         <div id="player" data-api-url="https://example.com/"></div>
+                        <div id="playlist-box">
+                            <div class="scroller"><div id="playlist"></div></div>
+                        </div>
                         <div id="details-box">
                             <div class="title"></div>
                             <div class="description"></div>
@@ -55,14 +58,14 @@ describe("The player", function() {
             expect(typeof(window.jQuery.ajax.calls.first().args[1].success)).toBe("function");
         });
 
-        describe("and the data has been fetched", function() {
+        describe("the data has been fetched", function() {
             beforeEach(function() {
                 onYouTubeIframeAPIReady();
                 this.ajaxFunc = window.jQuery.ajax.calls.first().args[1].success;
             });
 
             it("should listen to the onStateChange event", function() {
-                this.ajaxFunc({"videos": [{id: "123"}]});
+                this.ajaxFunc({"videos": [{id: "123", html_snippet: "<div></div>"}]});
                 expect(window.YT.Player.calls.count()).toBe(1);
 
                 var args = window.YT.Player.calls.first().args;
@@ -70,7 +73,7 @@ describe("The player", function() {
             });
 
             it("should start with the first video", function() {
-                this.ajaxFunc({"videos": [{id: "123"}]});
+                this.ajaxFunc({"videos": [{id: "123", html_snippet: "<div></div>"}]});
                 expect(window.YT.Player.calls.count()).toBe(1);
 
                 var args = window.YT.Player.calls.first().args;
@@ -78,11 +81,20 @@ describe("The player", function() {
             });
 
             it("should set the title and description correctly", function() {
-                this.ajaxFunc({"videos": [{id: "123", title: "hello title", description: "hello description"}]});
+                this.ajaxFunc({"videos": [{id: "123", title: "hello title", description: "hello description", html_snippet: "<div>Hello</div>"}]});
 
                 expect(window.YT.Player.calls.count()).toBe(1);
                 expect($(".title").text()).toBe("hello title");
                 expect($(".description").text()).toBe("hello description");
+            });
+
+            it("should set populate the playlist", function() {
+                expect($("#playlist").children().length).toBe(0);
+                this.ajaxFunc({"videos": [{id: "123", title: "hello title", description: "hello description", html_snippet: "<div>Hello</div>"}]});
+
+                expect(window.YT.Player.calls.count()).toBe(1);
+                expect($("#playlist").children().length).toBe(1);
+                expect($("#playlist").children().text()).toBe("Hello");
             });
 
             it("should work even if there are no videos", function() {
@@ -95,8 +107,8 @@ describe("The player", function() {
             describe("and the queue is populated", function() {
                 beforeEach(function() {
                     this.ajaxFunc({"videos": [
-                        {id: "123", title: "first", description: "first"},
-                        {id: "456", title: "second", description: "second"},
+                        {id: "123", title: "first", description: "first", html_snippet: "<div>first</div>"},
+                        {id: "456", title: "second", description: "second", html_snippet: "<div>second</div>"},
                     ]});
                     var playerStateEnd = 123;
                     this.fakeEvent = {data: playerStateEnd, target: {
@@ -109,12 +121,15 @@ describe("The player", function() {
                 });
 
                 it("should progress through the queue nicely", function() {
+                    expect($(".current-video").text()).toBe("first");
                     this.playerEvents.onStateChange(this.fakeEvent);
                     expect($(".title").text()).toBe("second");
                     expect($(".description").text()).toBe("second");
 
                     expect(this.fakeEvent.target.playVideo.calls.count()).toBe(1);
                     expect(this.fakeEvent.target.cueVideoById.calls.count()).toBe(1);
+                    expect($(".current-video").text()).toBe("second");
+
                 });
 
                 it("should ignore player states that we don't know about", function() {
@@ -147,11 +162,11 @@ describe("The player", function() {
 
                 it("should not try to fetch the next batch of videos if the queue if full enough", function() {
                     this.ajaxFunc({next: "https://example.com/?page=2", videos: [
-                        {id: 1, title: "title", description: "description"},
-                        {id: 2, title: "title", description: "description"},
-                        {id: 3, title: "title", description: "description"},
-                        {id: 4, title: "title", description: "description"},
-                        {id: 5, title: "title", description: "description"},
+                        {id: 1, title: "title", description: "description", html_snippet: "<div></div>"},
+                        {id: 2, title: "title", description: "description", html_snippet: "<div></div>"},
+                        {id: 3, title: "title", description: "description", html_snippet: "<div></div>"},
+                        {id: 4, title: "title", description: "description", html_snippet: "<div></div>"},
+                        {id: 5, title: "title", description: "description", html_snippet: "<div></div>"},
                     ]});
                     this.playerEvents.onStateChange(this.fakeEvent);
                     // no additional calls were made

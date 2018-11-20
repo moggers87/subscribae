@@ -18,6 +18,8 @@
     --video-thumbnail-width: 120px;
     --video-thumbnail-height: 90px;
 
+    --playlist-height: 80vh;
+
     /* Colours chosen via:
      * https://webaim.org/resources/contrastchecker/
      * https://www.color-blindness.com/color-name-hue/
@@ -82,16 +84,25 @@
     --nav-height: 45px;
 }
 
-.side-scroll {
-    overflow-x: scroll;
-    white-space: nowrap;
-
-    & .undo-scroll {
-        white-space: normal;
+.x-scroll {
+    & .scroller {
+        overflow-x: hidden;
+        white-space: nowrap;
     }
 }
 
-fieldset.side-scroll {
+.y-scroll {
+    & .scroller {
+        overflow-y: hidden;
+        white-space: nowrap;
+    }
+}
+
+.undo-scroll {
+    white-space: normal;
+}
+
+fieldset.x-scroll {
     min-width: 0;
     max-with: 100%;
 }

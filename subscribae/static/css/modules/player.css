@@ -14,3 +14,27 @@
         fill-opacity: 1.0;
     }
 }
+
+#playlist-box {
+    width: 40%;
+}
+
+#details-box {
+    width: 60%;
+}
+
+#playlist-box, #details-box {
+    min-height: var(--playlist-height);
+}
+
+#playlist-box .scroller {
+    overflow-y: scroll;
+}
+
+#playlist {
+    max-height: var(--playlist-height);
+}
+
+.current-video {
+    background-color: color(var(--dark-colour) tint(30%));
+}

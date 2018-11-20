@@ -13,12 +13,18 @@
     <div id="player" data-api-url="{% url "video-api" bucket=bucket.pk %}">
         {% include "subscribae/includes/logo.svg" %}
     </div>
-    <div id="playlist"></div>
-    <div id="details-box"><h3 class="title"></h3><p class="description"></p></div>
+    <div class="flex flex-wrap flex-row">
+        <div id="playlist-box" class="y-scroll gutter flex flex-column">
+            <div class="scroller"><div id="playlist" class="videos"></div></div>
+        </div>
+        <div id="details-box" class="gutter"><h3 class="title"></h3><p class="description"></p></div>
+    </div>
 </div>
-<form action="{% url "bucket" bucket=bucket.pk %}" method="POST">
-    {% csrf_token %}
-    {% include "subscribae/includes/form.html" with form=form %}
-    <button class="button button-primary">{% trans "Save" %}</button>
-</form>
+<div>
+    <form action="{% url "bucket" bucket=bucket.pk %}" method="POST">
+        {% csrf_token %}
+        {% include "subscribae/includes/form.html" with form=form %}
+        <button class="button button-primary">{% trans "Save" %}</button>
+    </form>
+</div>
 {% endblock %}

@@ -25,33 +25,52 @@ function onYouTubeIframeAPIReady() {
 
         var player, apiUrl;
         var queue = [];
+        var queueIndex = 0;
         var $titleObj = $("#details-box .title");
         var $descObj = $("#details-box .description");
+        var $playlistObj = $("#playlist");
+        var queueLocked = false;
 
         var $playerBox = $("#player-box");
         var noVideoTitle = $playerBox.data("no-video-title");
         var noVideoDescription = $playerBox.data("no-video-description");
 
         function fetchVideos(callback) {
+            if (queueLocked) {
+                return;
+            }
+
+            queueLocked = true;
+
             $.ajax(apiUrl, {
                 success: function(data, textStatus, jqXHR) {
                     apiUrl = data.next ? data.next : apiUrl;
                     callback(data.videos);
+                    queueLocked = false;
                 }
             });
         }
 
         function addVideos(videos) {
             Array.prototype.push.apply(queue, videos);
+            $playlistObj.append(videos.map(function(vid) {
+                return vid.html_snippet;
+            }));
+
         }
 
         function popVideo() {
-            return queue.shift();
+            return queue[queueIndex++];
         }
 
         function setMeta(video) {
             $titleObj.text(video.title);
             $descObj.text(video.description);
+            $playlistObj.children("div").removeClass("current-video");
+            var $queueItem = $playlistObj.children("div:nth-child(" + queueIndex + ")").addClass("current-video");
+
+            $playlistObj.scrollTop($playlistObj.scrollTop() + ($queueItem.position().top - $playlistObj.position().top));
+
         }
 
         function noVideo() {
@@ -61,7 +80,7 @@ function onYouTubeIframeAPIReady() {
 
         function onPlayerState(event) {
             if (event.data == yt.PlayerState.ENDED) {
-                if (queue.length < QUEUE_IS_SMALL) {
+                if ((queue.length - queueIndex) < QUEUE_IS_SMALL) {
                     // TODO: there's a chance that this will populate the queue
                     // after popVideo has run and returned undef. We should
                     // probably try and recover from that state.
