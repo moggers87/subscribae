@@ -42,7 +42,8 @@ function onYouTubeIframeAPIReady() {
 
             queueLocked = true;
 
-            $.ajax(apiUrl, {
+            $.ajax({
+                url: apiUrl,
                 success: function(data, textStatus, jqXHR) {
                     apiUrl = data.next ? data.next : apiUrl;
                     callback(data.videos);
@@ -78,6 +79,23 @@ function onYouTubeIframeAPIReady() {
             $descObj.text(noVideoDescription);
         }
 
+        function finishedVideo() {
+            // TODO make this a service worker that can run even if the user
+            // navigates away from the page
+            if (queueIndex < 0 || queueIndex >= queue.length) {
+                console.error("queueIndex out of range: " + queueIndex);
+                return;
+            }
+            $.ajax({
+                url: apiUrl,
+                method: "POST",
+                data: {
+                    id: queue[queueIndex].id
+                }
+            });
+
+        }
+
         function onPlayerState(event) {
             if (event.data == yt.PlayerState.ENDED) {
                 if ((queue.length - queueIndex) < QUEUE_IS_SMALL) {
@@ -86,6 +104,8 @@ function onYouTubeIframeAPIReady() {
                     // probably try and recover from that state.
                     fetchVideos(addVideos);
                 }
+
+                finishedVideo();
 
                 var video = popVideo();
                 if (video !== undefined) {
