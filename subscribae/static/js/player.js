@@ -23,7 +23,7 @@ function onYouTubeIframeAPIReady() {
     (function($, yt) {
         var QUEUE_IS_SMALL = 5;
 
-        var player, apiUrl;
+        var player;
         var queue = [];
         var queueIndex = 0;
         var $titleObj = $("#details-box .title");
@@ -34,6 +34,9 @@ function onYouTubeIframeAPIReady() {
         var $playerBox = $("#player-box");
         var noVideoTitle = $playerBox.data("no-video-title");
         var noVideoDescription = $playerBox.data("no-video-description");
+
+        var apiUrl = $("#player").data("api-url");
+        var csrfToken = $("#player").data("csrf");
 
         function fetchVideos(callback) {
             if (queueLocked) {
@@ -90,7 +93,8 @@ function onYouTubeIframeAPIReady() {
                 url: apiUrl,
                 method: "POST",
                 data: {
-                    id: queue[queueIndex].id
+                    id: queue[queueIndex].id,
+                    csrfmiddlewaretoken: csrfToken
                 }
             });
 
@@ -118,7 +122,6 @@ function onYouTubeIframeAPIReady() {
             }
         }
 
-        apiUrl = $("#player").data("api-url");
         fetchVideos(function(data) {
             var video;
 

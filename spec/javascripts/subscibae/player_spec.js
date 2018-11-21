@@ -28,7 +28,7 @@ describe("The player", function() {
                     <div id="player-box"
                         data-no-video-title="No more videos"
                         data-no-video-description="Sorry, looks like you've watched everything!">
-                        <div id="player" data-api-url="https://example.com/"></div>
+                        <div id="player" data-api-url="https://example.com/" data-csrf="a1b2c3"></div>
                         <div id="playlist-box">
                             <div class="scroller"><div id="playlist"></div></div>
                         </div>
@@ -171,7 +171,7 @@ describe("The player", function() {
                     // only one more call is made - to finished video
                     expect(window.jQuery.ajax.calls.count()).toBe(2);
                     expect(window.jQuery.ajax.calls.argsFor(1)[0].url).toBe("https://example.com/?page=2");
-                    expect(window.jQuery.ajax.calls.argsFor(1)[0].data).toEqual({id: 1});
+                    expect(window.jQuery.ajax.calls.argsFor(1)[0].data).toEqual({id: 1, csrfmiddlewaretoken: "a1b2c3"});
                     expect(window.jQuery.ajax.calls.argsFor(1)[0].method).toBe("POST");
                 });
             });

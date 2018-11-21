@@ -99,7 +99,7 @@ class VideoApiTestCase(TestCase):
 
         video.refresh_from_db()
         self.assertEqual(video.viewed, True)
-        self.assertEqual(video.buckets.all()[0].last_watched_video, video.id)
+        self.assertEqual(video.buckets.all()[0].last_watched_video, video.ordering_key)
 
 
 class QuerySetToJsonTestCase(TestCase):

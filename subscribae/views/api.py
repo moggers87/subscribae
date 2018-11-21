@@ -85,7 +85,7 @@ def video(request, bucket):
             except (Bucket.DoesNotExist, Video.DoesNotExist, KeyError):
                 raise Http404
 
-            bucket_obj.last_watched_video = key
+            bucket_obj.last_watched_video = vid.ordering_key
             bucket_obj.save()
 
             vid.viewed = True
