@@ -90,6 +90,7 @@ class Bucket(UniquenessMixin, models.Model):
     title = models.CharField(max_length=100)
     last_update = models.DateTimeField()
     last_viewed = models.DateTimeField(null=True, blank=True)
+    last_watched_video = models.CharField(max_length=200)
 
     class Meta:
         unique_together = ["user", "title"]

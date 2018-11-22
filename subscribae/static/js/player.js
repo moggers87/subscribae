@@ -23,7 +23,7 @@ function onYouTubeIframeAPIReady() {
     (function($, yt) {
         var QUEUE_IS_SMALL = 5;
 
-        var player, apiUrl;
+        var player;
         var queue = [];
         var queueIndex = 0;
         var $titleObj = $("#details-box .title");
@@ -35,6 +35,9 @@ function onYouTubeIframeAPIReady() {
         var noVideoTitle = $playerBox.data("no-video-title");
         var noVideoDescription = $playerBox.data("no-video-description");
 
+        var apiUrl = $("#player").data("api-url");
+        var csrfToken = $("#player").data("csrf");
+
         function fetchVideos(callback) {
             if (queueLocked) {
                 return;
@@ -42,7 +45,8 @@ function onYouTubeIframeAPIReady() {
 
             queueLocked = true;
 
-            $.ajax(apiUrl, {
+            $.ajax({
+                url: apiUrl,
                 success: function(data, textStatus, jqXHR) {
                     apiUrl = data.next ? data.next : apiUrl;
                     callback(data.videos);
@@ -78,6 +82,24 @@ function onYouTubeIframeAPIReady() {
             $descObj.text(noVideoDescription);
         }
 
+        function finishedVideo() {
+            // TODO make this a service worker that can run even if the user
+            // navigates away from the page
+            if (queueIndex < 0 || queueIndex >= queue.length) {
+                console.error("queueIndex out of range: " + queueIndex);
+                return;
+            }
+            $.ajax({
+                url: apiUrl,
+                method: "POST",
+                data: {
+                    id: queue[queueIndex].id,
+                    csrfmiddlewaretoken: csrfToken
+                }
+            });
+
+        }
+
         function onPlayerState(event) {
             if (event.data == yt.PlayerState.ENDED) {
                 if ((queue.length - queueIndex) < QUEUE_IS_SMALL) {
@@ -86,6 +108,8 @@ function onYouTubeIframeAPIReady() {
                     // probably try and recover from that state.
                     fetchVideos(addVideos);
                 }
+
+                finishedVideo();
 
                 var video = popVideo();
                 if (video !== undefined) {
@@ -98,7 +122,6 @@ function onYouTubeIframeAPIReady() {
             }
         }
 
-        apiUrl = $("#player").data("api-url");
         fetchVideos(function(data) {
             var video;
 

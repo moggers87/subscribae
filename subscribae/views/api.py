@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import JsonResponse, Http404
 
-from subscribae.models import Video, create_composite_key
+from subscribae.models import Bucket, Video, create_composite_key
 
 
 API_PAGE_SIZE = 10
@@ -69,24 +69,36 @@ def queryset_to_json(qs, ordering, property_map=None, before=None, after=None):
 @login_required
 def video(request, bucket):
     try:
-        qs = Video.objects.filter(user=request.user, buckets__contains=int(bucket))
+        bucket_id = int(bucket)
     except ValueError:
         raise Http404
 
+    qs = Video.objects.filter(user=request.user, buckets__contains=bucket_id)
+
     if request.method == "POST":
-        with transaction.atomic():
+        with transaction.atomic(xg=True):
             try:
                 key = create_composite_key(str(request.user.pk), request.POST["id"])
                 vid = qs.get(id=key)
-            except (Video.DoesNotExist, KeyError):
+
+                bucket_obj = Bucket.objects.get(id=bucket_id)
+            except (Bucket.DoesNotExist, Video.DoesNotExist, KeyError):
                 raise Http404
+
+            bucket_obj.last_watched_video = vid.ordering_key
+            bucket_obj.save()
 
             vid.viewed = True
             vid.save()
         return JsonResponse({})
     else:
+        try:
+            bucket_obj = Bucket.objects.get(id=bucket_id)
+        except Bucket.DoesNotExist:
+            raise Http404
+
         before = request.GET.get("before")
-        after = request.GET.get("after")
+        after = request.GET.get("after", bucket_obj.last_watched_video)
 
         videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP, before, after)
 

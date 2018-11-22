@@ -56,7 +56,8 @@ class VideoApiTestCase(TestCase):
                              reverse("video-api", kwargs={"bucket": "123"})), fetch_redirect_response=False)
 
     def test_get_empty(self):
-        response = self.client.get(reverse("video-api", kwargs={"bucket": "123"}))
+        bucket = BucketFactory()
+        response = self.client.get(reverse("video-api", kwargs={"bucket": bucket.id}))
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data, {"videos": []})
@@ -95,6 +96,10 @@ class VideoApiTestCase(TestCase):
         data = {"id": video.youtube_id}
         response = self.client.post(reverse("video-api", kwargs={"bucket": video.buckets.first().pk}), data=data)
         self.assertEqual(response.status_code, 200)
+
+        video.refresh_from_db()
+        self.assertEqual(video.viewed, True)
+        self.assertEqual(video.buckets.all()[0].last_watched_video, video.ordering_key)
 
 
 class QuerySetToJsonTestCase(TestCase):
