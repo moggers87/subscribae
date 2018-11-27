@@ -21,6 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import JsonResponse, Http404
 
+from subscribae.decorators import active_user
 from subscribae.models import Bucket, Video, create_composite_key
 
 
@@ -67,6 +68,7 @@ def queryset_to_json(qs, ordering, property_map=None, before=None, after=None):
 
 
 @login_required
+@active_user
 def video(request, bucket):
     try:
         bucket_id = int(bucket)

@@ -53,6 +53,8 @@ class UserFactory(factory.django.DjangoModelFactory):
     username = factory.Sequence(lambda n: 'john%s' % n)
     email = factory.LazyAttribute(lambda o: '%s@example.org' % o.username)
 
+    is_active = True
+
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         """Call `create_user` rather than `create`
