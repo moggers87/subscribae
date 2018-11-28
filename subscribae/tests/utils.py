@@ -81,6 +81,7 @@ class SubscriptionFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     last_update = factory.LazyFunction(timezone.now)
+    channel_id = factory.Sequence(lambda n: u"%d" % n)
 
 
 class VideoFactory(factory.django.DjangoModelFactory):

@@ -18,7 +18,7 @@
 from django import forms
 from django.utils import timezone
 
-from subscribae.models import Bucket
+from subscribae.models import Bucket, Subscription
 from subscribae.widgets import SubscriptionInBucket
 
 
@@ -69,3 +69,4 @@ class BucketEditForm(ErrorClassMixin, BucketUniqueMixin, forms.ModelForm):
     def __init__(self, **kwargs):
         super(BucketEditForm, self).__init__(**kwargs)
         self.instance.last_update = timezone.now()
+        self.fields['subs'].queryset = Subscription.objects.filter(user=self.instance.user)
