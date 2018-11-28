@@ -28,17 +28,6 @@
             <div class="title font-weight-semibold gutter-vertical">
                 <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
             </div>
-            <div class="gutter">
-                <div class="subscriptions x-scroll flex flex-row">
-                    <div class="scroller">
-                        {% for subscription in bucket.subs.all %}
-                            {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
-                        {% empty %}
-                        <p class="undo-scroll">&laquo;{% trans "And what am I suppos' to do with an emp-ty case?" context "Quote from the 5th Element"%}&raquo;</p>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
             <div class="videos gutter">
                 {% for video in bucket.video_set.all|slice:"10" %}{% include "subscribae/includes/videos.html" with video=video %}{% endfor %}
             </div>
