@@ -34,7 +34,7 @@ class ViewTestCase(TestCase):
         # TODO consider mocking rather than changing the environment
         os.environ['USER_EMAIL'] = 'test@example.com'
         os.environ['USER_ID'] = '1'
-        self.user = get_user_model().objects.create(username='1', email='test@example.com')
+        self.user = get_user_model().objects.create(username='1', email='test@example.com', is_active=True)
 
     def tearDown(self):
         del os.environ['USER_EMAIL']

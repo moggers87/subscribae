@@ -42,7 +42,7 @@ def datetime_to_js_iso(dt):
 class VideoApiTestCase(TestCase):
     def setUp(self):
         super(VideoApiTestCase, self).setUp()
-        self.user = get_user_model().objects.create(username='1', email='test@example.com')
+        self.user = get_user_model().objects.create(username='1', email='test@example.com', is_active=True)
         gae_login(self.user)
 
     def tearDown(self):

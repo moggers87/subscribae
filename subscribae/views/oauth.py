@@ -21,11 +21,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 
+from subscribae.decorators import active_user
 from subscribae.models import OauthToken
 from subscribae.utils import get_oauth_flow
 
 
 @login_required
+@active_user
 def oauth_start(request):
     flow = get_oauth_flow(request.user)
     auth_uri = flow.step1_get_authorize_url()
@@ -33,6 +35,7 @@ def oauth_start(request):
 
 
 @login_required
+@active_user
 def oauth_callback(request):
     if "code" in request.GET:
         auth_code = request.GET["code"]

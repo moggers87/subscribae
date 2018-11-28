@@ -25,6 +25,7 @@ from django.template.response import TemplateResponse
 from django.views.decorators.http import require_POST
 from google.appengine.ext.deferred import deferred
 
+from subscribae.decorators import active_user
 from subscribae.forms import BucketForm, BucketEditForm
 from subscribae.models import OauthToken, Subscription, Bucket
 from subscribae.utils import new_subscriptions
@@ -35,6 +36,7 @@ def home(request):
 
 
 @login_required
+@active_user
 def overview(request):
     context = {
         'subscription_list': request.user.subscription_set.all(),
@@ -44,6 +46,7 @@ def overview(request):
 
 
 @login_required
+@active_user
 def bucket(request, bucket):
     bucket = get_object_or_404(Bucket, pk=bucket, user=request.user)
     if request.method == "POST":
@@ -60,8 +63,9 @@ def bucket(request, bucket):
     return TemplateResponse(request, 'subscribae/bucket.html', context)
 
 
-@login_required
 @require_POST
+@login_required
+@active_user
 def bucket_new(request):
     form = BucketForm(user=request.user, data=request.POST)
     if form.is_valid():
@@ -72,6 +76,7 @@ def bucket_new(request):
 
 
 @login_required
+@active_user
 def subscription(request, subscription):
     subscription = get_object_or_404(Subscription, pk=subscription, user=request.user)
     buckets = Bucket.objects.filter(subs__contains=subscription)
@@ -83,6 +88,7 @@ def subscription(request, subscription):
 
 
 @login_required
+@active_user
 def sync_subscription(request):
     if OauthToken.objects.filter(user_id=request.user.id).exists():
         deferred.defer(new_subscriptions, request.user.id)

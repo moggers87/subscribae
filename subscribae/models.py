@@ -15,8 +15,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
+
 import base64
 
+from djangae.contrib.gauth_datastore.models import GaeAbstractDatastoreUser
 from djangae.db.constraints import UniquenessMixin
 from djangae.fields import ComputedCharField, RelatedSetField, JSONField
 from django.conf import settings
@@ -147,3 +149,7 @@ class SiteConfig(models.Model):
     def render_footer(self):
         tmpl = Template(self.footer_text)
         return tmpl.render(Context({"object": self}))
+
+
+class SubscribaeUser(GaeAbstractDatastoreUser):
+    is_active = models.BooleanField(default=False)

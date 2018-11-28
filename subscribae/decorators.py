@@ -16,12 +16,20 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from djangae.contrib.gauth_datastore.backends import AppEngineUserAPIBackend
+from functools import wraps
+
+from django.core.exceptions import ImproperlyConfigured
+from django.http import Http404
 
 
-class SubscribaeUserBackend(AppEngineUserAPIBackend):
-    def authenticate(self, google_user=None):
-        maybe_user = super(SubscribaeUserBackend, self).authenticate(google_user=google_user)
+def active_user(fn):
+    @wraps(fn)
+    def inner(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            raise ImproperlyConfigured("Use login_required before this decorator")
+        elif request.user.is_active:
+            return fn(request, *args, **kwargs)
+        else:
+            raise Http404("User is not active")
 
-        if self.user_can_authenticate(maybe_user):
-            return maybe_user
+    return inner

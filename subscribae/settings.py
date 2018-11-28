@@ -57,8 +57,8 @@ DEBUG = True
 ASSETS_DEBUG = DEBUG
 ASSETS_AUTO_BUILD = False
 
-# Despite Djangae docs saying this is false by default :)
-DJANGAE_CREATE_UNKNOWN_USER = False
+# Djangae should create users for us
+DJANGAE_CREATE_UNKNOWN_USER = True
 
 # Application definition
 
@@ -194,6 +194,4 @@ CSP_CONNECT_SRC = ("'self'",)
 
 from djangae.contrib.gauth.settings import *  # noqa
 
-AUTHENTICATION_BACKENDS = (
-    'subscribae.backends.SubscribaeUserBackend',
-)
+AUTH_USER_MODEL = "subscribae.SubscribaeUser"
