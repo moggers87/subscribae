@@ -2,17 +2,16 @@
 {% load i18n %}
 
 {% block content %}
-<div class="subscription-list x-scroll gutter-vertical flex flex-row">
+<div class="subscription-list x-scroll gutter-vertical flex flex-row"
+     data-more="{% trans "Show more" %}" data-less="{% trans "Show less" %}">
     <div class="scroller">
         {% for subscription in subscription_list %}
         <a href="{% url "subscription" subscription=subscription.pk %}">
             {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
         </a>
-        {% empty %}
-        <h3>{% trans "You have no subscriptions" %}</h3>
-        <p><{% trans "Head over to Youtube and go subscribe to some" %}</p>
         {% endfor %}
     </div>
+    <div class="more"><button>{% trans "Show more" %}</button></div>
 </div>
 <div class="gutter-vertical">
     <form action="{% url "bucket-new" %}" method="POST">
@@ -32,9 +31,6 @@
                 {% for video in bucket.video_set.all|slice:"10" %}{% include "subscribae/includes/videos.html" with video=video %}{% endfor %}
             </div>
         </div>
-        {% empty %}
-        <h3>{% trans "Looks like you have no buckets!" %}</h3>
-        <p>{% trans "Would you like to create one?" %}</p>
         {% endfor %}
     </div>
 </div>

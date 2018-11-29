@@ -17,7 +17,6 @@
 */
 
 
-
 function onYouTubeIframeAPIReady() {
     'use strict';
     (function($, yt) {
