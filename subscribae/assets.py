@@ -117,6 +117,7 @@ postcss = get_filter(PostCSS, binary=os.path.join(node_modules, ".bin", "postcss
 js = Bundle(
     "thirdparty/jquery/dist/jquery.js",
     "js/player.js",
+    "js/expando.js",
     filters=(ugly,),
     output="compiled/js/website.%(version)s.js",
 )

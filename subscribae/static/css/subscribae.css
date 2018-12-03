@@ -85,9 +85,22 @@
 }
 
 .x-scroll {
+    & .more button {
+        height: var(--video-thumbnail-height);
+    }
+
     & .scroller {
-        overflow-x: hidden;
-        white-space: nowrap;
+        display: flex;
+        flex-flow: wrap;
+        height: var(--video-thumbnail-height);
+        overflow: hidden;
+    }
+
+    &.expanded {
+        & .scroller {
+            height: unset !important;
+            overflow: visible;
+        }
     }
 }
 
@@ -102,9 +115,27 @@
     white-space: normal;
 }
 
-fieldset.x-scroll {
-    min-width: 0;
-    max-with: 100%;
+fieldset.x-scroll  {
+    & .scroller {
+        min-width: 0;
+        max-width: 100%;
+        height: calc(var(--video-thumbnail-height) + 1rem);
+
+        & label {
+            margin-top: 0;
+            & p {
+                display: none;
+            }
+        }
+    }
+
+    &.expanded .scroller label p {
+        display: unset;
+    }
+}
+
+.subscription-list.x-scroll .scroller {
+    height: var(--video-thumbnail-height);
 }
 
 #details-box .description {

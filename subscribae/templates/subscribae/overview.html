@@ -2,17 +2,16 @@
 {% load i18n %}
 
 {% block content %}
-<div class="subscription-list x-scroll gutter-vertical flex flex-row">
+<div class="subscription-list x-scroll gutter-vertical flex flex-row"
+     data-more="{% trans "Show more" %}" data-less="{% trans "Show less" %}">
     <div class="scroller">
         {% for subscription in subscription_list %}
         <a href="{% url "subscription" subscription=subscription.pk %}">
             {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
         </a>
-        {% empty %}
-        <h3>{% trans "You have no subscriptions" %}</h3>
-        <p><{% trans "Head over to Youtube and go subscribe to some" %}</p>
         {% endfor %}
     </div>
+    <div class="more"><button>{% trans "Show more" %}</button></div>
 </div>
 <div class="gutter-vertical">
     <form action="{% url "bucket-new" %}" method="POST">
@@ -28,24 +27,10 @@
             <div class="title font-weight-semibold gutter-vertical">
                 <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
             </div>
-            <div class="gutter">
-                <div class="subscriptions x-scroll flex flex-row">
-                    <div class="scroller">
-                        {% for subscription in bucket.subs.all %}
-                            {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
-                        {% empty %}
-                        <p class="undo-scroll">&laquo;{% trans "And what am I suppos' to do with an emp-ty case?" context "Quote from the 5th Element"%}&raquo;</p>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
             <div class="videos gutter">
                 {% for video in bucket.video_set.all|slice:"10" %}{% include "subscribae/includes/videos.html" with video=video %}{% endfor %}
             </div>
         </div>
-        {% empty %}
-        <h3>{% trans "Looks like you have no buckets!" %}</h3>
-        <p>{% trans "Would you like to create one?" %}</p>
         {% endfor %}
     </div>
 </div>
