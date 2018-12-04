@@ -24,7 +24,7 @@ function onYouTubeIframeAPIReady() {
 
         var player;
         var queue = [];
-        var queueIndex = 0;
+        var queueIndex = -1;
         var $titleObj = $("#details-box .title");
         var $descObj = $("#details-box .description");
         var $playlistObj = $("#playlist");
@@ -33,6 +33,8 @@ function onYouTubeIframeAPIReady() {
         var $playerBox = $("#player-box");
         var noVideoTitle = $playerBox.data("no-video-title");
         var noVideoDescription = $playerBox.data("no-video-description");
+        var $previousButton = $(".controls .back");
+        var $nextButton = $(".controls .forward");
 
         var apiUrl = $("#player").data("api-url");
         var csrfToken = $("#player").data("csrf");
@@ -62,15 +64,26 @@ function onYouTubeIframeAPIReady() {
 
         }
 
-        function popVideo() {
-            return queue[queueIndex++];
+        function popVideo(reverse) {
+            var index;
+
+            if (reverse === undefined) {
+                index = ++queueIndex;
+            } else {
+                index = --queueIndex;
+            }
+
+            return queue[index];
         }
 
         function setMeta(video) {
+            var $queueItem;
+            var childTh = queueIndex + 1;
+
             $titleObj.text(video.title);
             $descObj.text(video.description);
             $playlistObj.children("div").removeClass("current-video");
-            var $queueItem = $playlistObj.children("div:nth-child(" + queueIndex + ")").addClass("current-video");
+            $queueItem = $playlistObj.children("div:nth-child(" + childTh + ")").addClass("current-video");
 
             $playlistObj.scrollTop($playlistObj.scrollTop() + ($queueItem.position().top - $playlistObj.position().top));
 
@@ -88,6 +101,7 @@ function onYouTubeIframeAPIReady() {
                 console.error("queueIndex out of range: " + queueIndex);
                 return;
             }
+
             $.ajax({
                 url: apiUrl,
                 method: "POST",
@@ -96,18 +110,20 @@ function onYouTubeIframeAPIReady() {
                     csrfmiddlewaretoken: csrfToken
                 }
             });
+        }
 
+        function checkQueueAndFetchMoreVideos() {
+            if ((queue.length - queueIndex) < QUEUE_IS_SMALL) {
+                // TODO: there's a chance that this will populate the queue
+                // after popVideo has run and returned undef. We should
+                // probably try and recover from that state.
+                fetchVideos(addVideos);
+            }
         }
 
         function onPlayerState(event) {
             if (event.data == yt.PlayerState.ENDED) {
-                if ((queue.length - queueIndex) < QUEUE_IS_SMALL) {
-                    // TODO: there's a chance that this will populate the queue
-                    // after popVideo has run and returned undef. We should
-                    // probably try and recover from that state.
-                    fetchVideos(addVideos);
-                }
-
+                checkQueueAndFetchMoreVideos();
                 finishedVideo();
 
                 var video = popVideo();
@@ -120,6 +136,34 @@ function onYouTubeIframeAPIReady() {
                 }
             }
         }
+
+        // controls
+
+        function changeVideo(reverse) {
+            var video;
+
+            player.pauseVideo();
+
+            checkQueueAndFetchMoreVideos();
+            finishedVideo();
+
+            video = popVideo(reverse);
+            player.cueVideoById(video.id);
+            setMeta(video);
+            player.playVideo();
+        }
+
+        $previousButton.click(function() {
+            if (queueIndex !== 0) {
+                changeVideo(true);
+            }
+        });
+
+        $nextButton.click(function() {
+            if (queueIndex < (queue.length - 1)) {
+                changeVideo();
+            }
+        });
 
         fetchVideos(function(data) {
             var video;
