@@ -36,6 +36,7 @@
         {% block container %}
             <div class="container gutter-vertical">{% block content %}{% endblock %}</div>
         {% endblock %}
-        <div class="footer container">{{ site_config.render_footer }}</div>
+        <div class="footer container">{{ site_config.render_footer }} |
+            <a href="{% url "source" %}">{% blocktrans with site_name=site_config.site_name %}{{ site_name }} is Free Software{% endblocktrans %}</a></div>
     </body>
 </html>

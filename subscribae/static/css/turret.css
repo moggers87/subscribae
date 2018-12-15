@@ -79,8 +79,8 @@
 /* @import 'turretcss/turret/typography/cite'; */
 @import 'turretcss/turret/typography/list';
 /* @import 'turretcss/turret/typography/definition-list'; */
-/* @import 'turretcss/turret/typography/code'; */
-/* @import 'turretcss/turret/typography/pre'; */
+@import 'turretcss/turret/typography/code';
+@import 'turretcss/turret/typography/pre';
 /* @import 'turretcss/turret/typography/kbd'; */
 /* @import 'turretcss/turret/typography/mark'; */
 

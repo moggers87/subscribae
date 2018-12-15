@@ -1,0 +1,31 @@
+{% extends "subscribae/base.html" %}
+{% load i18n %}
+
+{% block container %}
+<div class="source container">
+    <h3>{% blocktrans with site_name=site_config.site_name %}{{ site_name }} Source Code{% endblocktrans %}</h3>
+    <p>{% blocktrans with site_name=site_config.site_name %}
+        {{ site_name }} is licensed under the GNU Affero General Public License,
+        version 3.
+    {% endblocktrans %}</p>
+    <h4>{% trans "What does that mean?" %}</h4>
+    <p>{% blocktrans %}
+        That means you have the right to read our source code (either as a user of
+        this service or someone who has already received a copy), send it to your
+        friends, makes changes to it and run it on your own server. You also have a
+        responsibility to grant these same rights to your users. The full text of
+        this licence can be found with the source code linked to on this page.
+    {% endblocktrans %}</p>
+    <h4>{% trans "Third party libraries" %}</h4>
+    <p>{% blocktrans with site_name=site_config.site_name %}
+        {{ site_name }} uses a number of third party libraries (we don't believe in
+        reinventing the wheel). Checkout our source code to see their respective
+        licences.
+    {% endblocktrans %}</p>
+    <h3>{% trans "Get the code" %}</h3>
+    <p>{% blocktrans with source_link=site_config.source_link %}
+        You can find the latest source code here: <a href="{{ source_link }}">
+        {{ source_link }}</a>. The current version is <code>{{ version }}</code>
+    {% endblocktrans %}</p>
+</div>
+{% endblock %}
