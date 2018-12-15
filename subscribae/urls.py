@@ -48,6 +48,7 @@ urlpatterns = (
     url(r'^sync$', misc.sync_subscription, name='sync'),
     url(r'^authorise$', oauth.oauth_start, name='authorise'),
     url(r'^oauth2callback$', oauth.oauth_callback, name='oauth2callback'),
+    url(r'^source', misc.source, name='source'),
 
     # api
     url(r'^api/video/(?P<bucket>.+)$', api.video, name='video-api'),

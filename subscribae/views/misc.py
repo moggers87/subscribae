@@ -17,6 +17,8 @@
 #    along with Subscribae.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+import os
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -97,6 +99,11 @@ def sync_subscription(request):
     else:
         request.session[settings.OAUTH_RETURN_SESSION_KEY] = 'sync'
         return HttpResponseRedirect(reverse('authorise'))
+
+
+def source(request):
+    version = os.environ["CURRENT_VERSION_ID"]
+    return TemplateResponse(request, 'subscribae/source.html', {'version': version})
 
 
 def styleguide(request):

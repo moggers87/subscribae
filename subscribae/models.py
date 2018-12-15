@@ -146,6 +146,7 @@ class SiteConfig(models.Model):
     """
     site_name = models.CharField(default="cool.example.com", max_length=200)
     footer_text = models.TextField(default="Someone forgot to fill out the footer!")
+    source_link = models.CharField(default="https://github.com/moggers87/subscribae", max_length=200)
 
     def render_footer(self):
         tmpl = Template(self.footer_text)

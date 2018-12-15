@@ -139,6 +139,10 @@ class ViewTestCase(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertNumTasksEquals(1)
 
+    def test_source(self):
+        response = self.client.get(reverse('source'))
+        self.assertEqual(response.status_code, 200)
+
     @mock.patch('subscribae.utils.client')
     def test_oauth_start(self, client):
         client.flow_from_clientsecrets.return_value.step1_get_authorize_url.return_value = 'https://myserver/auth'

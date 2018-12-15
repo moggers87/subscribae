@@ -155,3 +155,7 @@ svg.logo {
 .wide-container {
     max-width: unset;
 }
+
+.source {
+    text-align: center;
+}
