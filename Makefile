@@ -43,8 +43,13 @@ static-live: install-deps
 	DJANGO_SETTINGS_MODULE=subscribae.settings_live ./manage.py collectstatic --no-input --clear
 	DJANGO_SETTINGS_MODULE=subscribae.settings_live ./manage.py assets build
 
+.PHONY: check
+check:
+	DJANGO_SETTINGS_MODULE=subscribae.settings_live ./manage.py check --deploy --fail-level WARNING
+
 .PHONY: upload
 upload: static-live
+	$(MAKE) check
 	./appcfg.py -V "$(GIT_VERSION)" update .
 	echo "https://$(GIT_VERSION)-dot-subscribae.appspot.com/"
 
