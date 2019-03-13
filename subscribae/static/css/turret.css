@@ -1,11 +1,11 @@
 /*!
- * turretcss v4.1.4
+ * turretcss v5.1.3
  * https://turretcss.com
  *
  * Licensed under the MIT license.
  * https://www.opensource.org/licenses/mit-license.php
  *
- * Copyright 2018 Bigfish
+ * Copyright 2019 Bigfish
  * https://www.bigfish.tv
  */
 
@@ -16,28 +16,14 @@
 @import 'turretcss/turret/lib/normalize';
 
 /**
- * Colors
+ * Definitions
  */
 
-@import 'turretcss/turret/_colors';
-
-/**
- * Globals
- */
-
-@import 'turretcss/turret/_globals';
-
-/**
- * Variables
- */
-
-@import 'turretcss/turret/_variables';
-
-/**
- * Mixins
- */
-
-@import 'turretcss/turret/_mixins';
+@import 'turretcss/turret/_color';
+@import 'turretcss/turret/_base';
+@import 'turretcss/turret/_typography';
+@import 'turretcss/turret/_form';
+@import 'turretcss/turret/_element';
 
 /**
  * Base
@@ -47,6 +33,7 @@
 @import 'turretcss/turret/base/root';
 @import 'turretcss/turret/base/body';
 @import 'turretcss/turret/base/container';
+@import 'turretcss/turret/base/group';
 /* @import 'turretcss/turret/base/print'; */
 
 /**
@@ -66,9 +53,8 @@
  */
 
 @import 'turretcss/turret/typography/headings';
-/* @import 'turretcss/turret/typography/display-title'; */
-/* @import 'turretcss/turret/typography/big'; */
-/* @import 'turretcss/turret/typography/small-caps'; */
+@import 'turretcss/turret/typography/display-title';
+/* @import 'turretcss/turret/typography/all-caps'; */
 /* @import 'turretcss/turret/typography/lead'; */
 @import 'turretcss/turret/typography/paragraph';
 @import 'turretcss/turret/typography/link';
@@ -119,6 +105,7 @@
 /* @import 'turretcss/turret/element/media'; */
 @import 'turretcss/turret/element/nav';
 /* @import 'turretcss/turret/element/spinner'; */
+/* @import 'turretcss/turret/element/spinner-sizes'; */
 /* @import 'turretcss/turret/element/table'; */
 
 /**
@@ -126,29 +113,35 @@
  */
 
 /* @import 'turretcss/turret/utility/background'; */
-@import 'turretcss/turret/utility/border';
-/* @import 'turretcss/turret/utility/color'; */
+/* @import 'turretcss/turret/utility/background-color'; */
 @import 'turretcss/turret/utility/border-radius';
+@import 'turretcss/turret/utility/border';
 @import 'turretcss/turret/utility/border-color';
+/* @import 'turretcss/turret/utility/box-shadow'; */
+/* @import 'turretcss/turret/utility/color'; */
 /* @import 'turretcss/turret/utility/display'; */
 /* @import 'turretcss/turret/utility/fill'; */
 @import 'turretcss/turret/utility/flex';
-/* @import 'turretcss/turret/utility/float'; */
 /* @import 'turretcss/turret/utility/font-family'; */
-@import 'turretcss/turret/utility/font-weight';
 /* @import 'turretcss/turret/utility/font-size'; */
-/* @import 'turretcss/turret/utility/line-height'; */
+@import 'turretcss/turret/utility/font-weight';
+/* @import 'turretcss/turret/utility/icon'; */
 /* @import 'turretcss/turret/utility/letter-spacing'; */
-@import 'turretcss/turret/utility/gutter';
+/* @import 'turretcss/turret/utility/line-height'; */
 @import 'turretcss/turret/utility/margin';
 /* @import 'turretcss/turret/utility/max-width'; */
+/* @import 'turretcss/turret/utility/min-height'; */
+/* @import 'turretcss/turret/utility/order'; */
 /* @import 'turretcss/turret/utility/overflow'; */
-/* @import 'turretcss/turret/utility/padding'; */
+@import 'turretcss/turret/utility/padding';
 /* @import 'turretcss/turret/utility/pointer-events'; */
 /* @import 'turretcss/turret/utility/position'; */
-/* @import 'turretcss/turret/utility/text'; */
+/* @import 'turretcss/turret/utility/space'; */
 /* @import 'turretcss/turret/utility/stroke'; */
-/* @import 'turretcss/turret/utility/icon'; */
+/* @import 'turretcss/turret/utility/text-align'; */
+/* @import 'turretcss/turret/utility/text-decoration'; */
+/* @import 'turretcss/turret/utility/text-transform'; */
+/* @import 'turretcss/turret/utility/truncate'; */
 /* @import 'turretcss/turret/utility/transition'; */
 /* @import 'turretcss/turret/utility/utility'; */
 /* @import 'turretcss/turret/utility/visibility'; */

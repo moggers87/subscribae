@@ -12,12 +12,19 @@
     </head>
     <body>
         <nav class="nav-inline">
-            {% include "subscribae/includes/logo.svg" %}
+            <div class="nav-header">
+                <a href="{% url "home" %}">
+                    {% include "subscribae/includes/logo.svg" %}
+                    <span class="display-title display-title-l">{{ site_config.site_name }}</span>
+                </a>
+            </div>
             {# label must be a sibling after checkbox to allow styling of label based on checkbox focus #}
             <input type="checkbox" id="nav-collapse-1">
-            <label for="nav-collapse-1" role="button" class="nav-toggle margin-right-xs border border-radius">
+            <label for="nav-collapse-1" role="button" class="nav-toggle margin-right-xs">
                 <span class="screen-reader">{% trans "Toggle navigation" %}</span>
-                {% include "subscribae/includes/drop-down.svg" %}
+                <span class="burger"></span>
+                <span class="burger"></span>
+                <span class="burger"></span>
             </label>
             <ul>
                 {% if user.is_authenticated %}
@@ -34,7 +41,7 @@
             </ul>
         </nav>
         {% block container %}
-            <div class="container gutter-vertical">{% block content %}{% endblock %}</div>
+            <div class="container padding-vertical-xs">{% block content %}{% endblock %}</div>
         {% endblock %}
         <div class="footer container">{{ site_config.render_footer }} |
             <a href="{% url "source" %}">{% blocktrans with site_name=site_config.site_name %}{{ site_name }} is Free Software{% endblocktrans %}</a></div>

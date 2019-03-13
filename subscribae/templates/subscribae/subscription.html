@@ -3,11 +3,11 @@
 
 {% block content %}
     {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
-    <div id="details-box" class="gutter-vertical">
+    <div id="details-box" class="padding-vertical-xs">
         <h1 class="title">{{ subscription.title }}</h1>
         <p class="description">{{ subscription.description }}</p>
     </div>
-    <div class="gutter-vertical">
+    <div class="padding-vertical-xs">
         Buckets:
         <ul>
             {% for bucket in buckets %}
@@ -17,7 +17,7 @@
             {% endfor %}
         </ul>
     </div>
-    <div class="gutter-vertical">
+    <div class="padding-vertical-xs">
         Videos:
         <ul>
             {% for video in subscription.video_set.all %}

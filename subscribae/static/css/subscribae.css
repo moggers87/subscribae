@@ -29,8 +29,8 @@
      * the colour and use the "official" RGB to get something that is less
      * muddy
     `*/
-    --dark-colour: color(#262335 shade(50%));  /* steel gray */
-    --main-colour: color(#960018 lightness(70%));  /* carmine */
+    --dark-colour: color-mod(#262335 shade(50%));  /* steel gray */
+    --main-colour: color-mod(#960018 lightness(70%));  /* carmine */
     --light-colour: #FFF0F0; /* snow */
 
     --color: var(--light-colour);
@@ -40,33 +40,33 @@
     --primary-hover: var(--primary-100);
     --primary-active: var(--primary-200);
 
-    --secondary: color(var(--main-colour) hue(-30));
+    --secondary: color-mod(var(--main-colour) hue(-30));
     --secondary-hover: var(--secondary-100);
     --secondary-active: var(--secondary-200);
 
-    --tertiary: color(var(--main-colour) hue(+30));
+    --tertiary: color-mod(var(--main-colour) hue(+30));
     --tertiary-hover: var(--tertiary-100);
     --tertiary-active: var(--tertiary-200);
 
-    --error: color(var(--main-colour) hue(0) lightness(60%));
+    --error: color-mod(var(--main-colour) hue(0) lightness(60%));
     --error-hover: var(--error-100);
     --error-active: var(--error-200);
 
-    --warning: color(var(--main-colour) hue(220) lightness(60%));
+    --warning: color-mod(var(--main-colour) hue(220) lightness(60%));
     --warning-hover: var(--warning-100);
     --warning-active: var(--warning-200);
 
-    --info: color(var(--main-colour) hue(180) lightness(60%));
+    --info: color-mod(var(--main-colour) hue(180) lightness(60%));
     --info-hover: var(--info-100);
     --info-active: var(--info-200);
 
-    --success: color(var(--main-colour) hue(140) lightness(60%));
+    --success: color-mod(var(--main-colour) hue(140) lightness(60%));
     --success-hover: var(--success-100);
     --success-active: var(--success-200);
 
     --button-color: var(--light-colour);
-    --button-hover-background: color(var(--button-background) tint(30%));
-    --button-active-background: color(var(--button-background) tint(40%));
+    --button-hover-background: color-mod(var(--button-background) tint(30%));
+    --button-active-background: color-mod(var(--button-background) tint(40%));
 
     --button-primary-color: var(--dark-colour);
     --button-secondary-color: var(--dark-colour);
@@ -76,12 +76,8 @@
     --button-info-color: var(--dark-colour);
     --button-success-color: var(--dark-colour);
 
-    --form-error: {
-        color: var(--error) !important;
-        border-color: var(--error) !important;
-    }
-
-    --nav-height: 45px;
+    --nav-height: 1.75em;
+    --nav-height-extra: 2em;
 }
 
 .x-scroll {
@@ -119,7 +115,6 @@ fieldset.x-scroll  {
     & .scroller {
         min-width: 0;
         max-width: 100%;
-        height: calc(var(--video-thumbnail-height) + 1rem);
 
         & label {
             margin-top: 0;
@@ -144,7 +139,8 @@ fieldset.x-scroll  {
 
 label.error {
     & ~ input {
-        @apply --form-error;
+        color: var(--error) !important;
+        border-color: var(--error) !important;
     }
 }
 

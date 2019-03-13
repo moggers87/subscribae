@@ -5,7 +5,6 @@ nav {
 
     & li {
         height: var(--nav-height);
-        @apply --display-title;
     }
 
     & ul {
@@ -16,11 +15,13 @@ nav {
         }
     }
 
+    & a {
+        text-decoration: none;
+    }
 
     & svg.logo {
         float: left;
-
-        height: var(--nav-height);
+        height: 100%;
         width: auto;
 
         & .fg {
@@ -32,6 +33,10 @@ nav {
             fill: var(--light-colour);
             fill-opacity: 1.0;
         }
+
+        & ~ span {
+            margin-left: 8px;
+        }
     }
 }
 
@@ -40,9 +45,14 @@ nav {
     top: -9999px;
     left: -9999px;
 
-    &:checked ~ ul {
-        display: block;
-        padding-top: var(--nav-height);
+    @media (--xs) {
+        &:checked ~ ul {
+            display: block;
+
+            & li {
+                margin: 0 0.5rem;
+            }
+        }
     }
 
     &:hover ~ .nav-toggle,
@@ -56,23 +66,28 @@ nav {
 }
 
 .nav-toggle {
-    height: calc(var(--nav-height) - 16);
-    width: calc(var(--nav-height) - 16);
+    height: calc(var(--nav-height) - 8px);
+    width: 2em;
     display: block !important;
     position: absolute;
     top: 0;
     right: 0;
-    margin-top: 6px;
-    margin-bottom: 6px;
-    padding: 3px;
-    border-color: var(--dark-colour);
 
-    & svg path {
-        fill: var(--dark-colour);
-        fill-opacity: 1.0;
+    & span.burger {
+        display: block;
+        height: 3px;
+        width: 2em;
+        margin-bottom: 3px;
+
+        background: var(--dark-colour);
     }
 
     @media (--s-up) {
             display: none !important;
         }
+}
+
+.nav-header {
+    display: inline-block;
+    height: var(--nav-height-extra);
 }
