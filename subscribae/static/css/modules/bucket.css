@@ -23,7 +23,7 @@
         max-width: 50%;
     }
 
-    @media (--xl) {
+    @media (--xl-up) {
         min-width: 25%;
         max-width: 25%;
     }
@@ -36,8 +36,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
         margin: 0;
-        /* line-height is a unitless value and the font size is 1rem */
-        height: calc(var(--line-height) * 3rem);
     }
 
     & img {

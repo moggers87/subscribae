@@ -37,6 +37,7 @@ static-dev:
 	./manage.py collectstatic --no-input --clear -v0
 	./manage.py assets build
 	touch subscribae/wsgi.py
+	date
 
 .PHONY: static-live
 static-live: install-deps

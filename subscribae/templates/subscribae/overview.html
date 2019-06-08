@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-<div class="subscription-list x-scroll gutter-vertical flex flex-row"
+<div class="subscription-list x-scroll padding-vertical-xs flex flex-row"
      data-more="{% trans "Show more" %}" data-less="{% trans "Show less" %}">
     <div class="scroller">
         {% for subscription in subscription_list %}
@@ -13,21 +13,21 @@
     </div>
     <div class="more"><button>{% trans "Show more" %}</button></div>
 </div>
-<div class="gutter-vertical">
+<div class="padding-vertical-xs">
     <form action="{% url "bucket-new" %}" method="POST">
         {% csrf_token %}
         {{ form }}
         <button class="button button-primary">{% trans "Create new bucket" %}</button>
     </form>
 </div>
-<div class="bucket-list gutter-vertical">
+<div class="bucket-list padding-vertical-xs">
     <div class="x-scroll flex flex-row flex-1-0-auto">
         {% for bucket in bucket_list %}
         <div class="bucket border border-color-secondary border-radius margin-right-xs">
-            <div class="title font-weight-semibold gutter-vertical">
+            <div class="title font-weight-semibold padding-vertical-xs">
                 <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
             </div>
-            <div class="videos gutter">
+            <div class="videos padding-xs">
                 {% for video in bucket.video_set.all|slice:"10" %}{% include "subscribae/includes/videos.html" with video=video %}{% endfor %}
             </div>
         </div>
