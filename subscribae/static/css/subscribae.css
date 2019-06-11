@@ -80,6 +80,21 @@
     --nav-height-extra: 2em;
 }
 
+/* Firefox and good browsers */
+html, body {
+    scrollbar-width: auto;
+    scrollbar-color: var(--main-colour) var(--dark-colour);
+}
+
+/* webkit and bad browsers */
+::-webkit-scrollbar {
+    background-color: var(--dark-colour);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--main-colour);
+}
+
 .x-scroll {
     & .more button {
         height: var(--video-thumbnail-height);
