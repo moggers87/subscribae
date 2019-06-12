@@ -25,12 +25,24 @@ describe("The player", function() {
         beforeEach(function() {
             this.html = $(`
                 <div id="fixture">
+                    <style>
+                        #playlist-box {}
+                        .scroller {
+                            overflow-y: scroll;
+                        }
+                        #playlist {}
+                        #playlist div {
+                            height: 100px;
+                        }
+                    </style>
                     <div id="player-box"
                         data-no-video-title="No more videos"
                         data-no-video-description="Sorry, looks like you've watched everything!">
                         <div id="player" data-api-url="https://example.com/" data-csrf="a1b2c3"></div>
-                        <div id="playlist-box">
-                            <div class="scroller"><div id="playlist"></div></div>
+                        <div id="playlist-box" style="height: 14px">
+                            <div class="scroller" style="overflow-y: scroll">
+                                <div id="playlist" style="height: 14px"></div>
+                            </div>
                         </div>
                         <div id="details-box">
                             <div class="title"></div>
@@ -130,6 +142,7 @@ describe("The player", function() {
                     expect($(".current-video").text()).toBe("first");
                     $(".controls .forward").click();
                     expect($(".current-video").text()).toBe("second");
+                    expect($(".current-video").position().top).toBe($(".scroller").position().top);
                     expect(window.jQuery.ajax.calls.count()).toBe(3);
                     expect(window.jQuery.ajax.calls.argsFor(2)[0].url).toBe("https://example.com/");
                     expect(window.jQuery.ajax.calls.argsFor(2)[0].data).toEqual({id: '123', csrfmiddlewaretoken: "a1b2c3"});
@@ -141,6 +154,7 @@ describe("The player", function() {
                     expect($(".current-video").text()).toBe("second");
                     $(".controls .back").click();
                     expect($(".current-video").text()).toBe("first");
+                    expect($(".current-video").position().top).toBe($(".scroller").position().top);
                     expect(window.jQuery.ajax.calls.count()).toBe(4);
                     expect(window.jQuery.ajax.calls.argsFor(3)[0].url).toBe("https://example.com/");
                     expect(window.jQuery.ajax.calls.argsFor(3)[0].data).toEqual({id: '456', csrfmiddlewaretoken: "a1b2c3"});
