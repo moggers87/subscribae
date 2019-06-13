@@ -29,6 +29,7 @@ function onYouTubeIframeAPIReady() {
         var $titleObj = $("#details-box .title");
         var $descObj = $("#details-box .description");
         var $playlistObj = $("#playlist");
+        var $playlistObjScroller = $("#playlist-box .scroller");
         var queueLocked = false;
 
         var $playerBox = $("#player-box");
@@ -86,7 +87,7 @@ function onYouTubeIframeAPIReady() {
             $playlistObj.children("div").removeClass("current-video");
             $queueItem = $playlistObj.children("div:nth-child(" + childTh + ")").addClass("current-video");
 
-            $playlistObj.scrollTop($playlistObj.scrollTop() + ($queueItem.position().top - $playlistObj.position().top));
+            $playlistObjScroller.scrollTop($playlistObjScroller.scrollTop() + ($queueItem.position().top - $playlistObjScroller.position().top));
 
         }
 

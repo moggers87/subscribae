@@ -36,5 +36,5 @@
 }
 
 .current-video {
-    background-color: color(var(--dark-colour) tint(30%));
+    background-color: color-mod(var(--dark-colour) tint(30%));
 }
