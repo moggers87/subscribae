@@ -20,12 +20,14 @@
 import os
 
 from django.conf import settings
+from django.contrib.auth import logout as django_logout
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.views.decorators.http import require_POST
+from google.appengine.api import users
 from google.appengine.ext.deferred import deferred
 
 from subscribae.decorators import active_user
@@ -99,6 +101,13 @@ def sync_subscription(request):
     else:
         request.session[settings.OAUTH_RETURN_SESSION_KEY] = 'sync'
         return HttpResponseRedirect(reverse('authorise'))
+
+
+@login_required
+def logout(request):
+    django_logout(request)
+    logout_url = users.create_logout_url(reverse("home"))
+    return HttpResponseRedirect(logout_url)
 
 
 def source(request):

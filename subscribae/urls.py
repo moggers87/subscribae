@@ -49,6 +49,7 @@ urlpatterns = (
     url(r'^authorise$', oauth.oauth_start, name='authorise'),
     url(r'^oauth2callback$', oauth.oauth_callback, name='oauth2callback'),
     url(r'^source', misc.source, name='source'),
+    url(r'^logout', misc.logout, name='logout'),
 
     # api
     url(r'^api/video/(?P<bucket>.+)$', api.video, name='video-api'),
