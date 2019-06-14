@@ -20,11 +20,10 @@
 from djangae.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import JsonResponse, Http404
+from django.http import Http404, JsonResponse
 
 from subscribae.decorators import active_user
 from subscribae.models import Bucket, Video, create_composite_key
-
 
 API_PAGE_SIZE = 10
 

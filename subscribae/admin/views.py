@@ -24,12 +24,11 @@ from djangae.db.consistency import ensure_instance_consistent
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, Http404
+from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
-from subscribae.admin.forms import UserAddForm, UserEditForm, SiteConfigForm
-from subscribae.utils import get_site_config, SITE_CONFIG_CACHE_KEY
-
+from subscribae.admin.forms import SiteConfigForm, UserAddForm, UserEditForm
+from subscribae.utils import SITE_CONFIG_CACHE_KEY, get_site_config
 
 _log = logging.getLogger(__name__)
 

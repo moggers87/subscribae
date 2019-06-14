@@ -19,10 +19,10 @@
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-import factory
-import factory.fuzzy
 
 from subscribae.models import Bucket, Subscription, Video
+import factory
+import factory.fuzzy
 
 
 class MockExecute(object):

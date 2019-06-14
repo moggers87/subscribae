@@ -26,15 +26,8 @@ from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse
 
-from subscribae.admin.views import (
-    USER_PAGE_SIZE,
-    admin_for_superusers,
-    index,
-    site_config,
-    user_add,
-    user_edit,
-    user_index,
-)
+from subscribae.admin.views import (USER_PAGE_SIZE, admin_for_superusers, index, site_config, user_add, user_edit,
+                                    user_index)
 from subscribae.models import SiteConfig
 from subscribae.utils import SITE_CONFIG_CACHE_KEY
 

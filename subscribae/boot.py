@@ -31,8 +31,8 @@
 #    along with Subscribae.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+from os.path import abspath, dirname, exists, join
 import sys
-from os.path import dirname, abspath, join, exists
 
 PROJECT_DIR = dirname(dirname(abspath(__file__)))
 SITEPACKAGES_DIR = join(PROJECT_DIR, "sitepackages")

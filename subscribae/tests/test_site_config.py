@@ -21,7 +21,7 @@ from djangae.test import TestCase
 from django.core.cache import cache
 import mock
 
-from subscribae import utils, context_processors
+from subscribae import context_processors, utils
 from subscribae.models import SiteConfig
 
 

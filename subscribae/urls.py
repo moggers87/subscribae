@@ -38,7 +38,6 @@ from django.contrib.staticfiles.views import serve
 
 from subscribae.views import api, misc, oauth, tasks
 
-
 urlpatterns = (
     url(r'^$', misc.home, name='home'),
     url(r'^overview$', misc.overview, name='overview'),
