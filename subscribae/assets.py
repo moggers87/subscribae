@@ -22,8 +22,7 @@ import os
 
 from django.conf import settings
 from django_assets import Bundle, register
-from webassets.filter import ExternalTool
-from webassets.filter import get_filter
+from webassets.filter import ExternalTool, get_filter
 from webassets.utils import working_directory
 
 

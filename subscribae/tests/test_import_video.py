@@ -26,9 +26,9 @@ from google.appengine.runtime import DeadlineExceededError as RuntimeExceededErr
 from pytz import UTC
 import mock
 
-from subscribae.models import Subscription, OauthToken, Video, create_composite_key
-from subscribae.utils import import_videos, API_MAX_RESULTS
-from subscribae.tests.utils import MockExecute, BucketFactory
+from subscribae.models import OauthToken, Subscription, Video, create_composite_key
+from subscribae.tests.utils import BucketFactory, MockExecute
+from subscribae.utils import API_MAX_RESULTS, import_videos
 
 
 class ImportVideoTasksTestCase(TestCase):

@@ -21,13 +21,12 @@ import base64
 
 from djangae.contrib.gauth_datastore.models import GaeAbstractDatastoreUser
 from djangae.db.constraints import UniquenessMixin
-from djangae.fields import ComputedCharField, RelatedSetField, JSONField
+from djangae.fields import ComputedCharField, JSONField, RelatedSetField
 from django.conf import settings
 from django.db import models
-from django.template import Template, Context
+from django.template import Context, Template
 from django.template.loader import get_template
 from oauth2client.client import Credentials
-
 
 DEFAULT_SIZE = 'default'
 

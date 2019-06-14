@@ -22,7 +22,7 @@ from datetime import datetime
 from djangae.test import TestCase
 from pytz import UTC
 
-from subscribae.models import Bucket, Subscription, Video, SiteConfig, create_composite_key
+from subscribae.models import Bucket, SiteConfig, Subscription, Video, create_composite_key
 from subscribae.tests.utils import BucketFactory, SubscriptionFactory, VideoFactory
 
 

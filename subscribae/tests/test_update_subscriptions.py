@@ -25,8 +25,8 @@ from google.appengine.runtime import DeadlineExceededError as RuntimeExceededErr
 import mock
 
 from subscribae.models import OauthToken
-from subscribae.utils import update_subscriptions_for_user, update_subscriptions, import_videos
-from subscribae.tests.utils import MockExecute, UserFactory, SubscriptionFactory
+from subscribae.tests.utils import MockExecute, SubscriptionFactory, UserFactory
+from subscribae.utils import import_videos, update_subscriptions, update_subscriptions_for_user
 
 
 class UpdateSubscriptionsForUsersTestCase(TestCase):

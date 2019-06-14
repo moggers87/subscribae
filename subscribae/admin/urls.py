@@ -21,7 +21,6 @@ from django.conf.urls import url
 
 from subscribae.admin import views
 
-
 urlpatterns = (
     url(r'^$', views.index, name='index'),
     url(r'^users/$', views.user_index, name='user-index'),

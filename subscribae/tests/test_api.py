@@ -25,9 +25,9 @@ from django.core.urlresolvers import reverse
 import mock
 
 from subscribae.models import Video
-from subscribae.views.api import queryset_to_json
 from subscribae.test import gae_login, gae_logout
 from subscribae.tests.utils import BucketFactory, VideoFactory
+from subscribae.views.api import queryset_to_json
 
 
 def datetime_to_js_iso(dt):

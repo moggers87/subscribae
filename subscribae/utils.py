@@ -32,8 +32,7 @@ from google.appengine.runtime import DeadlineExceededError as RuntimeExceededErr
 from oauth2client import client
 import httplib2
 
-from subscribae.models import Bucket, Video, Subscription, OauthToken, SiteConfig, create_composite_key
-
+from subscribae.models import Bucket, OauthToken, SiteConfig, Subscription, Video, create_composite_key
 
 API_NAME = 'youtube'
 API_VERSION = 'v3'

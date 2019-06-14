@@ -31,8 +31,8 @@ from google.appengine.api import users
 from google.appengine.ext.deferred import deferred
 
 from subscribae.decorators import active_user
-from subscribae.forms import BucketForm, BucketEditForm
-from subscribae.models import OauthToken, Subscription, Bucket
+from subscribae.forms import BucketEditForm, BucketForm
+from subscribae.models import Bucket, OauthToken, Subscription
 from subscribae.utils import new_subscriptions
 
 

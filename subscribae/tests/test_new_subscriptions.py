@@ -21,9 +21,9 @@ from djangae.test import TestCase
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
 import mock
 
-from subscribae.models import Subscription, OauthToken
-from subscribae.utils import new_subscriptions, API_MAX_RESULTS
+from subscribae.models import OauthToken, Subscription
 from subscribae.tests.utils import MockExecute, UserFactory
+from subscribae.utils import API_MAX_RESULTS, new_subscriptions
 
 
 class NewSubscriptionTestCase(TestCase):

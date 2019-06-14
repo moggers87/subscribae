@@ -14,15 +14,14 @@
 #    specific language governing permissions and limitations under the License.
 ##
 
+from StringIO import StringIO
+from urllib import urlopen
+from zipfile import ZipFile
 import os
-import subprocess
+import platform
 import shutil
 import stat
-import platform
-
-from StringIO import StringIO
-from zipfile import ZipFile
-from urllib import urlopen
+import subprocess
 
 REQUIREMENTS = ["pip", "git"]
 
