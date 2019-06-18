@@ -34,15 +34,15 @@ update-deps: update-dev-deps update-prod-deps update-npm-deps
 
 .PHONY: static-dev
 static-dev:
+	npx grunt
 	./manage.py collectstatic --no-input --clear -v0
-	./manage.py assets build
 	touch subscribae/wsgi.py
 	date
 
 .PHONY: static-live
 static-live: install-deps
+	npx grunt
 	DJANGO_SETTINGS_MODULE=subscribae.settings_live ./manage.py collectstatic --no-input --clear
-	DJANGO_SETTINGS_MODULE=subscribae.settings_live ./manage.py assets build
 
 .PHONY: check
 check:

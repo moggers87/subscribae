@@ -4,20 +4,20 @@
     background-size: cover;
     background-position: center;
 
-    @media (--xs) {
-        background-image: url('/static/imgs/tapes-720.png');
+    @media (--xs-down) {
+        background-image: url('imgs/tapes-720.png');
     }
 
     @media (--m-down) {
-        background-image: url('/static/imgs/tapes-1080.png');
+        background-image: url('imgs/tapes-1080.png');
     }
 
     @media (--l-down) {
-        background-image: url('/static/imgs/tapes-1620.png');
+        background-image: url('imgs/tapes-1620.png');
     }
 
-    @media (--xl) {
-        background-image: url('/static/imgs/tapes-2160.png');
+    @media (--xl-up) {
+        background-image: url('imgs/tapes-2160.png');
     }
 
     & h1 {

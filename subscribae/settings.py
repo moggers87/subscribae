@@ -72,7 +72,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django.forms',
-    'django_assets',
     'csp',
     'cspreports',
     'djangae.contrib.gauth_datastore',
@@ -167,20 +166,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'django_assets.finders.AssetsFinder',
 )
 STATICFILES_STORAGE = 'subscribae.storage.ManifestOutsideOfStaticFilesStorage'
 STATIC_MANIGEST_PATH = os.path.join(BASE_DIR, ".staticmanifest.json")
 
 STATICFILES_DIRS = [
-    ("thirdparty", os.path.join(BASE_DIR, "node_modules")),
+    "frontend/build/compiled",
 ]
 
-
-# STATIC_ROOT isn't uploaded to the same place as application data is, but we
-# need to access the manifest file to create the correct URLs in our templates
-ASSETS_MANIFEST = "file:{}".format(os.path.join(BASE_DIR, ".webassets-manifest"))
-ASSETS_CACHE = False
 
 # sensible default CSP settings, feel free to modify them
 CSP_DEFAULT_SRC = ("'self'", "*.gstatic.com")

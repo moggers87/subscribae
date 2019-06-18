@@ -3,3 +3,5 @@ htmlcov
 node_modules
 /static
 /sitepackages
+/frontend/build
+/coverage

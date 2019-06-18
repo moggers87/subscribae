@@ -1,13 +1,9 @@
-{% load assets staticfiles i18n %}
+{% load staticfiles i18n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
     <head>
-        {% assets "main_js" %}
-            <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-        {% endassets %}
-        {% assets "main_css" %}
-            <link href="{{ ASSET_URL }}" rel="stylesheet" type="text/css" />
-        {% endassets %}
+        <script type="text/javascript" src="{% static "website.min.js" %}"></script>
+        <link href="{% static "website.css" %}" rel="stylesheet" type="text/css" />
         {% block head %}{% endblock %}
     </head>
     <body>

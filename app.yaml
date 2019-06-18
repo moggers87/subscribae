@@ -26,21 +26,24 @@ handlers:
   secure: always
 
 skip_files:
-    - manage.py
+    - (.*)\.pyc
+    - Gruntfile.js
+    - Makefile
     - README.md
+    - \.coverage(.*)
+    - \.git
+    - \.storage.*
+    - \.tox
+    - coverage
+    - frontend
+    - htmlcov
     - install_deps
+    - karma.conf.js
+    - manage.py
+    - node_modules
+    - original_images
+    - package-lock.json
+    - package.json
     - requirements\*
     - sitepackages/dev*
-    - \.storage.*
-    - \.git
-    - (.*)\.pyc
-    - node_modules
-    - static/thirdparty
-    - package.json
-    - package-lock.json
-    - Makefile
     - tox.ini
-    - \.tox
-    - \.coverage(.*)
-    - htmlcov
-    - original_images
