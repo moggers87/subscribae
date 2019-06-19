@@ -18,6 +18,8 @@ oauth_secrets.json
 # npm
 
 node_modules
+coverage
+frontend/build
 
 # C extensions
 *.so

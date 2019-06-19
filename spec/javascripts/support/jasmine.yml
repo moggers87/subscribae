@@ -1,6 +1,0 @@
-    src_files:
-        - node_modules/jquery/dist/jquery.js
-        - subscribae/static/js/*.js
-    spec_files:
-      - "**/*[Ss]pec.js"
-    spec_dir: spec/javascripts
