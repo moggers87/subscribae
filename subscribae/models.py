@@ -28,7 +28,7 @@ from django.template import Context, Template
 from django.template.loader import get_template
 from oauth2client.client import Credentials
 
-DEFAULT_SIZE = 'default'
+DEFAULT_SIZE = 'medium'
 
 
 def create_composite_key(*args):
