@@ -1,4 +1,4 @@
-.subscription-thumbnail-default {
+.subscription-list a, .subscription-thumbnail-default {
     height: var(--subscription-thumbnail-size);
     width: var(--subscription-thumbnail-size);
 }

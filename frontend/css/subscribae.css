@@ -16,7 +16,7 @@
     --subscription-thumbnail-size: 88px;
 
     --video-thumbnail-width: 120px;
-    --video-thumbnail-height: 90px;
+    --video-thumbnail-height: 67.5px;
 
     --playlist-height: 80vh;
 
@@ -97,13 +97,13 @@ html, body {
 
 .x-scroll {
     & .more button {
-        height: var(--video-thumbnail-height);
+        height: var(--subscription-thumbnail-size);
     }
 
     & .scroller {
         display: flex;
         flex-flow: wrap;
-        height: var(--video-thumbnail-height);
+        height: var(--subscription-thumbnail-size);
         overflow: hidden;
     }
 
@@ -145,7 +145,7 @@ fieldset.x-scroll  {
 }
 
 .subscription-list.x-scroll .scroller {
-    height: var(--video-thumbnail-height);
+    height: var(--subscription-thumbnail-size);
 }
 
 #details-box .description {

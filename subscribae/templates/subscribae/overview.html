@@ -6,7 +6,7 @@
      data-more="{% trans "Show more" %}" data-less="{% trans "Show less" %}">
     <div class="scroller">
         {% for subscription in subscription_list %}
-        <a href="{% url "subscription" subscription=subscription.pk %}">
+        <a href="{% url "subscription" subscription=subscription.pk %}" class="margin-right-xs margin-bottom-xs">
             {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
         </a>
         {% endfor %}
