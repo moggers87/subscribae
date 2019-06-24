@@ -61,9 +61,12 @@ def bucket(request, bucket):
             return HttpResponseRedirect(reverse("bucket", kwargs={"bucket": bucket.pk}))
     else:
         form = BucketEditForm(instance=bucket)
+
+    video_start_from = request.GET.get("start")
     context = {
         'bucket': bucket,
         'form': form,
+        'start': video_start_from,
     }
     return TemplateResponse(request, 'subscribae/bucket.html', context)
 

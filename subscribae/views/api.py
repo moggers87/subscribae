@@ -36,7 +36,12 @@ VIDEO_API_MAP = {
 }
 
 
-def queryset_to_json(qs, ordering, property_map=None, before=None, after=None):
+def queryset_to_json(qs, ordering, property_map=None, before=None, after=None, start=None, end=None):
+    """
+    Turn a queryset into a JSON object that can easily serialised into JSON
+
+    before, start, end, after are prioritised in that order
+    """
     qs = qs.order_by(ordering)
     if ordering.startswith("-"):
         ordering = ordering[1:]
@@ -46,6 +51,10 @@ def queryset_to_json(qs, ordering, property_map=None, before=None, after=None):
 
     if before is not None:
         qs = qs.filter(**{"{}__lt".format(ordering): before}).reverse()
+    elif start is not None:
+        qs = qs.filter(**{"{}__gte".format(ordering): start})
+    elif end is not None:
+        qs = qs.filter(**{"{}__lte".format(ordering): end}).reverse()
     elif after is not None:
         qs = qs.filter(**{"{}__gt".format(ordering): after})
 
@@ -99,10 +108,12 @@ def video(request, bucket):
         except Bucket.DoesNotExist:
             raise Http404
 
-        before = request.GET.get("before")
-        after = request.GET.get("after", bucket_obj.last_watched_video)
-
-        videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP, before, after)
+        videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP,
+                                               before=request.GET.get("before"),
+                                               after=request.GET.get("after", bucket_obj.last_watched_video),
+                                               start=request.GET.get("start"),
+                                               end=request.GET.get("end"),
+                                               )
 
         data = {"videos": videos}
 

@@ -82,6 +82,19 @@ class ViewTestCase(TestCase):
         response = self.client.post(reverse('bucket', kwargs={'bucket': new_bucket.pk}), data)
         self.assertEqual(response.status_code, 200)
 
+    def test_bucket_start(self):
+        bucket = BucketFactory(title='Cheese', user=self.user)
+        response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["start"], None)
+        self.assertNotIn("?start=", response.content)
+
+        video_id = "bluhbluhvideo"
+        response = self.client.get("{}?start={}".format(reverse('bucket', kwargs={'bucket': bucket.pk}), video_id))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["start"], video_id)
+        self.assertIn("?start={}".format(video_id), response.content)
+
     def test_bucket_new(self):
         self.assertEqual(len(self.user.bucket_set.all()), 0)
         data = {
