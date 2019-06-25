@@ -64,8 +64,8 @@ class VideoApiTestCase(TestCase):
         self.assertEqual(data, {"videos": []})
 
     def test_get(self):
-        video = VideoFactory(user=self.user, buckets=[BucketFactory(user=self.user)])
-        bucket = video.buckets.first()
+        bucket = BucketFactory(user=self.user)
+        video = VideoFactory(user=self.user, buckets=[bucket])
 
         response = self.client.get(reverse("video-api", kwargs={"bucket": bucket.pk}))
         self.assertEqual(response.status_code, 200)
@@ -79,6 +79,34 @@ class VideoApiTestCase(TestCase):
                 "published": datetime_to_js_iso(video.published_at),
                 "html_snippet": video.html_snippet,
             }],
+        })
+
+    def test_get_with_start(self):
+        bucket = BucketFactory(user=self.user)
+        videos = VideoFactory.create_batch(3, user=self.user, buckets=[bucket])
+
+        response = self.client.get("{}?start={}".format(reverse("video-api",
+                                                        kwargs={"bucket": bucket.pk}), videos[1].ordering_key))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data, {
+            "next": "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket.pk}), videos[2].ordering_key),
+            "videos": [
+                {
+                    "id": videos[1].youtube_id,
+                    "title": videos[1].title,
+                    "description": videos[1].description,
+                    "published": datetime_to_js_iso(videos[1].published_at),
+                    "html_snippet": videos[1].html_snippet,
+                },
+                {
+                    "id": videos[2].youtube_id,
+                    "title": videos[2].title,
+                    "description": videos[2].description,
+                    "published": datetime_to_js_iso(videos[2].published_at),
+                    "html_snippet": videos[2].html_snippet,
+                },
+            ],
         })
 
     def test_post_not_found(self):
@@ -147,6 +175,26 @@ class QuerySetToJsonTestCase(TestCase):
         self.assertEqual(items, [{"id": v.id} for v in videos[1:]])
         self.assertEqual(first, videos[1].pk)
         self.assertEqual(last, videos[2].pk)
+
+    def test_start(self):
+        videos = VideoFactory.create_batch(3)
+        videos = sorted(videos, key=lambda v: v.pk)
+
+        qs = Video.objects.all()
+        items, first, last = queryset_to_json(qs, "pk", {"id": "id"}, start=videos[1].pk)
+        self.assertEqual(items, [{"id": v.id} for v in videos[1:]])
+        self.assertEqual(first, videos[1].pk)
+        self.assertEqual(last, videos[2].pk)
+
+    def test_end(self):
+        videos = VideoFactory.create_batch(3)
+        videos = sorted(videos, key=lambda v: v.pk)
+
+        qs = Video.objects.all()
+        items, first, last = queryset_to_json(qs, "pk", {"id": "id"}, end=videos[1].pk)
+        self.assertEqual(items, [{"id": v.id} for v in reversed(videos[:2])])
+        self.assertEqual(first, videos[1].pk)
+        self.assertEqual(last, videos[0].pk)
 
     def test_property_map(self):
         video = VideoFactory()

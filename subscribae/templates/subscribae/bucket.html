@@ -11,7 +11,7 @@
     data-no-video-title="{% trans "No more videos" %}"
     data-no-video-description="{% trans "Sorry, looks like you've watched everything!" %}">
     <div id="player"
-        data-api-url="{% url "video-api" bucket=bucket.pk %}"
+        data-api-url="{% url "video-api" bucket=bucket.pk %}{% if start is not None %}?start={{ start }}{% endif %}"
         data-csrf="{{ csrf_token }}"
         >
         {% include "subscribae/includes/logo.svg" %}
