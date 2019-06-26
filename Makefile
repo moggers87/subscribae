@@ -6,6 +6,13 @@ tests: install-deps
 	$(MAKE) static-dev
 	./manage.py test
 
+.PHONY: tests-coverage
+tests-coverage: install-deps
+	pip install coverage
+	$(MAKE) clean-pyc
+	$(MAKE) static-dev
+	coverage run --branch ./manage.py test
+
 .PHONY: install-pip-deps
 install-pip-deps:
 	./install_deps

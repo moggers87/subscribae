@@ -5,13 +5,19 @@ matrix:
         env: TOX_ENV=lint
       - language: python
         python: "2.7"
-        script: make tests
+        script: make tests-coverage
+        after_script:
+          - pip install codecov
+          - codecov
       - language: node_js
         node_js: node
         env:
           - GRUNT_TASK=karma:firefox
           - MOZ_HEADLESS=1
           - FIREFOX=esr
+        after_script:
+          - npm install codecov
+          - npx codecov
         addons:
             firefox: latest-esr
       - language: node_js
@@ -20,11 +26,17 @@ matrix:
           - GRUNT_TASK=karma:firefox
           - MOZ_HEADLESS=1
           - FIREFOX=latest
+        after_script:
+          - npm install codecov
+          - npx codecov
         addons:
             firefox: latest
       - language: node_js
         node_js: node
         env: GRUNT_TASK=karma:chrome
+        after_script:
+          - npm install codecov
+          - npx codecov
         addons:
             chrome: stable
       - language: node_js
