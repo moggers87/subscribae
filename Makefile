@@ -1,17 +1,21 @@
 GIT_VERSION := $(shell git describe --dirty)
 
-.PHONY: tests
-tests: install-deps
+.PHONY: tests-py
+tests-py: install-deps
 	$(MAKE) clean-pyc
 	$(MAKE) static-dev
 	./manage.py test
 
-.PHONY: tests-coverage
+.PHONY: tests-py-coverage
 tests-coverage: install-deps
 	pip install coverage
 	$(MAKE) clean-pyc
 	$(MAKE) static-dev
 	coverage run --branch ./manage.py test
+
+.PHONY: tests-js
+tests-js: install-deps
+	npx grunt tests
 
 .PHONY: install-pip-deps
 install-pip-deps:

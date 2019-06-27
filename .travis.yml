@@ -5,7 +5,7 @@ matrix:
         env: TOX_ENV=lint
       - language: python
         python: "2.7"
-        script: make tests-coverage
+        script: make tests-py-coverage
         after_script:
           - pip install codecov
           - codecov
