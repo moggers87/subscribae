@@ -21,14 +21,14 @@
 
 #details-box {
     width: 60%;
+
+    & .description {
+        white-space: pre-wrap;
+    }
 }
 
 #playlist-box, #details-box {
     min-height: var(--playlist-height);
-}
-
-#playlist-box .scroller {
-    overflow-y: scroll;
 }
 
 #playlist {

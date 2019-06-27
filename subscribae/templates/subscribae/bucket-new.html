@@ -6,6 +6,6 @@
 <form action="{% url "bucket-new" %}" method="POST">
     {% csrf_token %}
     {% include "subscribae/includes/form.html" with form=form %}
-    <button class="button button-primary">Save</button>
+    <button class="button-primary">Save</button>
 </form>
 {% endblock %}

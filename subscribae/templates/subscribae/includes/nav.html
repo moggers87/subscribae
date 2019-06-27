@@ -1,0 +1,18 @@
+{% load i18n %}
+<nav class="nav-inline">
+    <div class="nav-header">
+        <a href="{% url "home" %}">
+            {% include "subscribae/includes/logo.svg" %}
+            <span class="display-title display-title-l">{{ site_config.site_name }}</span>
+        </a>
+    </div>
+    {# label must be a sibling after checkbox to allow styling of label based on checkbox focus #}
+    <input type="checkbox" id="nav-collapse-1">
+    <label for="nav-collapse-1" role="button" class="nav-toggle margin-right-xs">
+        <span class="screen-reader">{% trans "Toggle navigation" %}</span>
+        <span class="burger"></span>
+        <span class="burger"></span>
+        <span class="burger"></span>
+    </label>
+    {% include nav_items|default:"subscribae/includes/nav_items.html" %}
+</nav>

@@ -1,0 +1,6 @@
+label.error {
+    & ~ input {
+        color: var(--error) !important;
+        border-color: var(--error) !important;
+    }
+}

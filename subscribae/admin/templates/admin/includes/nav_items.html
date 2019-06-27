@@ -1,0 +1,6 @@
+{% load i18n %}
+<ul>
+    <li><a href="{% url "admin:index" %}">{% trans "Admin" %}</a></li>
+    <li><a href="{% url "admin:user-index" %}">{% trans "Users" %}</a></li>
+    <li><a href="{% url "admin:site-config" %}">{% trans "Site" %}</a></li>
+</ul>

@@ -16,8 +16,8 @@
 <div class="padding-vertical-xs">
     <form action="{% url "bucket-new" %}" method="POST">
         {% csrf_token %}
-        {{ form }}
-        <button class="button button-primary">{% trans "Create new bucket" %}</button>
+        {% include "subscribae/includes/form.html" with form=form %}
+        <button class="button-primary">{% trans "Create new bucket" %}</button>
     </form>
 </div>
 <div class="bucket-list padding-vertical-xs">

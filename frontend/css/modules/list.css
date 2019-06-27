@@ -1,0 +1,7 @@
+.y-scroll {
+    & .scroller {
+        overflow-y: scroll;
+        white-space: nowrap;
+    }
+}
+

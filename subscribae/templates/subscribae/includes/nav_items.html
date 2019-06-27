@@ -1,0 +1,14 @@
+{% load i18n %}
+<ul>
+    {% if user.is_authenticated %}
+        {% if user.is_active %}
+            <li><a href="{% url "overview" %}">
+                <span>Overview</span>
+            </a></li>
+        {% endif %}
+    {% else %}
+        <li><a href="{% url "djangae_login_redirect" %}">
+            <span>Login</span>
+        </a></li>
+    {% endif %}
+</ul>
