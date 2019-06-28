@@ -49,9 +49,13 @@ module.exports = function(grunt) {
                     }),
                 ]
             },
-            dist: {
-                src: ["<%= dirs.css %>/subscribae.css"],
-                dest: "<%= dirs.build %>/compiled/website.css"
+            publicCss: {
+                src: ["<%= dirs.css %>/public.css"],
+                dest: "<%= dirs.build %>/compiled/public.css"
+            },
+            adminCss: {
+                src: ["<%= dirs.css %>/admin.css"],
+                dest: "<%= dirs.build %>/compiled/admin.css"
             }
         },
         karma: {

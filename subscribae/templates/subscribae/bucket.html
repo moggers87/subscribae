@@ -31,7 +31,7 @@
     <form action="{% url "bucket" bucket=bucket.pk %}" method="POST">
         {% csrf_token %}
         {% include "subscribae/includes/form.html" with form=form %}
-        <button class="button button-primary">{% trans "Save" %}</button>
+        <button class="button-primary">{% trans "Save" %}</button>
     </form>
 </div>
 {% endblock %}

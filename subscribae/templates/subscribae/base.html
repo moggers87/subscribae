@@ -3,39 +3,11 @@
 <html lang="{{ LANGUAGE_CODE }}">
     <head>
         <script type="text/javascript" src="{% static "website.min.js" %}"></script>
-        <link href="{% static "website.css" %}" rel="stylesheet" type="text/css" />
+        <link href="{% static "public.css" %}" rel="stylesheet" type="text/css" />
         {% block head %}{% endblock %}
     </head>
     <body>
-        <nav class="nav-inline">
-            <div class="nav-header">
-                <a href="{% url "home" %}">
-                    {% include "subscribae/includes/logo.svg" %}
-                    <span class="display-title display-title-l">{{ site_config.site_name }}</span>
-                </a>
-            </div>
-            {# label must be a sibling after checkbox to allow styling of label based on checkbox focus #}
-            <input type="checkbox" id="nav-collapse-1">
-            <label for="nav-collapse-1" role="button" class="nav-toggle margin-right-xs">
-                <span class="screen-reader">{% trans "Toggle navigation" %}</span>
-                <span class="burger"></span>
-                <span class="burger"></span>
-                <span class="burger"></span>
-            </label>
-            <ul>
-                {% if user.is_authenticated %}
-                    {% if user.is_active %}
-                        <li><a href="{% url "overview" %}">
-                            <span>Overview</span>
-                        </a></li>
-                    {% endif %}
-                {% else %}
-                    <li><a href="{% url "djangae_login_redirect" %}">
-                        <span>Login</span>
-                    </a></li>
-                {% endif %}
-            </ul>
-        </nav>
+        {% include "subscribae/includes/nav.html" %}
         {% block container %}
             <div class="container padding-vertical-xs">{% block content %}{% endblock %}</div>
         {% endblock %}

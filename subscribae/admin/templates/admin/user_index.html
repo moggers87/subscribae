@@ -4,10 +4,10 @@
 {% block content %}
 <a href="{% url "admin:user-add" %}">{% trans "Add user" %}</a>
 {% for user in users %}
-<div id="{{ user.id }}">
-    <div>{{ user.email }}</div>
-    <div>{{ user.is_active }}</div>
-    <div><a href="{% url "admin:user-edit" user_id=user.id %}">{% trans "Edit" %}</a>
+<div id="{{ user.id }}" class="flex flex-row margin-top-xs">
+    <div class="margin-right-xs">{{ user.email }}</div>
+    <div class="margin-right-xs">{{ user.is_active }}</div>
+    <div><a href="{% url "admin:user-edit" user_id=user.id %}">{% trans "Edit" %}</a></div>
 </div>
 {% endfor %}
 {% endblock %}

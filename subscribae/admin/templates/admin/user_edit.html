@@ -1,11 +1,10 @@
 {% extends "admin/base.html" %}
 {% load i18n %}
-
 {% block content %}
 <form method="POST">
     {% csrf_token %}
     <p>{{ form.instance.email }}</p>
-    {{ form }}
+    {% include "subscribae/includes/form.html" with form=form %}
     <button>{% trans "Submit" %}</button>
 </form>
 {% endblock %}

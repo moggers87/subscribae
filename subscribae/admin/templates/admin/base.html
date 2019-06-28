@@ -1,12 +1,12 @@
+{% load staticfiles i18n %}
 <!DOCTYPE html>
 <html>
     <head>
+        <link href="{% static "public.css" %}" rel="stylesheet" type="text/css" />
+        {% block head %}{% endblock %}
     </head>
     <body>
-        <a href="{% url "admin:index" %}">Admin</a>
-        <a href="{% url "admin:user-index" %}">Users</a>
-        <a href="{% url "admin:site-config" %}">Site</a>
-        <hr>
-        {% block content %}{% endblock %}
+        {% include "subscribae/includes/nav.html" with nav_items="admin/includes/nav_items.html" %}
+        <div class="container padding-vertical-xs">{% block content %}{% endblock %}</div>
     </body>
 </html>
