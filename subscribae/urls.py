@@ -38,6 +38,11 @@ from django.contrib.staticfiles.views import serve
 
 from subscribae.views import api, misc, oauth, tasks
 
+handler400 = "subscribae.views.error.bad_request"
+handler403 = "subscribae.views.error.permission_denied"
+handler404 = "subscribae.views.error.not_found"
+handler500 = "subscribae.views.error.server_error"
+
 urlpatterns = (
     url(r'^$', misc.home, name='home'),
     url(r'^overview$', misc.overview, name='overview'),

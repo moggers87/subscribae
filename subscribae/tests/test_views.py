@@ -21,12 +21,15 @@ import os
 
 from djangae.test import TestCase, inconsistent_db
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
+from django.test.client import RequestFactory
 from google.appengine.api import users
 import mock
 
 from subscribae.models import OauthToken
 from subscribae.tests.utils import BucketFactory, SubscriptionFactory, VideoFactory
+from subscribae.views.error import ErrorView
 
 
 class ViewTestCase(TestCase):
@@ -194,3 +197,28 @@ class ViewTestCase(TestCase):
         response = self.client.get(reverse("logout"))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], users.create_logout_url(reverse("home")))
+
+
+class ErrorViewTestCase(TestCase):
+    def test_view(self):
+        view_func = ErrorView.as_view(
+            error_message="some message or other",
+            error_code=499,
+            headline="some headline"
+        )
+
+        request = RequestFactory().get("/")
+        response = view_func(request)
+
+        self.assertEqual(response.status_code, 499)
+        self.assertIn("some message or other", str(response.content))
+        self.assertIn("some headline", str(response.content))
+
+    def test_misconfigured(self):
+        view_obj = ErrorView()
+
+        with self.assertRaises(ImproperlyConfigured):
+            view_obj.get_error_message()
+
+        with self.assertRaises(ImproperlyConfigured):
+            view_obj.get_error_code()
