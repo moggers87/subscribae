@@ -122,6 +122,7 @@ SILENCED_SYSTEM_CHECKS = [
 ]
 
 CSRF_USE_SESSIONS = True
+CSRF_FAILURE_VIEW = "subscribae.views.error.csrf_failure"
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
