@@ -7,7 +7,7 @@ tests-py: install-deps
 	./manage.py test
 
 .PHONY: tests-py-coverage
-tests-coverage: install-deps
+tests-py-coverage: install-deps
 	pip install coverage
 	$(MAKE) clean-pyc
 	$(MAKE) static-dev
