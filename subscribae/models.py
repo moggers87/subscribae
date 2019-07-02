@@ -98,6 +98,14 @@ class Bucket(UniquenessMixin, models.Model):
         unique_together = ["user", "title"]
         ordering = ["title"]
 
+    @property
+    def latest_videos(self):
+        qs = self.video_set.all()
+        if self.last_watched_video:
+            qs = qs.filter(ordering_key__gt=self.last_watched_video)
+
+        return qs
+
 
 class Video(ThumbnailAbstract):
     """A video"""
