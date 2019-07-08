@@ -7,6 +7,9 @@ module.exports = function(grunt) {
             js: "frontend/js",
             css: "frontend/css",
         },
+        clean: {
+            build: ["<%= dirs.build %>"],
+        },
         concat: {
             dist: {
                 src: ["<%= dirs.thirdparty %>/jquery/dist/jquery.js", "<%= dirs.js %>/src/*.js"],
@@ -96,11 +99,14 @@ module.exports = function(grunt) {
             all: ["."]
         }
     });
+
+    grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks("grunt-contrib-concat");
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks('@lodder/grunt-postcss');
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.registerTask("default", ["concat", "uglify", "postcss"]);
+
+    grunt.registerTask("default", ["clean", "concat", "uglify", "postcss"]);
     grunt.registerTask("tests", ["karma:firefox", "karma:chrome"]);
 };
