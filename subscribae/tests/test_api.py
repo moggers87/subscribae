@@ -84,11 +84,43 @@ class VideoApiTestCase(TestCase):
     def test_get_with_start(self):
         bucket = BucketFactory(user=self.user)
         videos = VideoFactory.create_batch(3, user=self.user, buckets=[bucket])
+        videos = sorted(videos, key=lambda v: v.ordering_key)
 
         response = self.client.get("{}?start={}".format(reverse("video-api",
                                                         kwargs={"bucket": bucket.pk}), videos[1].ordering_key))
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
+        self.assertEqual(len(data["videos"]), 2)
+        self.assertEqual(data, {
+            "next": "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket.pk}), videos[2].ordering_key),
+            "videos": [
+                {
+                    "id": videos[1].youtube_id,
+                    "title": videos[1].title,
+                    "description": videos[1].description,
+                    "published": datetime_to_js_iso(videos[1].published_at),
+                    "html_snippet": videos[1].html_snippet,
+                },
+                {
+                    "id": videos[2].youtube_id,
+                    "title": videos[2].title,
+                    "description": videos[2].description,
+                    "published": datetime_to_js_iso(videos[2].published_at),
+                    "html_snippet": videos[2].html_snippet,
+                },
+            ],
+        })
+
+    def test_get_with_after(self):
+        bucket = BucketFactory(user=self.user)
+        videos = VideoFactory.create_batch(3, user=self.user, buckets=[bucket])
+        videos = sorted(videos, key=lambda v: v.ordering_key)
+
+        response = self.client.get("{}?after={}".format(reverse("video-api",
+                                                        kwargs={"bucket": bucket.pk}), videos[0].ordering_key))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data["videos"]), 2)
         self.assertEqual(data, {
             "next": "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket.pk}), videos[2].ordering_key),
             "videos": [
