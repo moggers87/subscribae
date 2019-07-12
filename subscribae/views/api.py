@@ -39,8 +39,6 @@ VIDEO_API_MAP = {
 def queryset_to_json(qs, ordering, property_map=None, before=None, after=None, start=None, end=None):
     """
     Turn a queryset into a JSON object that can easily serialised into JSON
-
-    before, start, end, after are prioritised in that order
     """
     qs = qs.order_by(ordering)
     if ordering.startswith("-"):
@@ -49,14 +47,18 @@ def queryset_to_json(qs, ordering, property_map=None, before=None, after=None, s
     if not isinstance(property_map, dict):
         raise ValueError("property_map should be a dict-like object")
 
+    unique_kwargs = [before, after, start, end]
+    if unique_kwargs.count(None) < (len(unique_kwargs) - 1):  # a maximum of 1 item may be not None
+        raise TypeError("queryset_to_json may only take one of: before, after, start, end")
+
     if before is not None:
         qs = qs.filter(**{"{}__lt".format(ordering): before}).reverse()
+    elif after is not None:
+        qs = qs.filter(**{"{}__gt".format(ordering): after})
     elif start is not None:
         qs = qs.filter(**{"{}__gte".format(ordering): start})
     elif end is not None:
         qs = qs.filter(**{"{}__lte".format(ordering): end}).reverse()
-    elif after is not None:
-        qs = qs.filter(**{"{}__gt".format(ordering): after})
 
     qs = qs[:API_PAGE_SIZE]
 
@@ -110,7 +112,7 @@ def video(request, bucket):
 
         videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP,
                                                before=request.GET.get("before"),
-                                               after=request.GET.get("after", bucket_obj.last_watched_video),
+                                               after=request.GET.get("after"),
                                                start=request.GET.get("start"),
                                                end=request.GET.get("end"),
                                                )

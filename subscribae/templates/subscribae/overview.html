@@ -27,7 +27,7 @@
             <div class="title font-weight-semibold padding-vertical-xs">
                 <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
             </div>
-            <div class="videos padding-xs">{% for video in bucket.video_set.all|slice:"10" %}
+            <div class="videos padding-xs">{% for video in bucket.latest_videos|slice:"10" %}
                 <a href="{% url "bucket" bucket=bucket.pk %}?start={{ video.ordering_key }}">{% include "subscribae/includes/videos.html" with video=video %}</a>
             {% endfor %}</div>
         </div>
