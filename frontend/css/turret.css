@@ -46,7 +46,7 @@
  * Animation
  */
 
-/* @import 'turretcss/turret/animation/spin'; */
+@import 'turretcss/turret/animation/spin';
 
 /**
  * Typography
@@ -104,8 +104,8 @@
 /* @import 'turretcss/turret/element/figure'; */
 /* @import 'turretcss/turret/element/media'; */
 @import 'turretcss/turret/element/nav';
-/* @import 'turretcss/turret/element/spinner'; */
-/* @import 'turretcss/turret/element/spinner-sizes'; */
+@import 'turretcss/turret/element/spinner';
+@import 'turretcss/turret/element/spinner-sizes';
 /* @import 'turretcss/turret/element/table'; */
 
 /**
