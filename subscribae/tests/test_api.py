@@ -78,6 +78,7 @@ class VideoApiTestCase(TestCase):
                 "description": video.description,
                 "published": datetime_to_js_iso(video.published_at),
                 "html_snippet": video.html_snippet,
+                "ordering_key": video.ordering_key,
             }],
         })
 
@@ -100,6 +101,7 @@ class VideoApiTestCase(TestCase):
                     "description": videos[1].description,
                     "published": datetime_to_js_iso(videos[1].published_at),
                     "html_snippet": videos[1].html_snippet,
+                    "ordering_key": videos[1].ordering_key,
                 },
                 {
                     "id": videos[2].youtube_id,
@@ -107,6 +109,7 @@ class VideoApiTestCase(TestCase):
                     "description": videos[2].description,
                     "published": datetime_to_js_iso(videos[2].published_at),
                     "html_snippet": videos[2].html_snippet,
+                    "ordering_key": videos[2].ordering_key,
                 },
             ],
         })
@@ -130,6 +133,7 @@ class VideoApiTestCase(TestCase):
                     "description": videos[1].description,
                     "published": datetime_to_js_iso(videos[1].published_at),
                     "html_snippet": videos[1].html_snippet,
+                    "ordering_key": videos[1].ordering_key,
                 },
                 {
                     "id": videos[2].youtube_id,
@@ -137,6 +141,7 @@ class VideoApiTestCase(TestCase):
                     "description": videos[2].description,
                     "published": datetime_to_js_iso(videos[2].published_at),
                     "html_snippet": videos[2].html_snippet,
+                    "ordering_key": videos[2].ordering_key,
                 },
             ],
         })

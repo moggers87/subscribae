@@ -33,6 +33,7 @@ VIDEO_API_MAP = {
     "description": "description",
     "published": "published_at",
     "html_snippet": "html_snippet",
+    "ordering_key": "ordering_key",
 }
 
 

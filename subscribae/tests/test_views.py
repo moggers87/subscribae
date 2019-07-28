@@ -28,7 +28,7 @@ from google.appengine.api import users
 import mock
 
 from subscribae.models import OauthToken
-from subscribae.tests.utils import BucketFactory, SubscriptionFactory, VideoFactory
+from subscribae.tests.utils import BucketFactory, SubscriptionFactory
 from subscribae.views.error import ErrorView
 
 
@@ -56,14 +56,17 @@ class ViewTestCase(TestCase):
 
     def test_overview_has_items(self):
         subscriptions = SubscriptionFactory.create_batch(2, user=self.user)
-        buckets = [BucketFactory(user=self.user), BucketFactory(user=self.user, subs=[subscriptions[0]])]
-        videos = [VideoFactory(user=self.user, buckets=[buckets[1]], subscription=subscriptions[0]),
-                  VideoFactory(user=self.user)]
+        buckets = [
+            BucketFactory(user=self.user),
+            BucketFactory(user=self.user, subs=[subscriptions[0]]),
+            BucketFactory(),
+        ]
 
         response = self.client.get(reverse('overview'))
         self.assertEqual(response.status_code, 200)
-        self.assertIn(videos[0].ordering_key, response.content)
-        self.assertNotIn(videos[1].ordering_key, response.content)
+        self.assertIn(buckets[0].title, response.content)
+        self.assertIn(buckets[1].title, response.content)
+        self.assertNotIn(buckets[2].title, response.content)
 
     def test_bucket(self):
         response = self.client.get(reverse('bucket', kwargs={'bucket': 1}))

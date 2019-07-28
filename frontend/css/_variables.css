@@ -69,5 +69,8 @@
 
     --nav-height: 1.75em;
     --nav-height-extra: 2em;
+
+    --spinner-width: 0.5rem;
+    --spinner-speed: 1s;
 }
 

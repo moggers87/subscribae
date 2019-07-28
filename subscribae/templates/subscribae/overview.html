@@ -27,9 +27,11 @@
             <div class="title font-weight-semibold padding-vertical-xs">
                 <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
             </div>
-            <div class="videos padding-xs">{% for video in bucket.latest_videos|slice:"10" %}
-                <a href="{% url "bucket" bucket=bucket.pk %}?start={{ video.ordering_key }}">{% include "subscribae/includes/videos.html" with video=video %}</a>
-            {% endfor %}</div>
+            <div class="videos padding-xs"
+                 data-bucket-url="{% url "bucket" bucket=bucket.pk %}"
+                 data-api-url="{% url "video-api" bucket=bucket.pk %}{% if bucket.last_watched_video %}?after={{ bucket.last_watched_video }}{% endif %}">
+                <div class="spinner spinner-xxl padding-xxl"></div>
+            </div>
         </div>
         {% endfor %}
     </div>
