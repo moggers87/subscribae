@@ -1,0 +1,1 @@
+data-api-url="{% url "video-api" bucket=bucket.pk %}{% if start is not None %}?start={{ start }}{% elif bucket.last_watched_video %}?after={{ bucket.last_watched_video }}{% endif %}"
