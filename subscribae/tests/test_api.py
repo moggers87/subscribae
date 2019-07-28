@@ -26,7 +26,7 @@ import mock
 
 from subscribae.models import Video
 from subscribae.test import gae_login, gae_logout
-from subscribae.tests.utils import BucketFactory, VideoFactory
+from subscribae.tests.utils import BucketFactory, SubscriptionFactory, VideoFactory
 from subscribae.views.api import queryset_to_json
 
 
@@ -40,25 +40,25 @@ def datetime_to_js_iso(dt):
     return js_iso
 
 
-class VideoApiTestCase(TestCase):
+class BucketVideoApiTestCase(TestCase):
     def setUp(self):
-        super(VideoApiTestCase, self).setUp()
+        super(BucketVideoApiTestCase, self).setUp()
         self.user = get_user_model().objects.create(username='1', email='test@example.com', is_active=True)
         gae_login(self.user)
 
     def tearDown(self):
         gae_logout()
-        super(VideoApiTestCase, self).tearDown()
+        super(BucketVideoApiTestCase, self).tearDown()
 
     def test_login_required(self):
         gae_logout()
-        response = self.client.get(reverse("video-api", kwargs={"bucket": "123"}))
+        response = self.client.get(reverse("bucket-video-api", kwargs={"bucket": "123"}))
         self.assertRedirects(response, "{}?next={}".format(reverse("djangae_login_redirect"),
-                             reverse("video-api", kwargs={"bucket": "123"})), fetch_redirect_response=False)
+                             reverse("bucket-video-api", kwargs={"bucket": "123"})), fetch_redirect_response=False)
 
     def test_get_empty(self):
         bucket = BucketFactory()
-        response = self.client.get(reverse("video-api", kwargs={"bucket": bucket.id}))
+        response = self.client.get(reverse("bucket-video-api", kwargs={"bucket": bucket.id}))
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data, {"videos": []})
@@ -67,11 +67,11 @@ class VideoApiTestCase(TestCase):
         bucket = BucketFactory(user=self.user)
         video = VideoFactory(user=self.user, buckets=[bucket])
 
-        response = self.client.get(reverse("video-api", kwargs={"bucket": bucket.pk}))
+        response = self.client.get(reverse("bucket-video-api", kwargs={"bucket": bucket.pk}))
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data, {
-            "next": "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket.pk}), video.ordering_key),
+            "next": "{}?after={}".format(reverse("bucket-video-api", kwargs={"bucket": bucket.pk}), video.ordering_key),
             "videos": [{
                 "id": video.youtube_id,
                 "title": video.title,
@@ -87,13 +87,14 @@ class VideoApiTestCase(TestCase):
         videos = VideoFactory.create_batch(3, user=self.user, buckets=[bucket])
         videos = sorted(videos, key=lambda v: v.ordering_key)
 
-        response = self.client.get("{}?start={}".format(reverse("video-api",
+        response = self.client.get("{}?start={}".format(reverse("bucket-video-api",
                                                         kwargs={"bucket": bucket.pk}), videos[1].ordering_key))
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(len(data["videos"]), 2)
         self.assertEqual(data, {
-            "next": "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket.pk}), videos[2].ordering_key),
+            "next": "{}?after={}".format(reverse("bucket-video-api",
+                                                 kwargs={"bucket": bucket.pk}), videos[2].ordering_key),
             "videos": [
                 {
                     "id": videos[1].youtube_id,
@@ -119,13 +120,14 @@ class VideoApiTestCase(TestCase):
         videos = VideoFactory.create_batch(3, user=self.user, buckets=[bucket])
         videos = sorted(videos, key=lambda v: v.ordering_key)
 
-        response = self.client.get("{}?after={}".format(reverse("video-api",
+        response = self.client.get("{}?after={}".format(reverse("bucket-video-api",
                                                         kwargs={"bucket": bucket.pk}), videos[0].ordering_key))
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(len(data["videos"]), 2)
         self.assertEqual(data, {
-            "next": "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket.pk}), videos[2].ordering_key),
+            "next": "{}?after={}".format(reverse("bucket-video-api",
+                                         kwargs={"bucket": bucket.pk}), videos[2].ordering_key),
             "videos": [
                 {
                     "id": videos[1].youtube_id,
@@ -148,24 +150,137 @@ class VideoApiTestCase(TestCase):
 
     def test_post_not_found(self):
         data = {}
-        response = self.client.post(reverse("video-api", kwargs={"bucket": "123"}), data=data)
+        response = self.client.post(reverse("bucket-video-api", kwargs={"bucket": "123"}), data=data)
         self.assertEqual(response.status_code, 404)
 
     def test_post_bad_bucket_id(self):
         video = VideoFactory(user=self.user)
         data = {"id": video.youtube_id}
-        response = self.client.post(reverse("video-api", kwargs={"bucket": "cannot be cast to int"}), data=data)
+        response = self.client.post(reverse("bucket-video-api", kwargs={"bucket": "cannot be cast to int"}), data=data)
         self.assertEqual(response.status_code, 404)
 
     def test_post(self):
         video = VideoFactory(user=self.user, buckets=[BucketFactory(user=self.user)])
         data = {"id": video.youtube_id}
-        response = self.client.post(reverse("video-api", kwargs={"bucket": video.buckets.first().pk}), data=data)
+        response = self.client.post(reverse("bucket-video-api", kwargs={"bucket": video.buckets.first().pk}), data=data)
         self.assertEqual(response.status_code, 200)
 
         video.refresh_from_db()
         self.assertEqual(video.viewed, True)
         self.assertEqual(video.buckets.all()[0].last_watched_video, video.ordering_key)
+
+
+class SubscriptionVideoApiTestCase(TestCase):
+    def setUp(self):
+        super(SubscriptionVideoApiTestCase, self).setUp()
+        self.user = get_user_model().objects.create(username='1', email='test@example.com', is_active=True)
+        gae_login(self.user)
+
+    def tearDown(self):
+        gae_logout()
+        super(SubscriptionVideoApiTestCase, self).tearDown()
+
+    def test_login_required(self):
+        gae_logout()
+        response = self.client.get(reverse("subscription-video-api", kwargs={"subscription": "123"}))
+        self.assertRedirects(response, "{}?next={}".format(reverse("djangae_login_redirect"),
+                             reverse("subscription-video-api",
+                                     kwargs={"subscription": "123"})), fetch_redirect_response=False)
+
+    def test_get_empty(self):
+        subscription = SubscriptionFactory()
+        response = self.client.get(reverse("subscription-video-api", kwargs={"subscription": subscription.id}))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data, {"videos": []})
+
+    def test_get(self):
+        subscription = SubscriptionFactory(user=self.user)
+        video = VideoFactory(user=self.user, subscription=subscription)
+
+        response = self.client.get(reverse("subscription-video-api", kwargs={"subscription": subscription.pk}))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data, {
+            "next": "{}?after={}".format(reverse("subscription-video-api",
+                                         kwargs={"subscription": subscription.pk}), video.ordering_key),
+            "videos": [{
+                "id": video.youtube_id,
+                "title": video.title,
+                "description": video.description,
+                "published": datetime_to_js_iso(video.published_at),
+                "html_snippet": video.html_snippet,
+                "ordering_key": video.ordering_key,
+            }],
+        })
+
+    def test_get_with_start(self):
+        subscription = SubscriptionFactory(user=self.user)
+        videos = VideoFactory.create_batch(3, user=self.user, subscription=subscription)
+        videos = sorted(videos, key=lambda v: v.ordering_key)
+
+        response = self.client.get(
+            "{}?start={}".format(reverse("subscription-video-api",
+                                         kwargs={"subscription": subscription.pk}), videos[1].ordering_key))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data["videos"]), 2)
+        self.assertEqual(data, {
+            "next": "{}?after={}".format(reverse("subscription-video-api",
+                                                 kwargs={"subscription": subscription.pk}), videos[2].ordering_key),
+            "videos": [
+                {
+                    "id": videos[1].youtube_id,
+                    "title": videos[1].title,
+                    "description": videos[1].description,
+                    "published": datetime_to_js_iso(videos[1].published_at),
+                    "html_snippet": videos[1].html_snippet,
+                    "ordering_key": videos[1].ordering_key,
+                },
+                {
+                    "id": videos[2].youtube_id,
+                    "title": videos[2].title,
+                    "description": videos[2].description,
+                    "published": datetime_to_js_iso(videos[2].published_at),
+                    "html_snippet": videos[2].html_snippet,
+                    "ordering_key": videos[2].ordering_key,
+                },
+            ],
+        })
+
+    def test_get_with_after(self):
+        subscription = SubscriptionFactory(user=self.user)
+        videos = VideoFactory.create_batch(3, user=self.user, subscription=subscription)
+        videos = sorted(videos, key=lambda v: v.ordering_key)
+
+        response = self.client.get(
+            "{}?after={}".format(reverse("subscription-video-api",
+                                         kwargs={"subscription": subscription.pk}), videos[0].ordering_key))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data["videos"]), 2)
+        self.assertEqual(data, {
+            "next": "{}?after={}".format(reverse("subscription-video-api",
+                                         kwargs={"subscription": subscription.pk}), videos[2].ordering_key),
+            "videos": [
+                {
+                    "id": videos[1].youtube_id,
+                    "title": videos[1].title,
+                    "description": videos[1].description,
+                    "published": datetime_to_js_iso(videos[1].published_at),
+                    "html_snippet": videos[1].html_snippet,
+                    "ordering_key": videos[1].ordering_key,
+                },
+                {
+                    "id": videos[2].youtube_id,
+                    "title": videos[2].title,
+                    "description": videos[2].description,
+                    "published": datetime_to_js_iso(videos[2].published_at),
+                    "html_snippet": videos[2].html_snippet,
+                    "ordering_key": videos[2].ordering_key,
+                },
+            ],
+        })
 
 
 class QuerySetToJsonTestCase(TestCase):
