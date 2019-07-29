@@ -48,3 +48,17 @@
         padding: 0.5rem;
     }
 }
+
+.header {
+    & > img, & > h1 {
+        display: inline-block;
+    }
+
+    & > img {
+        vertical-align: middle;
+    }
+
+    & > h1 {
+        margin: 0;
+    }
+}

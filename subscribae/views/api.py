@@ -21,6 +21,7 @@ from djangae.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import Http404, JsonResponse
+from django.views.decorators.http import require_http_methods
 
 from subscribae.decorators import active_user
 from subscribae.models import Bucket, Video, create_composite_key
@@ -38,8 +39,7 @@ VIDEO_API_MAP = {
 
 
 def queryset_to_json(qs, ordering, property_map=None, before=None, after=None, start=None, end=None):
-    """
-    Turn a queryset into a JSON object that can easily serialised into JSON
+    """Turn a queryset into a JSON object that can easily serialised into JSON
     """
     qs = qs.order_by(ordering)
     if ordering.startswith("-"):
@@ -81,7 +81,12 @@ def queryset_to_json(qs, ordering, property_map=None, before=None, after=None, s
 
 @login_required
 @active_user
-def video(request, bucket):
+@require_http_methods(("GET", "POST"))
+def bucket_video(request, bucket):
+    """Video API for buckets
+
+    Also accepts POST requests for viewed videos
+    """
     try:
         bucket_id = int(bucket)
     except ValueError:
@@ -106,11 +111,6 @@ def video(request, bucket):
             vid.save()
         return JsonResponse({})
     else:
-        try:
-            bucket_obj = Bucket.objects.get(id=bucket_id)
-        except Bucket.DoesNotExist:
-            raise Http404
-
         videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP,
                                                before=request.GET.get("before"),
                                                after=request.GET.get("after"),
@@ -121,7 +121,30 @@ def video(request, bucket):
         data = {"videos": videos}
 
         if len(videos) > 0:
-            next_url = "{}?after={}".format(reverse("video-api", kwargs={"bucket": bucket}), last)
+            next_url = "{}?after={}".format(reverse("bucket-video-api", kwargs={"bucket": bucket_id}), last)
             data["next"] = next_url
 
         return JsonResponse(data)
+
+
+@login_required
+@active_user
+@require_http_methods(("GET",))
+def subscription_video(request, subscription):
+    """Video API for subscriptions"""
+    qs = Video.objects.filter(user=request.user, subscription_id=subscription)
+
+    videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP,
+                                           before=request.GET.get("before"),
+                                           after=request.GET.get("after"),
+                                           start=request.GET.get("start"),
+                                           end=request.GET.get("end"),
+                                           )
+
+    data = {"videos": videos}
+
+    if len(videos) > 0:
+        next_url = "{}?after={}".format(reverse("subscription-video-api", kwargs={"subscription": subscription}), last)
+        data["next"] = next_url
+
+    return JsonResponse(data)

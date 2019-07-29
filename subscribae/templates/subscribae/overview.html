@@ -29,7 +29,7 @@
             </div>
             <div class="videos padding-xs"
                  data-bucket-url="{% url "bucket" bucket=bucket.pk %}"
-                 data-api-url="{% url "video-api" bucket=bucket.pk %}{% if bucket.last_watched_video %}?after={{ bucket.last_watched_video }}{% endif %}">
+                 data-api-url="{% url "bucket-video-api" bucket=bucket.pk %}{% if bucket.last_watched_video %}?after={{ bucket.last_watched_video }}{% endif %}">
                 <div class="spinner spinner-xxl padding-xxl"></div>
             </div>
         </div>
