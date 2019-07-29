@@ -1,30 +1,23 @@
 {% extends "subscribae/base.html" %}
 {% load i18n %}
 
+{% block head %}
+    <script type="text/javascript" src="https://www.youtube.com/iframe_api" async></script>
+{% endblock %}
+
 {% block content %}
+<div class="header padding-bottom-xs">
     {% include "subscribae/includes/subscription-icon.html" with subscription=subscription %}
-    <div id="details-box" class="padding-vertical-xs">
-        <h1 class="title">{{ subscription.title }}</h1>
-        <p class="description">{{ subscription.description }}</p>
+    <h1>{{ subscription.title }}</h1>
+</div>
+{% include "subscribae/includes/player-box.html" with player_options="subscribae/includes/subscription-player-options.html" %}
+    <div class="bucket-list padding-vertical-xs flex flex-row flex-1-0-auto flex-wrap">
+    {% for bucket in buckets %}
+    <div class="bucket">
+        <div class="title font-weight-semibold padding-vertical-xs margin-bottom-xs margin-right-xs border border-color-secondary border-radius">
+            <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
+        </div>
     </div>
-    <div class="padding-vertical-xs">
-        Buckets:
-        <ul>
-            {% for bucket in buckets %}
-            <li><a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a></li>
-            {% empty %}
-                <p>No buckets</p>
-            {% endfor %}
-        </ul>
-    </div>
-    <div class="padding-vertical-xs">
-        Videos:
-        <ul>
-            {% for video in subscription.video_set.all %}
-            <li>{{ video.title }}</li>
-            {% empty %}
-                <p>No Videos</p>
-            {% endfor %}
-        </ul>
+    {% endfor %}
     </div>
 {% endblock %}

@@ -6,7 +6,9 @@
 {% endblock %}
 
 {% block content %}
-<h1>{{ bucket.title }}</h1>
+<div class="header padding-bottom-xs">
+    <h1>{{ bucket.title }}</h1>
+</div>
 {% include "subscribae/includes/player-box.html" with player_options="subscribae/includes/bucket-player-options.html" %}
 <div>
     <form action="{% url "bucket" bucket=bucket.pk %}" method="POST">
