@@ -28,6 +28,8 @@ from django.template import Context, Template
 from django.template.loader import get_template
 from oauth2client.client import Credentials
 
+from subscribae.managers import VideoQuerySet
+
 DEFAULT_SIZE = 'medium'
 
 
@@ -58,6 +60,7 @@ class Subscription(ThumbnailAbstract):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     last_update = models.DateTimeField()
     last_viewed = models.DateTimeField(null=True)
+    last_watched_video = models.CharField(max_length=200)
 
     # from subscription endpoint
     channel_id = models.CharField(max_length=200)  # snippet.resourceId.channelId
@@ -125,6 +128,8 @@ class Video(ThumbnailAbstract):
                            primary_key=True, max_length=200)
     ordering_key = ComputedCharField(lambda self: create_composite_key(self.published_at.isoformat(" "),
                                      self.youtube_id), max_length=200)
+
+    objects = VideoQuerySet.as_manager()
 
     class Meta:
         ordering = ["ordering_key"]

@@ -1,1 +1,2 @@
 data-api-url="{% url "subscription-video-api" subscription=subscription.pk %}{% if start is not None %}?start={{ start }}{% elif subscription.last_watched_video %}?after={{ subscription.last_watched_video }}{% endif %}"
+data-viewed-api-url="{% url "subscription-video-viewed-api" subscription=subscription.pk %}"

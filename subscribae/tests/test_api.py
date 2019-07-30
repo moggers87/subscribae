@@ -63,6 +63,10 @@ class BucketVideoApiTestCase(TestCase):
         data = json.loads(response.content)
         self.assertEqual(data, {"videos": []})
 
+    def test_invalid_bucket_id(self):
+        response = self.client.get(reverse("bucket-video-api", kwargs={"bucket": "no!"}))
+        self.assertEqual(response.status_code, 404)
+
     def test_get(self):
         bucket = BucketFactory(user=self.user)
         video = VideoFactory(user=self.user, buckets=[bucket])
@@ -148,21 +152,54 @@ class BucketVideoApiTestCase(TestCase):
             ],
         })
 
-    def test_post_not_found(self):
+
+class BucketVideoViewApiTestCase(TestCase):
+    def setUp(self):
+        super(BucketVideoViewApiTestCase, self).setUp()
+        self.user = get_user_model().objects.create(username='1', email='test@example.com', is_active=True)
+        gae_login(self.user)
+
+    def tearDown(self):
+        gae_logout()
+        super(BucketVideoViewApiTestCase, self).tearDown()
+
+    def test_login_required(self):
+        gae_logout()
+        response = self.client.get(reverse("bucket-video-viewed-api", kwargs={"bucket": "123"}))
+        self.assertRedirects(response, "{}?next={}".format(reverse("djangae_login_redirect"),
+                             reverse("bucket-video-viewed-api",
+                                     kwargs={"bucket": "123"})), fetch_redirect_response=False)
+
+    def test_id_not_given(self):
         data = {}
-        response = self.client.post(reverse("bucket-video-api", kwargs={"bucket": "123"}), data=data)
+        response = self.client.post(reverse("bucket-video-viewed-api", kwargs={"bucket": "123"}), data=data)
         self.assertEqual(response.status_code, 404)
 
-    def test_post_bad_bucket_id(self):
+    def test_bad_bucket_id(self):
         video = VideoFactory(user=self.user)
         data = {"id": video.youtube_id}
-        response = self.client.post(reverse("bucket-video-api", kwargs={"bucket": "cannot be cast to int"}), data=data)
+        response = self.client.post(reverse("bucket-video-viewed-api",
+                                            kwargs={"bucket": "cannot be cast to int"}), data=data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_bucket_not_found(self):
+        video = VideoFactory(user=self.user)
+        data = {"id": video.youtube_id}
+        response = self.client.post(reverse("bucket-video-viewed-api",
+                                            kwargs={"bucket": "1"}), data=data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_video_not_found(self):
+        data = {"id": "12"}
+        response = self.client.post(reverse("bucket-video-viewed-api",
+                                            kwargs={"bucket": BucketFactory(user=self.user).pk}), data=data)
         self.assertEqual(response.status_code, 404)
 
     def test_post(self):
         video = VideoFactory(user=self.user, buckets=[BucketFactory(user=self.user)])
         data = {"id": video.youtube_id}
-        response = self.client.post(reverse("bucket-video-api", kwargs={"bucket": video.buckets.first().pk}), data=data)
+        response = self.client.post(reverse("bucket-video-viewed-api",
+                                            kwargs={"bucket": video.buckets.first().pk}), data=data)
         self.assertEqual(response.status_code, 200)
 
         video.refresh_from_db()
@@ -281,6 +318,54 @@ class SubscriptionVideoApiTestCase(TestCase):
                 },
             ],
         })
+
+
+class SubscriptionVideoViewApiTestCase(TestCase):
+    def setUp(self):
+        super(SubscriptionVideoViewApiTestCase, self).setUp()
+        self.user = get_user_model().objects.create(username='1', email='test@example.com', is_active=True)
+        gae_login(self.user)
+
+    def tearDown(self):
+        gae_logout()
+        super(SubscriptionVideoViewApiTestCase, self).tearDown()
+
+    def test_login_required(self):
+        gae_logout()
+        response = self.client.get(reverse("subscription-video-viewed-api", kwargs={"subscription": "123"}))
+        self.assertRedirects(response, "{}?next={}".format(reverse("djangae_login_redirect"),
+                             reverse("subscription-video-viewed-api",
+                                     kwargs={"subscription": "123"})), fetch_redirect_response=False)
+
+    def test_video_id_missing(self):
+        data = {}
+        response = self.client.post(reverse("subscription-video-viewed-api", kwargs={"subscription": "123"}), data=data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_bad_subscription_id(self):
+        video = VideoFactory(user=self.user)
+        data = {"id": video.youtube_id}
+        response = self.client.post(reverse("subscription-video-viewed-api",
+                                            kwargs={"subscription": SubscriptionFactory(user=self.user).pk}), data=data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_video_not_found(self):
+        data = {"id": "bluh"}
+        response = self.client.post(reverse("subscription-video-viewed-api",
+                                            kwargs={"subscription": "not an id"}), data=data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_post(self):
+        video = VideoFactory(user=self.user, subscription=SubscriptionFactory(user=self.user))
+        data = {"id": video.youtube_id}
+        response = self.client.post(reverse("subscription-video-viewed-api",
+                                            kwargs={"subscription": video.subscription_id}), data=data)
+        self.assertEqual(response.status_code, 200)
+
+        video.refresh_from_db()
+        video.subscription.refresh_from_db()
+        self.assertEqual(video.viewed, True)
+        self.assertEqual(video.subscription.last_watched_video, video.ordering_key)
 
 
 class QuerySetToJsonTestCase(TestCase):

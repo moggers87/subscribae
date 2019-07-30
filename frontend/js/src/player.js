@@ -40,6 +40,7 @@ function onYouTubeIframeAPIReady() {
 
         var apiUrl = $("#player").data("api-url");
         var csrfToken = $("#player").data("csrf");
+        var viewedApiUrl = $("#player").data("viewed-api-url");
 
         function fetchVideos(callback) {
             if (queueLocked) {
@@ -105,7 +106,7 @@ function onYouTubeIframeAPIReady() {
             }
 
             $.ajax({
-                url: apiUrl,
+                url: viewedApiUrl,
                 method: "POST",
                 data: {
                     id: queue[queueIndex].id,

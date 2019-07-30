@@ -38,7 +38,10 @@ describe("The player", function() {
                     <div id="player-box"
                         data-no-video-title="No more videos"
                         data-no-video-description="Sorry, looks like you've watched everything!">
-                        <div id="player" data-api-url="https://example.com/" data-csrf="a1b2c3"></div>
+                        <div id="player"
+                             data-api-url="https://example.com/videos"
+                             data-viewed-api-url="https://example.com/viewed"
+                             data-csrf="a1b2c3"></div>
                         <div id="playlist-box" style="height: 14px">
                             <div class="scroller" style="overflow-y: scroll">
                                 <div id="playlist" style="height: 14px"></div>
@@ -70,7 +73,7 @@ describe("The player", function() {
         it("should call the API", function() {
             onYouTubeIframeAPIReady();
             expect(window.jQuery.ajax.calls.count()).toBe(1);
-            expect(window.jQuery.ajax.calls.first().args[0].url).toBe("https://example.com/");
+            expect(window.jQuery.ajax.calls.first().args[0].url).toBe("https://example.com/videos");
             expect(typeof(window.jQuery.ajax.calls.first().args[0].success)).toBe("function");
         });
 
@@ -144,7 +147,7 @@ describe("The player", function() {
                     expect($(".current-video").text()).toBe("second");
                     expect($(".current-video").position().top).toBe($(".scroller").position().top);
                     expect(window.jQuery.ajax.calls.count()).toBe(3);
-                    expect(window.jQuery.ajax.calls.argsFor(2)[0].url).toBe("https://example.com/");
+                    expect(window.jQuery.ajax.calls.argsFor(2)[0].url).toBe("https://example.com/viewed");
                     expect(window.jQuery.ajax.calls.argsFor(2)[0].data).toEqual({id: '123', csrfmiddlewaretoken: "a1b2c3"});
                     expect(window.jQuery.ajax.calls.argsFor(2)[0].method).toBe("POST");
                 });
@@ -156,7 +159,7 @@ describe("The player", function() {
                     expect($(".current-video").text()).toBe("first");
                     expect($(".current-video").position().top).toBe($(".scroller").position().top);
                     expect(window.jQuery.ajax.calls.count()).toBe(4);
-                    expect(window.jQuery.ajax.calls.argsFor(3)[0].url).toBe("https://example.com/");
+                    expect(window.jQuery.ajax.calls.argsFor(3)[0].url).toBe("https://example.com/viewed");
                     expect(window.jQuery.ajax.calls.argsFor(3)[0].data).toEqual({id: '456', csrfmiddlewaretoken: "a1b2c3"});
                     expect(window.jQuery.ajax.calls.argsFor(3)[0].method).toBe("POST");
                 });
@@ -174,7 +177,7 @@ describe("The player", function() {
                     $(".controls .forward").click();
                     expect($(".current-video").text()).toBe("second");
                     expect(window.jQuery.ajax.calls.count()).toBe(3);
-                    expect(window.jQuery.ajax.calls.argsFor(2)[0].url).toBe("https://example.com/");
+                    expect(window.jQuery.ajax.calls.argsFor(2)[0].url).toBe("https://example.com/viewed");
                     expect(window.jQuery.ajax.calls.argsFor(2)[0].data).toEqual({id: '123', csrfmiddlewaretoken: "a1b2c3"});
                     expect(window.jQuery.ajax.calls.argsFor(2)[0].method).toBe("POST");
                 });
@@ -212,15 +215,15 @@ describe("The player", function() {
                 });
 
                 it("should try to fetch the next batch of videos and be ok with an empty set", function() {
-                    this.ajaxFunc({next: "https://example.com/?page=2", videos: []});
+                    this.ajaxFunc({next: "https://example.com/videos?page=2", videos: []});
                     this.playerEvents.onStateChange(this.fakeEvent);
                     expect(window.jQuery.ajax.calls.count()).toBe(3);
-                    expect(window.jQuery.ajax.calls.argsFor(1)[0].url).toBe("https://example.com/?page=2");
+                    expect(window.jQuery.ajax.calls.argsFor(1)[0].url).toBe("https://example.com/videos?page=2");
                     expect(typeof(window.jQuery.ajax.calls.argsFor(1)[0].success)).toBe("function");
                 });
 
                 it("should not try to fetch the next batch of videos if the queue if full enough", function() {
-                    this.ajaxFunc({next: "https://example.com/?page=2", videos: [
+                    this.ajaxFunc({next: "https://example.com/videos?page=2", videos: [
                         {id: 1, title: "title", description: "description", html_snippet: "<div></div>"},
                         {id: 2, title: "title", description: "description", html_snippet: "<div></div>"},
                         {id: 3, title: "title", description: "description", html_snippet: "<div></div>"},
@@ -230,7 +233,7 @@ describe("The player", function() {
                     this.playerEvents.onStateChange(this.fakeEvent);
                     // only one more call is made - to finished video
                     expect(window.jQuery.ajax.calls.count()).toBe(2);
-                    expect(window.jQuery.ajax.calls.argsFor(1)[0].url).toBe("https://example.com/?page=2");
+                    expect(window.jQuery.ajax.calls.argsFor(1)[0].url).toBe("https://example.com/viewed");
                     // this is technically wrong, but this.ajaxFunc is actually
                     // the wrong callback. If you can work out how to get the
                     // right callback then the next line should be comparing to
