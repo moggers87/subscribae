@@ -56,8 +56,14 @@ urlpatterns = (
     url(r'^logout', misc.logout, name='logout'),
 
     # api
-    url(r'^api/bucket/video/(?P<bucket>.+)$', api.bucket_video, name='bucket-video-api'),
-    url(r'^api/subscription/video/(?P<subscription>.+)$', api.subscription_video, name='subscription-video-api'),
+    url(r'^api/bucket/(?P<bucket>.+)/videos$',
+        api.bucket_video, name='bucket-video-api'),
+    url(r'^api/bucket/(?P<bucket>.+)/videos/viewed$',
+        api.bucket_video_viewed, name='bucket-video-viewed-api'),
+    url(r'^api/subscription/(?P<subscription>.+)/videos$',
+        api.subscription_video, name='subscription-video-api'),
+    url(r'^api/subscription/(?P<subscription>.+)/videos/viewed$',
+        api.subscription_video_viewed, name='subscription-video-viewed-api'),
 
     # crons
     url(r'^cron/update_subscriptions$', tasks.update_subscriptions_cron, name='update-subscriptions-cron'),

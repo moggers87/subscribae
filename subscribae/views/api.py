@@ -24,7 +24,7 @@ from django.http import Http404, JsonResponse
 from django.views.decorators.http import require_http_methods
 
 from subscribae.decorators import active_user
-from subscribae.models import Bucket, Video, create_composite_key
+from subscribae.models import Bucket, Subscription, Video, create_composite_key
 
 API_PAGE_SIZE = 10
 
@@ -81,7 +81,7 @@ def queryset_to_json(qs, ordering, property_map=None, before=None, after=None, s
 
 @login_required
 @active_user
-@require_http_methods(("GET", "POST"))
+@require_http_methods(("GET",))
 def bucket_video(request, bucket):
     """Video API for buckets
 
@@ -92,39 +92,55 @@ def bucket_video(request, bucket):
     except ValueError:
         raise Http404
 
-    qs = Video.objects.filter(user=request.user, buckets__contains=bucket_id)
+    qs = Video.objects.from_bucket(user=request.user, bucket=bucket_id)
 
-    if request.method == "POST":
-        with transaction.atomic(xg=True):
-            try:
-                key = create_composite_key(str(request.user.pk), request.POST["id"])
-                vid = qs.get(id=key)
+    videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP,
+                                           before=request.GET.get("before"),
+                                           after=request.GET.get("after"),
+                                           start=request.GET.get("start"),
+                                           end=request.GET.get("end"),
+                                           )
 
-                bucket_obj = Bucket.objects.get(id=bucket_id)
-            except (Bucket.DoesNotExist, Video.DoesNotExist, KeyError):
-                raise Http404
+    data = {"videos": videos}
 
-            bucket_obj.last_watched_video = vid.ordering_key
-            bucket_obj.save()
+    if len(videos) > 0:
+        next_url = "{}?after={}".format(reverse("bucket-video-api", kwargs={"bucket": bucket_id}), last)
+        data["next"] = next_url
 
-            vid.viewed = True
-            vid.save()
-        return JsonResponse({})
-    else:
-        videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP,
-                                               before=request.GET.get("before"),
-                                               after=request.GET.get("after"),
-                                               start=request.GET.get("start"),
-                                               end=request.GET.get("end"),
-                                               )
+    return JsonResponse(data)
 
-        data = {"videos": videos}
 
-        if len(videos) > 0:
-            next_url = "{}?after={}".format(reverse("bucket-video-api", kwargs={"bucket": bucket_id}), last)
-            data["next"] = next_url
+@login_required
+@active_user
+@require_http_methods(("POST",))
+def bucket_video_viewed(request, bucket):
+    try:
+        bucket_id = int(bucket)
+    except ValueError:
+        raise Http404
 
-        return JsonResponse(data)
+    try:
+        key = create_composite_key(str(request.user.pk), request.POST["id"])
+    except KeyError:
+        raise Http404
+
+    with transaction.atomic(xg=True):
+        try:
+            bucket_obj = Bucket.objects.get(id=bucket_id)
+        except Bucket.DoesNotExist:
+            raise Http404
+
+        try:
+            vid = Video.objects.from_bucket(user=request.user, bucket=bucket_id).get(id=key)
+        except Video.DoesNotExist:
+            raise Http404
+
+        bucket_obj.last_watched_video = vid.ordering_key
+        bucket_obj.save()
+
+        vid.viewed = True
+        vid.save()
+    return JsonResponse({})
 
 
 @login_required
@@ -132,7 +148,7 @@ def bucket_video(request, bucket):
 @require_http_methods(("GET",))
 def subscription_video(request, subscription):
     """Video API for subscriptions"""
-    qs = Video.objects.filter(user=request.user, subscription_id=subscription)
+    qs = Video.objects.from_subscription(user=request.user, subscription=subscription)
 
     videos, first, last = queryset_to_json(qs, "ordering_key", VIDEO_API_MAP,
                                            before=request.GET.get("before"),
@@ -148,3 +164,31 @@ def subscription_video(request, subscription):
         data["next"] = next_url
 
     return JsonResponse(data)
+
+
+@login_required
+@active_user
+@require_http_methods(("POST",))
+def subscription_video_viewed(request, subscription):
+    try:
+        key = create_composite_key(str(request.user.pk), request.POST["id"])
+    except KeyError:
+        raise Http404
+
+    with transaction.atomic(xg=True):
+        try:
+            subscription_obj = Subscription.objects.get(id=subscription)
+        except Subscription.DoesNotExist:
+            raise Http404
+
+        try:
+            vid = Video.objects.from_subscription(user=request.user, subscription=subscription).get(id=key)
+        except Video.DoesNotExist:
+            raise Http404
+
+        subscription_obj.last_watched_video = vid.ordering_key
+        subscription_obj.save()
+
+        vid.viewed = True
+        vid.save()
+    return JsonResponse({})

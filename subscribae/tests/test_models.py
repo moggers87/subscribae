@@ -23,7 +23,7 @@ from djangae.test import TestCase
 from pytz import UTC
 
 from subscribae.models import Bucket, SiteConfig, Subscription, Video, create_composite_key
-from subscribae.tests.utils import BucketFactory, SubscriptionFactory, VideoFactory
+from subscribae.tests.utils import BucketFactory, SubscriptionFactory, UserFactory, VideoFactory
 
 
 class ModelTestCase(TestCase):
@@ -85,3 +85,29 @@ class ModelTestCase(TestCase):
 
         output = conf.render_footer()
         self.assertEqual(output, "cool.example.com")
+
+    def test_video_from_subscription(self):
+        user = UserFactory()
+        sub1 = SubscriptionFactory(user=user, title="test1")
+        sub2 = SubscriptionFactory(user=user, title="test2")
+        video = VideoFactory(user=user, subscription=sub2)
+
+        videos1 = Video.objects.from_subscription(user=user, subscription=sub1)
+        videos2 = Video.objects.from_subscription(user=user, subscription=sub2)
+
+        self.assertEqual(len(videos1), 0)
+        self.assertEqual(len(videos2), 1)
+        self.assertEqual(videos2[0], video)
+
+    def test_video_from_bucket(self):
+        user = UserFactory()
+        bucket1 = BucketFactory(user=user, title="test1")
+        bucket2 = BucketFactory(user=user, title="test2")
+        video = VideoFactory(user=user, buckets=[bucket2])
+
+        videos1 = Video.objects.from_bucket(user=user, bucket=bucket1)
+        videos2 = Video.objects.from_bucket(user=user, bucket=bucket2)
+
+        self.assertEqual(len(videos1), 0)
+        self.assertEqual(len(videos2), 1)
+        self.assertEqual(videos2[0], video)
