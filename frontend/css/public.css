@@ -3,7 +3,7 @@
 @import '/_variables.css';
 
 @import './modules/bucket.css';
-@import './modules/expanding-scroll.css';
+@import './modules/expander.css';
 @import './modules/footer.css';
 @import './modules/forms.css';
 @import './modules/home.css';
