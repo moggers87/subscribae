@@ -72,5 +72,12 @@
 
     --spinner-width: 0.5rem;
     --spinner-speed: 1s;
+
+    /* 4 lines high */
+    --video-item-height: calc(var(--line-height-m) * 4rem);
+    /* 3 lines high */
+    --video-item-title: calc(var(--line-height-m) * 3rem);
+    /* 10 videos */
+    --videos-height: calc(var(--video-item-height) * 10);
 }
 
