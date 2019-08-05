@@ -5,3 +5,19 @@
     }
 }
 
+.x-scroll {
+    & .scroller {
+        overflow-x: scroll;
+        white-space: nowrap;
+    }
+}
+
+.invisible-scroll {
+    /* Firefox and good browsers */
+    scrollbar-width: none;
+
+    /* webkit and bad browsers */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}

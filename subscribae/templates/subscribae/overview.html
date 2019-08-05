@@ -21,19 +21,21 @@
     </form>
 </div>
 <div class="bucket-list padding-vertical-xs">
-    <div class="x-scroll flex flex-row flex-1-0-auto">
-        {% for bucket in bucket_list %}
-        <div class="bucket border border-color-secondary border-radius margin-right-xs">
-            <div class="title font-weight-semibold padding-vertical-xs">
-                <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
+    <div class="x-scroll">
+        <div class="scroller invisible-scroll flex flex-row flex-1-0-auto">
+            {% for bucket in bucket_list %}
+            <div class="bucket border border-color-secondary border-radius margin-right-xs">
+                <div class="title font-weight-semibold padding-vertical-xs">
+                    <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
+                </div>
+                <div class="videos padding-xs"
+                     data-bucket-url="{% url "bucket" bucket=bucket.pk %}"
+                     data-api-url="{% url "bucket-video-api" bucket=bucket.pk %}{% if bucket.last_watched_video %}?after={{ bucket.last_watched_video }}{% endif %}">
+                    <div class="spinner spinner-xxl padding-xxl"></div>
+                </div>
             </div>
-            <div class="videos padding-xs"
-                 data-bucket-url="{% url "bucket" bucket=bucket.pk %}"
-                 data-api-url="{% url "bucket-video-api" bucket=bucket.pk %}{% if bucket.last_watched_video %}?after={{ bucket.last_watched_video }}{% endif %}">
-                <div class="spinner spinner-xxl padding-xxl"></div>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %}
