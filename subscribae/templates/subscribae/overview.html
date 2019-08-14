@@ -22,6 +22,10 @@
 </div>
 <div class="bucket-list padding-vertical-xs">
     <div class="x-scroll">
+        <div class="padding-bottom-xs flex-justify flex-nowrap">
+            <div class="button button-secondary scroll-left">{% include "subscribae/includes/arrow.svg" %}</div>
+            <div class="button button-secondary scroll-right">{% include "subscribae/includes/arrow.svg" %}</div>
+        </div>
         <div class="scroller invisible-scroll flex flex-row flex-1-0-auto">
             {% for bucket in bucket_list %}
             <div class="bucket border border-color-secondary border-radius margin-right-xs">
