@@ -28,7 +28,7 @@
         </div>
         <div class="scroller invisible-scroll flex flex-row flex-1-0-auto">
             {% for bucket in bucket_list %}
-            <div class="bucket border border-color-secondary border-radius margin-right-xs">
+            <div class="item bucket border border-color-secondary border-radius margin-right-xs">
                 <div class="title font-weight-semibold padding-vertical-xs">
                     <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
                 </div>
