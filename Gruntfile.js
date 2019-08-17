@@ -11,6 +11,9 @@ module.exports = function(grunt) {
             build: ["<%= dirs.build %>"],
         },
         concat: {
+            options: {
+                sourceMap: true
+            },
             dist: {
                 src: ["<%= dirs.thirdparty %>/jquery/dist/jquery.js", "<%= dirs.js %>/src/*.js"],
                 dest: "<%= dirs.build %>/src/website.js",
@@ -21,6 +24,12 @@ module.exports = function(grunt) {
             options: {
                 mangle: true,
                 compress: true,
+                sourceMap: {
+                    includeSources: true
+                },
+                sourceMapIn: function(path) {
+                    return path + ".map";
+                },
                 output: {
                     comments: /^!/
                 }
@@ -33,6 +42,10 @@ module.exports = function(grunt) {
         postcss: {
             options: {
                 failOnError: true,
+                map: {
+                    inline: false,
+                    sourcesContent: true
+                },
                 processors: [
                     require("postcss-import"),
                     require('postcss-preset-env')({
