@@ -27,15 +27,28 @@
         min-width: 25%;
         max-width: 25%;
     }
+
+    & .videos {
+        min-height: var(--videos-height);
+        overflow: hidden;
+    }
 }
 
 .videos {
+    & a {
+        text-decoration: none;
+    }
+
+    & .video-item {
+        height: var(--video-item-height);
+    }
+
     & .title {
         white-space: normal;
         hyphens: auto;
         overflow: hidden;
-        text-overflow: ellipsis;
         margin: 0;
+        max-height: var(--video-item-title);
     }
 
     & img {

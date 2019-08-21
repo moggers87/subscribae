@@ -48,6 +48,6 @@
     };
 
     $(function() {
-        $(".x-scroll").subscribaeExpando();
+        $(".expander").subscribaeExpando();
     });
 })(jQuery);

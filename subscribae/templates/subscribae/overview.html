@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-<div class="subscription-list x-scroll padding-vertical-xs flex flex-row"
+<div class="subscription-list expander padding-vertical-xs flex flex-row"
      data-more="{% trans "Show more" %}" data-less="{% trans "Show less" %}">
     <div class="scroller">
         {% for subscription in subscription_list %}
@@ -21,19 +21,25 @@
     </form>
 </div>
 <div class="bucket-list padding-vertical-xs">
-    <div class="x-scroll flex flex-row flex-1-0-auto">
-        {% for bucket in bucket_list %}
-        <div class="bucket border border-color-secondary border-radius margin-right-xs">
-            <div class="title font-weight-semibold padding-vertical-xs">
-                <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
-            </div>
-            <div class="videos padding-xs"
-                 data-bucket-url="{% url "bucket" bucket=bucket.pk %}"
-                 data-api-url="{% url "bucket-video-api" bucket=bucket.pk %}{% if bucket.last_watched_video %}?after={{ bucket.last_watched_video }}{% endif %}">
-                <div class="spinner spinner-xxl padding-xxl"></div>
-            </div>
+    <div class="x-scroll">
+        <div class="padding-bottom-xs flex-justify flex-nowrap">
+            <div class="button button-secondary scroll-left">{% include "subscribae/includes/arrow.svg" %}</div>
+            <div class="button button-secondary scroll-right">{% include "subscribae/includes/arrow.svg" %}</div>
         </div>
-        {% endfor %}
+        <div class="scroller invisible-scroll flex flex-row flex-1-0-auto">
+            {% for bucket in bucket_list %}
+            <div class="item bucket border border-color-secondary border-radius margin-right-xs">
+                <div class="title font-weight-semibold padding-vertical-xs">
+                    <a href="{% url "bucket" bucket=bucket.pk %}">{{ bucket.title }}</a>
+                </div>
+                <div class="videos padding-xs"
+                     data-bucket-url="{% url "bucket" bucket=bucket.pk %}"
+                     data-api-url="{% url "bucket-video-api" bucket=bucket.pk %}{% if bucket.last_watched_video %}?after={{ bucket.last_watched_video }}{% endif %}">
+                    <div class="spinner spinner-xxl padding-xxl"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}

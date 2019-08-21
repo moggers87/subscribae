@@ -20,14 +20,14 @@ describe("The Expando plugin", function() {
     beforeEach(function() {
         this.html = $(`
             <div id="fixture">
-                <div class="x-scroll">
+                <div class="expander">
                     <div class="scroller"></div>
                     <div class="more"><button>Show more</button></div>
                 </div>
             </div>
         `);
         $("html").append(this.html);
-        this.html.find(".x-scroll").subscribaeExpando();
+        this.html.find(".expander").subscribaeExpando();
     });
 
     afterEach(function() {
@@ -39,16 +39,16 @@ describe("The Expando plugin", function() {
     });
 
 
-    it("should apply the expando class when clicked", function() {
-        expect($(".x-scroll").attr("class")).toBe("x-scroll");
+    it("should apply the expander class when clicked", function() {
+        expect($(".expander").attr("class")).toBe("expander");
         $(".more button").click();
-        expect($(".x-scroll").attr("class")).toBe("x-scroll expanded");
+        expect($(".expander").attr("class")).toBe("expander expanded");
     });
 
-    it("should remove the expando class when clicked", function() {
-        expect($(".x-scroll").attr("class")).toBe("x-scroll");
+    it("should remove the expander class when clicked", function() {
+        expect($(".expander").attr("class")).toBe("expander");
         $(".more button").click();
         $(".more button").click();
-        expect($(".x-scroll").attr("class")).toBe("x-scroll");
+        expect($(".expander").attr("class")).toBe("expander");
     });
 });
