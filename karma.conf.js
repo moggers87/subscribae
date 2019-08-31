@@ -22,6 +22,9 @@ module.exports = function(config) {
         },
         reporters: ['progress', 'coverage'],
         coverageReporter: {
+            instrumenterOptions: {
+                istanbul: { noCompact: true }
+            },
             reporters: [
                 {
                     type: 'lcov',
