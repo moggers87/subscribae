@@ -61,6 +61,13 @@ indexes:
 
 - kind: subscribae_video
   properties:
+  - name: buckets_ids
+  - name: user_id
+  - name: ordering_key
+    direction: desc
+
+- kind: subscribae_video
+  properties:
   - name: subscription_id
   - name: ordering_key
 

@@ -39,12 +39,16 @@ describe("The player", function() {
                         data-no-video-title="No more videos"
                         data-no-video-description="Sorry, looks like you've watched everything!">
                         <div id="player"
-                             data-api-url="https://example.com/videos"
+                             data-api-url="https://example.com/videos?start=12"
                              data-viewed-api-url="https://example.com/viewed"
                              data-csrf="a1b2c3"></div>
                         <div id="playlist-box" style="height: 14px">
                             <div class="scroller" style="overflow-y: scroll">
-                                <div id="playlist" style="height: 14px"></div>
+                                <div class="playlist-container" style="height: 14px">
+                                    <div class="back"><span class="screen-reader">{% trans "Load older videos" %}</span></div>
+                                    <div id="playlist"></div>
+                                    <div class="forward"><span class="screen-reader">{% trans "Load newer videos" %}</span></div>
+                                </div>
                             </div>
                         </div>
                         <div id="details-box">
@@ -73,11 +77,11 @@ describe("The player", function() {
         it("should call the API", function() {
             onYouTubeIframeAPIReady();
             expect(window.jQuery.ajax.calls.count()).toBe(1);
-            expect(window.jQuery.ajax.calls.first().args[0].url).toBe("https://example.com/videos");
+            expect(window.jQuery.ajax.calls.first().args[0].url).toBe("https://example.com/videos?start=12");
             expect(typeof(window.jQuery.ajax.calls.first().args[0].success)).toBe("function");
         });
 
-        describe("the data has been fetched", function() {
+        describe("and the data has been fetched", function() {
             beforeEach(function() {
                 onYouTubeIframeAPIReady();
                 this.ajaxFunc = window.jQuery.ajax.calls.first().args[0].success;
@@ -126,8 +130,8 @@ describe("The player", function() {
             describe("and the queue is populated", function() {
                 beforeEach(function() {
                     this.ajaxFunc({"videos": [
-                        {id: "123", title: "first", description: "first", html_snippet: "<div>first</div>"},
-                        {id: "456", title: "second", description: "second", html_snippet: "<div>second</div>"},
+                        {id: "123", title: "first", description: "first", html_snippet: "<div>first</div>", ordering_key: "1"},
+                        {id: "456", title: "second", description: "second", html_snippet: "<div>second</div>", ordering_key: "2"},
                     ]});
                     var playerStateEnd = 123;
                     this.fakeEvent = {data: playerStateEnd, target: {
@@ -218,7 +222,7 @@ describe("The player", function() {
                     this.ajaxFunc({next: "https://example.com/videos?page=2", videos: []});
                     this.playerEvents.onStateChange(this.fakeEvent);
                     expect(window.jQuery.ajax.calls.count()).toBe(3);
-                    expect(window.jQuery.ajax.calls.argsFor(1)[0].url).toBe("https://example.com/videos?page=2");
+                    expect(window.jQuery.ajax.calls.argsFor(1)[0].url).toBe("https://example.com/videos?after=2");
                     expect(typeof(window.jQuery.ajax.calls.argsFor(1)[0].success)).toBe("function");
                 });
 
@@ -240,6 +244,70 @@ describe("The player", function() {
                     // '123', not '456'
                     expect(window.jQuery.ajax.calls.argsFor(1)[0].data).toEqual({id: '456', csrfmiddlewaretoken: "a1b2c3"});
                     expect(window.jQuery.ajax.calls.argsFor(1)[0].method).toBe("POST");
+                });
+
+                describe("and the user has manually requested more videos", function() {
+                    it("should add videos to the end of the queue", function() {
+                        $("#playlist-box .forward").click();
+                        expect(window.jQuery.ajax.calls.count()).toBe(2);
+                        expect(window.jQuery.ajax.calls.argsFor(1)[0].url).toBe("https://example.com/videos?after=2");
+                        expect(typeof(window.jQuery.ajax.calls.argsFor(1)[0].success)).toBe("function");
+                        var ajaxFunc = window.jQuery.ajax.calls.argsFor(1)[0].success;
+                        ajaxFunc({"videos": [
+                            {id: "789", title: "third", description: "third", html_snippet: "<div>third</div>", ordering_key: "3"},
+                            {id: "abc", title: "forth", description: "forth", html_snippet: "<div>forth</div>", ordering_key: "4"},
+                        ]});
+                        expect($("#playlist").children().length).toBe(4);
+                        expect($("#playlist").children()[2].textContent).toEqual("third");
+                        expect($("#playlist").children()[3].textContent).toEqual("forth");
+                    });
+
+                    it("should add videos to the begining of the queue", function() {
+                        $("#playlist-box .back").click();
+                        expect(window.jQuery.ajax.calls.count()).toBe(2);
+                        expect(window.jQuery.ajax.calls.argsFor(1)[0].url).toBe("https://example.com/videos?before=1");
+                        expect(typeof(window.jQuery.ajax.calls.argsFor(1)[0].success)).toBe("function");
+                        var ajaxFunc = window.jQuery.ajax.calls.argsFor(1)[0].success;
+                        ajaxFunc({"videos": [
+                            {id: "789", title: "third", description: "third", html_snippet: "<div>third</div>", ordering_key: "3"},
+                            {id: "abc", title: "forth", description: "forth", html_snippet: "<div>forth</div>", ordering_key: "4"},
+                        ]});
+                        expect($("#playlist").children().length).toBe(4);
+                        expect($("#playlist").children()[0].textContent).toEqual("third");
+                        expect($("#playlist").children()[1].textContent).toEqual("forth");
+                    });
+
+                    it("should not error if the api returns no results", function() {
+                        var ajaxFunc;
+                        // forwards
+                        $("#playlist-box .forward").click();
+                        expect(window.jQuery.ajax.calls.count()).toBe(2);
+                        expect(window.jQuery.ajax.calls.argsFor(1)[0].url).toBe("https://example.com/videos?after=2");
+                        expect(typeof(window.jQuery.ajax.calls.argsFor(1)[0].success)).toBe("function");
+                        ajaxFunc = window.jQuery.ajax.calls.argsFor(1)[0].success;
+                        ajaxFunc({"videos": [
+                            {id: "789", title: "third", description: "third", html_snippet: "<div>third</div>", ordering_key: "3"},
+                            {id: "abc", title: "forth", description: "forth", html_snippet: "<div>forth</div>", ordering_key: "4"},
+                        ]});
+                        expect($("#playlist").children().length).toBe(4);
+                        expect($("#playlist").children()[2].textContent).toEqual("third");
+                        expect($("#playlist").children()[3].textContent).toEqual("forth");
+
+                        // backwards
+                        $("#playlist-box .back").click();
+                        expect(window.jQuery.ajax.calls.count()).toBe(3);
+                        expect(window.jQuery.ajax.calls.argsFor(2)[0].url).toBe("https://example.com/videos?before=1");
+                        expect(typeof(window.jQuery.ajax.calls.argsFor(2)[0].success)).toBe("function");
+                        ajaxFunc = window.jQuery.ajax.calls.argsFor(2)[0].success;
+                        ajaxFunc({"videos": [
+                            {id: "789", title: "fifth", description: "fifth", html_snippet: "<div>fifth</div>", ordering_key: "3"},
+                            {id: "abc", title: "sixth", description: "sixth", html_snippet: "<div>sixth</div>", ordering_key: "4"},
+                        ]});
+
+                        expect($("#playlist").children().length).toBe(6);
+                        expect($("#playlist").children()[0].textContent).toEqual("fifth");
+                        expect($("#playlist").children()[1].textContent).toEqual("sixth");
+                    });
                 });
             });
         });

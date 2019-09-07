@@ -17,6 +17,11 @@
 
 #playlist-box {
     width: 40%;
+
+    & .back, & .forward {
+        min-height: var(--button-height);
+        width: 100%;
+    }
 }
 
 #details-box {
@@ -31,7 +36,7 @@
     min-height: var(--playlist-height);
 }
 
-#playlist {
+.playlist-container {
     max-height: var(--playlist-height);
 }
 

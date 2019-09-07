@@ -42,28 +42,14 @@
     function SubscribaePlayer(yt, playerElement, addVideosToPlaylist, setTitleAndDescription) {
         var player;
         var queue = new Queue();
-        var apiUrl = playerElement.data("api-url");
         var csrfToken = playerElement.data("csrf");
         var viewedApiUrl = playerElement.data("viewed-api-url");
 
+        var apiUrl = playerElement.data("api-url").split("?");
+        var baseApiUrl = apiUrl[0];
+        var defaultArgs = apiUrl[1];
+
         /* methods */
-
-        function fetchVideos(callback) {
-            if (queue.semaphore) {
-                return;
-            }
-
-            queue.semaphore = true;
-
-            $.ajax({
-                url: apiUrl,
-                success: function(data, textStatus, jqXHR) {
-                    apiUrl = data.next ? data.next : apiUrl;
-                    callback(data.videos);
-                    queue.semaphore = false;
-                }
-            });
-        }
 
         function changeVideo(reverse) {
             var video;
@@ -87,11 +73,54 @@
             player.playVideo();
         }
 
-        function addVideosToQueue(videos) {
-            Array.prototype.push.apply(queue.queue, videos);
+        function loadMore(reverse) {
+            fetchVideos(addVideosToQueue, reverse);
+        }
+
+        function fetchVideos(callback, back, initial) {
+            var apiUrl;
+
+            if (queue.semaphore) {
+                return;
+            }
+
+            queue.semaphore = true;
+
+            if (initial === undefined) {
+                apiUrl = generateUrl(back);
+            } else {
+                apiUrl = baseApiUrl + "?" + defaultArgs;
+            }
+
+            $.ajax({
+                url: apiUrl,
+                success: function(data, textStatus, jqXHR) {
+                    callback(data.videos, back);
+                    queue.semaphore = false;
+                }
+            });
+        }
+
+        function generateUrl(back) {
+            if (queue.index < 0) {
+                return baseApiUrl;
+            } else if (back === undefined) {
+                return baseApiUrl + "?after=" + queue.queue[queue.queue.length - 1].ordering_key;
+            } else {
+                return baseApiUrl + "?before=" + queue.queue[0].ordering_key;
+            }
+
+        }
+
+        function addVideosToQueue(videos, prepend) {
+            if (prepend === undefined) {
+                Array.prototype.push.apply(queue.queue, videos);
+            } else {
+                Array.prototype.unshift.apply(queue.queue, videos);
+            }
             addVideosToPlaylist(videos.map(function(vid) {
                 return vid.html_snippet;
-            }));
+            }), prepend);
         }
 
         function checkQueueAndFetchMoreVideos() {
@@ -150,8 +179,8 @@
         }
 
         /* export public methods and properties */
-        this.fetchVideos = fetchVideos;
         this.changeVideo = changeVideo;
+        this.loadMore = loadMore;
         this.queue = queue;
 
         /* initialise player and populate queue */
@@ -174,7 +203,7 @@
             } else {
                 setTitleAndDescription();
             }
-        });
+        }, undefined, true);
     }
 
 
@@ -192,6 +221,7 @@
         var $titleObj = $("#details-box .title");
         var $descObj = $("#details-box .description");
         var $playlistObj = $("#playlist");
+        var $playlistBoxObj = $("#playlist-box");
         var $playlistObjScroller = $("#playlist-box .scroller");
 
         var $playerBox = $("#player-box");
@@ -200,12 +230,20 @@
 
         // controls
 
-        $("#player-box .controls .back").on("click", function() {
+        $playerBox.find(".controls .back").on("click", function() {
             player.changeVideo(true);
         });
 
-        $("#player-box .controls .forward").on("click", function() {
+        $playerBox.find(".controls .forward").on("click", function() {
             player.changeVideo();
+        });
+
+        $playlistBoxObj.find(".back").on("click", function() {
+            player.loadMore(true);
+        });
+
+        $playlistBoxObj.find(".forward").on("click", function() {
+            player.loadMore();
         });
 
         function setTitleAndDescription(video) {
@@ -227,7 +265,15 @@
             }
         }
 
-        player = new SubscribaePlayer(yt, $this, function(videos) {$playlistObj.append(videos);}, setTitleAndDescription);
+        function addToPlaylist(videos, prepend) {
+            if (prepend === undefined) {
+                $playlistObj.append(videos);
+            } else {
+                $playlistObj.prepend(videos);
+            }
+        }
+
+        player = new SubscribaePlayer(yt, $this, addToPlaylist, setTitleAndDescription);
         return $this;
     };
 })(jQuery);
