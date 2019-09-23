@@ -18,90 +18,125 @@
 */
 
 
-function onYouTubeIframeAPIReady() {
+(function($) {
     'use strict';
-    (function($, yt) {
+
+    function Queue() {
         var QUEUE_IS_SMALL = 5;
 
+        this.queue = [];
+        this.index = -1;
+        this.semaphore = false;
+
+        Object.defineProperty(this, "length", {
+            get: function() {
+                return this.queue.length;
+            }
+        });
+
+        this.isSmall = function() {
+            return (this.queue.length - this.index) < QUEUE_IS_SMALL;
+        };
+    }
+
+    function SubscribaePlayer(yt, playerElement, addVideosToPlaylist, setTitleAndDescription) {
         var player;
-        var queue = [];
-        var queueIndex = -1;
-        var $titleObj = $("#details-box .title");
-        var $descObj = $("#details-box .description");
-        var $playlistObj = $("#playlist");
-        var $playlistObjScroller = $("#playlist-box .scroller");
-        var queueLocked = false;
+        var queue = new Queue();
+        var csrfToken = playerElement.data("csrf");
+        var viewedApiUrl = playerElement.data("viewed-api-url");
 
-        var $playerBox = $("#player-box");
-        var noVideoTitle = $playerBox.data("no-video-title");
-        var noVideoDescription = $playerBox.data("no-video-description");
-        var $previousButton = $(".controls .back");
-        var $nextButton = $(".controls .forward");
+        var apiUrl = playerElement.data("api-url").split("?");
+        var baseApiUrl = apiUrl[0];
+        var defaultArgs = apiUrl[1];
 
-        var apiUrl = $("#player").data("api-url");
-        var csrfToken = $("#player").data("csrf");
-        var viewedApiUrl = $("#player").data("viewed-api-url");
+        /* methods */
 
-        function fetchVideos(callback) {
-            if (queueLocked) {
+        function changeVideo(reverse) {
+            var video;
+
+            if (reverse === undefined && (queue.index >= (queue.length - 1))) {
+                // last item, we can go no further forward
+                return;
+            } else if (reverse !== undefined && queue.index === 0) {
+                // first item, we can go no further back
                 return;
             }
 
-            queueLocked = true;
+            player.pauseVideo();
+
+            checkQueueAndFetchMoreVideos();
+            finishedVideo();
+
+            video = popVideo(reverse);
+            player.cueVideoById(video.id);
+            setTitleAndDescription(video);
+            player.playVideo();
+        }
+
+        function loadMore(reverse) {
+            fetchVideos(addVideosToQueue, reverse);
+        }
+
+        function fetchVideos(callback, back, initial) {
+            var apiUrl;
+
+            if (queue.semaphore) {
+                return;
+            }
+
+            queue.semaphore = true;
+
+            if (initial === undefined) {
+                apiUrl = generateUrl(back);
+            } else {
+                apiUrl = baseApiUrl + "?" + defaultArgs;
+            }
 
             $.ajax({
                 url: apiUrl,
                 success: function(data, textStatus, jqXHR) {
-                    apiUrl = data.next ? data.next : apiUrl;
-                    callback(data.videos);
-                    queueLocked = false;
+                    callback(data.videos, back);
+                    queue.semaphore = false;
                 }
             });
         }
 
-        function addVideos(videos) {
-            Array.prototype.push.apply(queue, videos);
-            $playlistObj.append(videos.map(function(vid) {
-                return vid.html_snippet;
-            }));
-
-        }
-
-        function popVideo(reverse) {
-            var index;
-
-            if (reverse === undefined) {
-                index = ++queueIndex;
+        function generateUrl(back) {
+            if (queue.index < 0) {
+                return baseApiUrl;
+            } else if (back === undefined) {
+                return baseApiUrl + "?after=" + queue.queue[queue.queue.length - 1].ordering_key;
             } else {
-                index = --queueIndex;
+                return baseApiUrl + "?before=" + queue.queue[0].ordering_key;
             }
 
-            return queue[index];
         }
 
-        function setMeta(video) {
-            var $queueItem;
-            var childTh = queueIndex + 1;
-
-            $titleObj.text(video.title);
-            $descObj.text(video.description);
-            $playlistObj.children("div").removeClass("current-video");
-            $queueItem = $playlistObj.children("div:nth-child(" + childTh + ")").addClass("current-video");
-
-            $playlistObjScroller.scrollTop($playlistObjScroller.scrollTop() + ($queueItem.position().top - $playlistObjScroller.position().top));
-
+        function addVideosToQueue(videos, prepend) {
+            if (prepend === undefined) {
+                Array.prototype.push.apply(queue.queue, videos);
+            } else {
+                Array.prototype.unshift.apply(queue.queue, videos);
+            }
+            addVideosToPlaylist(videos.map(function(vid) {
+                return vid.html_snippet;
+            }), prepend);
         }
 
-        function noVideo() {
-            $titleObj.text(noVideoTitle);
-            $descObj.text(noVideoDescription);
+        function checkQueueAndFetchMoreVideos() {
+            if (queue.isSmall()) {
+                // TODO: there's a chance that this will populate the queue
+                // after popVideo has run and returned undef. We should
+                // probably try and recover from that state.
+                fetchVideos(addVideosToQueue);
+            }
         }
 
         function finishedVideo() {
             // TODO make this a service worker that can run even if the user
             // navigates away from the page
-            if (queueIndex < 0 || queueIndex >= queue.length) {
-                console.error("queueIndex out of range: " + queueIndex);
+            if (queue.index < 0 || queue.index >= queue.length) {
+                console.error("queueIndex out of range: " + queue.index);
                 return;
             }
 
@@ -109,19 +144,22 @@ function onYouTubeIframeAPIReady() {
                 url: viewedApiUrl,
                 method: "POST",
                 data: {
-                    id: queue[queueIndex].id,
+                    id: queue.queue[queue.index].id,
                     csrfmiddlewaretoken: csrfToken
                 }
             });
         }
 
-        function checkQueueAndFetchMoreVideos() {
-            if ((queue.length - queueIndex) < QUEUE_IS_SMALL) {
-                // TODO: there's a chance that this will populate the queue
-                // after popVideo has run and returned undef. We should
-                // probably try and recover from that state.
-                fetchVideos(addVideos);
+        function popVideo(reverse) {
+            var index;
+
+            if (reverse === undefined) {
+                index = ++queue.index;
+            } else {
+                index = --queue.index;
             }
+
+            return queue.queue[index];
         }
 
         function onPlayerState(event) {
@@ -132,61 +170,116 @@ function onYouTubeIframeAPIReady() {
                 var video = popVideo();
                 if (video !== undefined) {
                     event.target.cueVideoById({videoId: video.id});
-                    setMeta(video);
+                    setTitleAndDescription(video);
                     event.target.playVideo();
                 } else {
-                    noVideo();
+                    setTitleAndDescription();
                 }
             }
         }
 
-        // controls
+        /* export public methods and properties */
+        this.changeVideo = changeVideo;
+        this.loadMore = loadMore;
+        this.queue = queue;
 
-        function changeVideo(reverse) {
-            var video;
-
-            player.pauseVideo();
-
-            checkQueueAndFetchMoreVideos();
-            finishedVideo();
-
-            video = popVideo(reverse);
-            player.cueVideoById(video.id);
-            setMeta(video);
-            player.playVideo();
-        }
-
-        $previousButton.click(function() {
-            if (queueIndex !== 0) {
-                changeVideo(true);
-            }
-        });
-
-        $nextButton.click(function() {
-            if (queueIndex < (queue.length - 1)) {
-                changeVideo();
-            }
-        });
-
+        /* initialise player and populate queue */
         fetchVideos(function(data) {
             var video;
 
-            addVideos(data);
+            addVideosToQueue(data);
 
             video = popVideo();
 
             if (video !== undefined) {
-                setMeta(video);
+                setTitleAndDescription(video);
                 // player bugs out if we don't provide it with an initial video
-                player = new yt.Player('player', {
+                player = new yt.Player(playerElement[0], {
                     videoId: video.id,
                     events: {
                         "onStateChange": onPlayerState
                     }
                 });
             } else {
-                noVideo();
+                setTitleAndDescription();
             }
+        }, undefined, true);
+    }
+
+
+    $.fn.youtube = function(yt) {
+        var $this = this;
+
+        if ($this.length > 1) {
+            throw new Error("This function can only be used on a single element.");
+        } else if ($this.length === 0) {
+            return $this;
+        }
+
+        var player;
+
+        var $titleObj = $("#details-box .title");
+        var $descObj = $("#details-box .description");
+        var $playlistObj = $("#playlist");
+        var $playlistBoxObj = $("#playlist-box");
+        var $playlistObjScroller = $("#playlist-box .scroller");
+
+        var $playerBox = $("#player-box");
+        var noVideoTitle = $playerBox.data("no-video-title");
+        var noVideoDescription = $playerBox.data("no-video-description");
+
+        // controls
+
+        $playerBox.find(".controls .back").on("click", function() {
+            player.changeVideo(true);
         });
-    })(jQuery, YT);
+
+        $playerBox.find(".controls .forward").on("click", function() {
+            player.changeVideo();
+        });
+
+        $playlistBoxObj.find(".back").on("click", function() {
+            player.loadMore(true);
+        });
+
+        $playlistBoxObj.find(".forward").on("click", function() {
+            player.loadMore();
+        });
+
+        function setTitleAndDescription(video) {
+            var $queueItem;
+            var childTh = player.queue.index + 1;
+
+            if (video === undefined) {
+                $titleObj.text(noVideoTitle);
+                $descObj.text(noVideoDescription);
+            } else {
+                $titleObj.text(video.title);
+                $descObj.text(video.description);
+                $playlistObj.children("div").removeClass("current-video");
+                $queueItem = $playlistObj.children("div:nth-child(" + childTh + ")").addClass("current-video");
+
+                $playlistObjScroller.scrollTop(
+                    $playlistObjScroller.scrollTop() + ($queueItem.position().top - $playlistObjScroller.position().top)
+                );
+            }
+        }
+
+        function addToPlaylist(videos, prepend) {
+            if (prepend === undefined) {
+                $playlistObj.append(videos);
+            } else {
+                $playlistObj.prepend(videos);
+            }
+        }
+
+        player = new SubscribaePlayer(yt, $this, addToPlaylist, setTitleAndDescription);
+        return $this;
+    };
+})(jQuery);
+
+
+function onYouTubeIframeAPIReady() {
+    'use strict';
+    $("#player").youtube(YT);
 }

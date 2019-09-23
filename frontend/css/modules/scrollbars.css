@@ -12,3 +12,11 @@ html, body {
 ::-webkit-scrollbar-thumb {
     background-color: var(--main-colour);
 }
+
+.scroll-secondary-colors {
+    scrollbar-color: var(--secondary) var(--dark-colour);
+
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--secondary);
+}
+}
