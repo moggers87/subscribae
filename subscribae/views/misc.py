@@ -46,6 +46,7 @@ def overview(request):
     context = {
         'subscription_list': request.user.subscription_set.all(),
         'bucket_list': request.user.bucket_set.all(),
+        'form': BucketForm(user=request.user),
     }
     return TemplateResponse(request, 'subscribae/overview.html', context)
 
