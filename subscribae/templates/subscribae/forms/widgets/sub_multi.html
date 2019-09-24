@@ -1,11 +1,9 @@
 {% load i18n %}
-<fieldset id="{{ widget.attrs.id }}" class="expander flex flex-row"
-     data-more="{% trans "Show more" %}" data-less="{% trans "Show less" %}">
-    <legend>{{ widget.name }}</legend>
-    <div class="scroller">
-        {% for group, options, index in widget.optgroups %}
-            {% for option in options %}{% include option.template_name with widget=option %}{% endfor %}
-        {% endfor %}
+<fieldset id="{{ widget.attrs.id }}" class="flex flex-row">
+    <legend>{% trans "Subscriptions" %}:</legend>
+    <div class="subs">
+    {% for group, options, index in widget.optgroups %}
+        {% for option in options %}{% include option.template_name with widget=option %}{% endfor %}
+    {% endfor %}
     </div>
-    <div class="more"><button>{% trans "Show more" %}</button></div>
 </fieldset>

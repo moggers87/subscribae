@@ -1,0 +1,11 @@
+{% extends "subscribae/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<p>{% blocktrans with name=form.instance.title %}Edit {{ name }}{% endblocktrans %}</p>
+<form action="{% url "bucket-edit" bucket=form.instance.pk %}" method="POST">
+    <button class="button-primary">Save</button>
+    {% csrf_token %}
+    {% include "subscribae/includes/form.html" with form=form %}
+</form>
+{% endblock %}

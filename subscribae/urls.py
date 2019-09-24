@@ -47,6 +47,7 @@ urlpatterns = (
     url(r'^$', misc.home, name='home'),
     url(r'^overview$', misc.overview, name='overview'),
     url(r'^bucket/new$', misc.bucket_new, name='bucket-new'),
+    url(r'^bucket/edit/(?P<bucket>.+)$', misc.bucket_edit, name='bucket-edit'),
     url(r'^bucket/(?P<bucket>.+)$', misc.bucket, name='bucket'),
     url(r'^subscription/(?P<subscription>.+)$', misc.subscription, name='subscription'),
     url(r'^sync$', misc.sync_subscription, name='sync'),
