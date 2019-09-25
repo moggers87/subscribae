@@ -310,6 +310,25 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                        page_token=page_token, only_first_page=only_first_page)
 
 
+def update_video_buckets(subscription_id, bucket_id, add=True, last_pk=None):
+    try:
+        videos_qs = Video.objects.order_by("pk").filter(subscription_id=subscription_id)
+        if last_pk:
+            videos_qs = videos_qs.filter(pk__gt=last_pk)
+
+        for video in video_qs:
+            if add:
+                video.buckets_ids += bucket_id
+            else:
+                video.buckets_ids -= bucket_id
+            video.save()
+            last_pk = video.pk
+    except RuntimeExceededError:
+        pass
+
+    deferred.defer(update_video_buckets, subscription_id, bucket_id, add, last_pk)
+
+
 def get_site_config():
     config = cache.get(SITE_CONFIG_CACHE_KEY)
     if config is None:
