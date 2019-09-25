@@ -81,24 +81,6 @@ class ViewTestCase(TestCase):
         response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
         self.assertEqual(response.status_code, 200)
 
-        subscription = SubscriptionFactory(user=self.user)
-        self.assertEqual(len(bucket.subs_ids), 0)
-        data = {
-            'title': 'Games',
-            'subs': [subscription.pk],
-        }
-        response = self.client.post(reverse('bucket', kwargs={'bucket': bucket.pk}), data)
-
-        bucket.refresh_from_db()
-
-        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
-        self.assertEqual(bucket.title, 'Games')
-        self.assertEqual(bucket.subs_ids, set([subscription.pk]))
-
-        new_bucket = BucketFactory(title='Cheese', user=self.user)
-        response = self.client.post(reverse('bucket', kwargs={'bucket': new_bucket.pk}), data)
-        self.assertEqual(response.status_code, 200)
-
     def test_bucket_start(self):
         bucket = BucketFactory(title='Cheese', user=self.user)
         response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
@@ -134,6 +116,26 @@ class ViewTestCase(TestCase):
             bucket = BucketFactory(title='Cheese', user=self.user)
             response = self.client.get(reverse('bucket', kwargs={'bucket': bucket.pk}))
             self.assertEqual(response.status_code, 200)
+
+    def test_bucket_edit(self):
+        subscription = SubscriptionFactory(user=self.user)
+        bucket = BucketFactory(user=self.user, title='Cheese')
+        self.assertEqual(len(bucket.subs_ids), 0)
+        data = {
+            'title': 'Games',
+            'subs': [subscription.pk],
+        }
+        response = self.client.post(reverse('bucket-edit', kwargs={'bucket': bucket.pk}), data)
+
+        bucket.refresh_from_db()
+
+        self.assertRedirects(response, reverse('bucket', kwargs={'bucket': bucket.pk}))
+        self.assertEqual(bucket.title, 'Games')
+        self.assertEqual(bucket.subs_ids, set([subscription.pk]))
+
+        new_bucket = BucketFactory(title='Cheese', user=self.user)
+        response = self.client.post(reverse('bucket-edit', kwargs={'bucket': new_bucket.pk}), data)
+        self.assertEqual(response.status_code, 200)
 
     def test_subscription(self):
         response = self.client.get(reverse('subscription', kwargs={'subscription': 1}))

@@ -6,6 +6,10 @@
         text-align: center;
         background-color: var(--secondary);
         color: var(--dark-colour);
+
+        & .edit {
+            float: right;
+        }
     }
 
     @media (--xs) {

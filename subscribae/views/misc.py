@@ -46,6 +46,7 @@ def overview(request):
     context = {
         'subscription_list': request.user.subscription_set.all(),
         'bucket_list': request.user.bucket_set.all(),
+        'form': BucketForm(user=request.user),
     }
     return TemplateResponse(request, 'subscribae/overview.html', context)
 
@@ -54,18 +55,9 @@ def overview(request):
 @active_user
 def bucket(request, bucket):
     bucket = get_object_or_404(Bucket, pk=bucket, user=request.user)
-    if request.method == "POST":
-        form = BucketEditForm(instance=bucket, data=request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse("bucket", kwargs={"bucket": bucket.pk}))
-    else:
-        form = BucketEditForm(instance=bucket)
-
     video_start_from = request.GET.get("start")
     context = {
         'bucket': bucket,
-        'form': form,
         'start': video_start_from,
     }
     return TemplateResponse(request, 'subscribae/bucket.html', context)
@@ -81,6 +73,22 @@ def bucket_new(request):
         return HttpResponseRedirect(reverse('bucket', kwargs={'bucket': bucket.pk}))
 
     return TemplateResponse(request, 'subscribae/bucket-new.html', {"form": form})
+
+
+@login_required
+@active_user
+def bucket_edit(request, bucket):
+    bucket = get_object_or_404(Bucket, pk=bucket, user=request.user)
+
+    if request.method == "POST":
+        form = BucketEditForm(instance=bucket, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("bucket", kwargs={"bucket": bucket.pk}))
+    else:
+        form = BucketEditForm(instance=bucket)
+
+    return TemplateResponse(request, 'subscribae/bucket-edit.html', {"form": form})
 
 
 @login_required

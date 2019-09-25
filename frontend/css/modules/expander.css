@@ -17,22 +17,3 @@
         }
     }
 }
-
-fieldset.expander  {
-    & .scroller {
-        min-width: 0;
-        max-width: 100%;
-
-        & label {
-            margin-top: 0;
-            & p {
-                display: none;
-            }
-        }
-    }
-
-    &.expanded .scroller label p {
-        display: unset;
-    }
-}
-
