@@ -3,7 +3,7 @@
 {% block container %}
 <div class="heading">
     <div class="container wide-container padding-vertical-xs">
-        <h1>{{ site_config.site_name }}</h1>
+        <h1>{% for s in site_config.site_name|lower %}<span>{{ s }}</span>{% if not forloop.last %}&#8203{% endif %}{% endfor %}</h1>
     </div>
 </div>
 {% endblock %}
