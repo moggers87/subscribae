@@ -1,18 +1,20 @@
 nav {
     color: var(--dark-colour);
     background-color: var(--main-colour);
-    min-height: var(--nav-height);
-
-    & li {
-        height: var(--nav-height);
-    }
+    min-height: var(--nav-height-extra);
 
     & ul {
         display: inline-block;
+        height: calc(var(--nav-height-extra) / 2);
 
         @media (--xs) {
             display: none;
+            height: unset;
         }
+    }
+
+    & li {
+        height: var(--nav-height);
     }
 
     & a {
