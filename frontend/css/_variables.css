@@ -70,6 +70,8 @@
     --nav-height: 1.75em;
     --nav-height-extra: 2em;
 
+    --footer-height: calc(var(--line-height-m) * 1rem);
+
     --spinner-width: 0.5rem;
     --spinner-speed: 1s;
 
