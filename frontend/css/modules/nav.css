@@ -7,7 +7,7 @@ nav {
         display: inline-block;
         height: calc(var(--nav-height-extra) / 2);
 
-        @media (--xs) {
+        @media (--xs-down) {
             display: none;
             height: unset;
         }
@@ -47,7 +47,7 @@ nav {
     top: -9999px;
     left: -9999px;
 
-    @media (--xs) {
+    @media (--xs-down) {
         &:checked ~ ul {
             display: block;
 
