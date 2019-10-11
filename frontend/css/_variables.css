@@ -69,6 +69,7 @@
 
     --nav-height: 1.75em;
     --nav-height-extra: 2em;
+    --nav-indent: calc(calc(calc(var(--nav-height-extra) / 3) * 4) + 10px);
 
     --footer-height: calc(var(--line-height-m) * 1rem);
 
