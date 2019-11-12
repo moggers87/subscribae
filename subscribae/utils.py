@@ -21,7 +21,6 @@ import logging
 import os
 
 from apiclient.discovery import build
-from djangae.db import transaction
 from django.conf import settings
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
@@ -38,6 +37,11 @@ API_NAME = 'youtube'
 API_VERSION = 'v3'
 API_MAX_RESULTS = 10
 USER_SHARD = 500
+
+CHANNEL_PARTS = "contentDetails"
+CHANNEL_FIELDS = "items(contentDetails(relatedPlaylists))"
+SUBSCRIPTION_PARTS = "snippet"
+SUBSCRIPTION_FIELDS = "items(snippet(resourceId(channelId),thumbnails))"
 
 # "random" id (it's actually my birthday)
 SITE_CONFIG_ID = 19871022
@@ -84,102 +88,14 @@ def update_subscriptions(last_pk=None):
             qs = qs.filter(pk__gt=last_pk)
 
         for obj in qs.iterator():
-            deferred.defer(update_subscriptions_for_user, obj.user_id)
+            if obj.user.is_active:
+                deferred.defer(subscriptions, obj.user_id)
             last_pk = obj.pk
     except RuntimeExceededError:
         deferred.defer(update_subscriptions, last_pk)
 
 
-def update_subscriptions_for_user(user_id, last_pk=None):
-    """Updates subscriptions
-
-    Loops over subscriptions we already have, deleting ones that no longer
-    appear in the API
-    """
-    try:
-        subscriptions = {}
-
-        subscriptions_qs = Subscription.objects.order_by("pk").filter(user_id=user_id)
-        if last_pk:
-            subscriptions_qs = subscriptions_qs.filter(pk__gt=last_pk)
-        subscriptions_qs = subscriptions_qs[:API_MAX_RESULTS]
-        if len(subscriptions_qs) == 0:
-            logging.debug("Subscription updates for User %s done.", user_id)
-            return
-
-        try:
-            youtube = get_service(user_id)
-        except OauthToken.DoesNotExist:
-            return
-
-        subscription_list = youtube.subscriptions() \
-            .list(mine=True,
-                  forChannelId=','.join([obj.channel_id for obj in subscriptions_qs]),
-                  part='snippet', maxResults=API_MAX_RESULTS).execute()
-
-        for item in subscription_list['items']:
-            channel_id = item['snippet']['resourceId']['channelId']
-
-            subscriptions[channel_id] = dict(
-                last_update=timezone.now(),
-                title=item['snippet']['title'],
-                description=item['snippet']['description'],
-                thumbnails={size: value.get('url', '') for size, value in item['snippet']['thumbnails'].items()},
-                upload_playlist=None,  # must fetch this from the channel data
-            )
-
-        ids_from_sub = subscriptions.keys()
-
-        channel_list = youtube.channels() \
-            .list(id=','.join(ids_from_sub), part='contentDetails', maxResults=API_MAX_RESULTS) \
-            .execute()
-        ids_from_chan = [channel['id'] for channel in channel_list['items']]
-
-        # there are times when a subscription has a channel id, but there
-        # isn't channel data for whatever reason, e.g. I'm subscribed to
-        # UCMzNCTNmDMBO9oueVWpuOMg but there's no data from the channel API
-        missing_channels = set(ids_from_sub) - set(ids_from_chan)
-        extra_channels = set(ids_from_chan) - set(ids_from_sub)
-        _log.info("Missing these IDs from the channel list endpoint: %s", missing_channels)
-        _log.info("Extra IDs from the channel list endpoint: %s", extra_channels)
-
-        for chn in channel_list['items']:
-            if chn['id'] in ids_from_sub:
-                subscriptions[chn['id']]['upload_playlist'] = chn['contentDetails']['relatedPlaylists']['uploads']
-
-        for obj in subscriptions_qs:
-            if obj.channel_id not in ids_from_sub:
-                # unsubscribed?
-                continue
-            if obj.channel_id in missing_channels:
-                # missing data
-                continue
-
-            data = subscriptions[obj.channel_id]
-            with transaction.atomic():
-                obj.refresh_from_db()
-
-                obj.last_update = data['last_update']
-                obj.title = data['title']
-                obj.description = data['description']
-                obj.thumbnails = data['thumbnails']
-                obj.upload_playlist = data['upload_playlist']
-
-                obj.save()
-
-            bucket_ids = Bucket.objects.order_by("pk").filter(subs__contains=obj).values_list('pk', flat=True)
-            bucket_ids = list(bucket_ids)
-            deferred.defer(import_videos, user_id, obj.pk, obj.upload_playlist, bucket_ids)
-
-            last_pk = obj.pk
-
-    except RuntimeExceededError:
-        pass
-
-    deferred.defer(update_subscriptions_for_user, user_id, last_pk)
-
-
-def new_subscriptions(user_id, page_token=None):
+def subscriptions(user_id, page_token=None):
     """Import new subscriptions into the system
 
     Loops over subscription data from API, adding new suscriptions and updating
@@ -192,31 +108,28 @@ def new_subscriptions(user_id, page_token=None):
             return
 
         while True:
-            subscriptions = {}
-
-            subscription_list = youtube.subscriptions() \
-                .list(mine=True, part='snippet', maxResults=API_MAX_RESULTS, pageToken=page_token) \
-                .execute()
+            subscription_data = {}
+            subscription_list = youtube.subscriptions().list(mine=True, part=SUBSCRIPTION_PARTS,
+                                                             fields=SUBSCRIPTION_FIELDS,
+                                                             maxResults=API_MAX_RESULTS,
+                                                             pageToken=page_token).execute()
 
             for item in subscription_list['items']:
                 channel_id = item['snippet']['resourceId']['channelId']
 
-                subscriptions[channel_id] = dict(
+                subscription_data[channel_id] = dict(
                     id=create_composite_key(str(user_id), channel_id),
                     user_id=user_id,
                     last_update=timezone.now(),
                     channel_id=channel_id,
-                    title=item['snippet']['title'],
-                    description=item['snippet']['description'],
                     thumbnails={size: value.get('url', '') for size, value in item['snippet']['thumbnails'].items()},
                     upload_playlist=None,  # must fetch this from the channel data
                 )
 
-            ids_from_sub = sorted(subscriptions.keys())
+            ids_from_sub = sorted(subscription_data.keys())
 
-            channel_list = youtube.channels() \
-                .list(id=','.join(ids_from_sub), part='contentDetails', maxResults=API_MAX_RESULTS) \
-                .execute()
+            channel_list = youtube.channels().list(id=','.join(ids_from_sub), part=CHANNEL_PARTS,
+                                                   fields=CHANNEL_FIELDS, maxResults=API_MAX_RESULTS).execute()
             ids_from_chan = [channel['id'] for channel in channel_list['items']]
 
             # there are times when a subscription has a channel id, but there
@@ -229,24 +142,28 @@ def new_subscriptions(user_id, page_token=None):
 
             for chn in channel_list['items']:
                 if chn['id'] in ids_from_sub:
-                    subscriptions[chn['id']]['upload_playlist'] = chn['contentDetails']['relatedPlaylists']['uploads']
+                    subscription_data[chn['id']]['upload_playlist'] = \
+                            chn['contentDetails']['relatedPlaylists']['uploads']
 
-            for data in subscriptions.itervalues():
+            for data in subscription_data.itervalues():
                 if data['channel_id'] in missing_channels:
                     continue
 
                 key = data.pop('id')
                 obj, created = Subscription.objects.update_or_create(id=key, defaults=data)
                 _log.debug("Subscription %s%s created", obj.id, "" if created else " not")
-                if created:
-                    deferred.defer(import_videos, user_id, key, obj.upload_playlist, [], only_first_page=True)
+                bucket_ids = []
+                if not created:
+                    bucket_ids = Bucket.objects.order_by("pk").filter(subs__contains=obj).values_list('pk', flat=True)
+                    bucket_ids = list(bucket_ids)
+                deferred.defer(import_videos, user_id, key, obj.upload_playlist, bucket_ids, only_first_page=created)
 
             if 'nextPageToken' in subscription_list:
                 page_token = subscription_list['nextPageToken']
             else:
                 break
     except RuntimeExceededError:
-        deferred.defer(new_subscriptions, user_id, page_token)
+        deferred.defer(subscriptions, user_id, page_token)
 
 
 def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=None, only_first_page=False):

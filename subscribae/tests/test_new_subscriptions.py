@@ -23,7 +23,7 @@ import mock
 
 from subscribae.models import OauthToken, Subscription
 from subscribae.tests.utils import MockExecute, UserFactory
-from subscribae.utils import API_MAX_RESULTS, new_subscriptions
+from subscribae.utils import API_MAX_RESULTS, subscriptions
 
 
 class NewSubscriptionTestCase(TestCase):
@@ -40,16 +40,12 @@ class NewSubscriptionTestCase(TestCase):
             'items': [
                 {
                     'snippet': {
-                        'title': 'A channel',
-                        'description': "It's a channel",
                         'resourceId': {'channelId': '123'},
                         'thumbnails': {},
                     },
                 },
                 {
                     'snippet': {
-                        'title': 'Another channel',
-                        'description': "It's another channel",
                         'resourceId': {'channelId': '456'},
                         'thumbnails': {},
                     },
@@ -80,8 +76,8 @@ class NewSubscriptionTestCase(TestCase):
     def tearDown(self):
         mock.patch.stopall()
 
-    def test_new_subscriptions(self):
-        new_subscriptions(self.user.id)
+    def test_subscriptions(self):
+        subscriptions(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 1)
         self.assertEqual(self.channel_mock.call_count, 1)
         self.assertEqual(Subscription.objects.count(), 2)
@@ -90,22 +86,24 @@ class NewSubscriptionTestCase(TestCase):
 
         self.assertEqual(self.subscription_mock.call_args, (
             (),
-            {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': None}
+            {'mine': True, 'part': 'snippet', 'fields': 'items(snippet(resourceId(channelId),thumbnails))',
+             'maxResults': API_MAX_RESULTS, 'pageToken': None}
         ))
         self.assertEqual(self.channel_mock.call_args, (
             (),
-            {'id': '123,456', 'part': 'contentDetails', 'maxResults': API_MAX_RESULTS}
+            {'id': '123,456', 'part': 'contentDetails', 'fields': 'items(contentDetails(relatedPlaylists))',
+             'maxResults': API_MAX_RESULTS}
         ))
 
         self.flush_task_queues()
 
-        new_subscriptions(self.user.id)
+        subscriptions(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 2)
         self.assertEqual(self.channel_mock.call_count, 2)
         self.assertEqual(Subscription.objects.count(), 2)
-        self.assertNumTasksEquals(0)
+        self.assertNumTasksEquals(2)  # two import_video tasks
 
-    def test_new_subscriptions_pagination(self):
+    def test_subscriptions_pagination(self):
         self.subscription_mock.return_value.execute = MockExecute([
             {
                 'items': [],
@@ -117,15 +115,17 @@ class NewSubscriptionTestCase(TestCase):
         ])
         self.channel_mock.return_value.execute.return_value = {'items': []}
 
-        new_subscriptions(self.user.id)
+        subscriptions(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 2)
 
         self.assertEqual(self.subscription_mock.call_args_list, [
-            ((), {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': None}),
-            ((), {'mine': True, 'part': 'snippet', 'maxResults': API_MAX_RESULTS, 'pageToken': '123'}),
+            ((), {'mine': True, 'part': 'snippet', 'fields': 'items(snippet(resourceId(channelId),thumbnails))',
+                  'maxResults': API_MAX_RESULTS, 'pageToken': None}),
+            ((), {'mine': True, 'part': 'snippet', 'fields': 'items(snippet(resourceId(channelId),thumbnails))',
+                  'maxResults': API_MAX_RESULTS, 'pageToken': '123'}),
         ])
 
-    def test_new_subscriptions_runtime_exceeded(self):
+    def test_subscriptions_runtime_exceeded(self):
         self.subscription_mock.return_value.execute = MockExecute([
             {
                 'items': [],
@@ -138,7 +138,7 @@ class NewSubscriptionTestCase(TestCase):
         ])
         self.channel_mock.return_value.execute.return_value = {'items': []}
 
-        new_subscriptions(self.user.id)
+        subscriptions(self.user.id)
         self.assertEqual(self.subscription_mock.call_count, 2)
         # deadline exceeded will cause a new task to be spawned
         self.assertNumTasksEquals(1)
@@ -150,4 +150,4 @@ class NewSubscriptionTestCase(TestCase):
         OauthToken.objects.get(user_id=self.user.id).delete()
         self.service_patch.stop()
 
-        new_subscriptions(self.user.id)
+        subscriptions(self.user.id)

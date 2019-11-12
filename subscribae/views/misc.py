@@ -33,7 +33,7 @@ from google.appengine.ext.deferred import deferred
 from subscribae.decorators import active_user
 from subscribae.forms import BucketEditForm, BucketForm
 from subscribae.models import Bucket, OauthToken, Subscription
-from subscribae.utils import new_subscriptions
+from subscribae.utils import subscriptions
 
 
 def home(request):
@@ -107,7 +107,7 @@ def subscription(request, subscription):
 @active_user
 def sync_subscription(request):
     if OauthToken.objects.filter(user_id=request.user.id).exists():
-        deferred.defer(new_subscriptions, request.user.id)
+        deferred.defer(subscriptions, request.user.id)
         return HttpResponse("Sync started")
     else:
         request.session[settings.OAUTH_RETURN_SESSION_KEY] = 'sync'
