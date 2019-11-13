@@ -44,7 +44,7 @@ def home(request):
 @active_user
 def overview(request):
     context = {
-        'subscription_list': request.user.subscription_set.all(),
+        'subscription_list': request.user.subscription_set.all().add_titles(),
         'bucket_list': request.user.bucket_set.all(),
         'form': BucketForm(user=request.user),
     }
@@ -97,7 +97,7 @@ def subscription(request, subscription):
     subscription = get_object_or_404(Subscription, pk=subscription, user=request.user)
     buckets = Bucket.objects.filter(subs__contains=subscription)
     context = {
-        'subscription': subscription,
+        'subscription': subscription.add_titles(),
         'buckets': buckets,
     }
     return TemplateResponse(request, 'subscribae/subscription.html', context)

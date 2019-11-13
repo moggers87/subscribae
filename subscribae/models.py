@@ -28,7 +28,7 @@ from django.template import Context, Template
 from django.template.loader import get_template
 from oauth2client.client import Credentials
 
-from subscribae.managers import VideoQuerySet
+from subscribae.managers import SubscriptionQuerySet, VideoQuerySet
 
 DEFAULT_SIZE = 'medium'
 
@@ -72,12 +72,19 @@ class Subscription(ThumbnailAbstract):
     id = ComputedCharField(lambda self: create_composite_key(str(self.user_id), self.channel_id),
                            primary_key=True, max_length=200)
 
+    objects = SubscriptionQuerySet.as_manager()
+
     def __unicode__(self):
         tmpl = get_template("subscribae/models/subscription.html")
         return tmpl.render({"object": self})
 
     def __repr__(self):
         return "<Subscription {}>".format(self.channel_id.encode("utf-8", "ignore"))
+
+    def add_titles(self):
+        """Fetches titles and descriptions for Subscription"""
+        from subscribae.utils import subscription_add_titles
+        return list(subscription_add_titles([self]))[0]
 
 
 class Bucket(UniquenessMixin, models.Model):

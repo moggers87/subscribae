@@ -54,6 +54,7 @@ class ViewTestCase(TestCase):
         response = self.client.get(reverse('overview'))
         self.assertEqual(response.status_code, 200)
 
+    @mock.patch('subscribae.utils.subscription_add_titles', lambda x: x)
     def test_overview_has_items(self):
         subscriptions = SubscriptionFactory.create_batch(2, user=self.user)
         buckets = [
@@ -137,6 +138,7 @@ class ViewTestCase(TestCase):
         response = self.client.post(reverse('bucket-edit', kwargs={'bucket': new_bucket.pk}), data)
         self.assertEqual(response.status_code, 200)
 
+    @mock.patch('subscribae.utils.subscription_add_titles', lambda x: x)
     def test_subscription(self):
         response = self.client.get(reverse('subscription', kwargs={'subscription': 1}))
         self.assertEqual(response.status_code, 404)

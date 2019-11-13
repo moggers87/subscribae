@@ -38,10 +38,12 @@ API_VERSION = 'v3'
 API_MAX_RESULTS = 10
 USER_SHARD = 500
 
-CHANNEL_PARTS = "contentDetails"
 CHANNEL_FIELDS = "items(contentDetails(relatedPlaylists))"
-SUBSCRIPTION_PARTS = "snippet"
+CHANNEL_PARTS = "contentDetails"
+CHANNEL_TITLE_FIELDS = "items(snippet(title, description))"
+CHANNEL_TITLE_PARTS = "snippet"
 SUBSCRIPTION_FIELDS = "items(snippet(resourceId(channelId),thumbnails))"
+SUBSCRIPTION_PARTS = "snippet"
 
 # "random" id (it's actually my birthday)
 SITE_CONFIG_ID = 19871022
@@ -79,6 +81,28 @@ def get_service(user_id):
 
     service = build(API_NAME, API_VERSION, http=http)
     return service
+
+
+def subscription_add_titles(objects):
+    # TODO we should cache this data somewhere
+    objects = list(objects)
+    if len(objects) == 0:
+        return
+
+    youtube = get_service(objects[0].user_id)
+    channel_ids = [i.channel_id for i in objects]
+
+    channel_list = youtube.channels().list(id=','.join(channel_ids), part=CHANNEL_TITLE_PARTS,
+                                           fields=CHANNEL_TITLE_FIELDS, maxResults=len(objects)).execute()
+
+    channel_data = {chan["id"]: {"title": chan["snippet"]["title"], "description": chan["snippet"]["description"]}
+                    for chan in channel_list["items"]}
+
+    for obj in objects:
+        data = channel_data[obj.channel_id]
+        obj.title = data["title"]
+        obj.description = data["description"]
+        yield obj
 
 
 def update_subscriptions(last_pk=None):
