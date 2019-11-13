@@ -64,8 +64,6 @@ class Subscription(ThumbnailAbstract):
 
     # from subscription endpoint
     channel_id = models.CharField(max_length=200)  # snippet.resourceId.channelId
-    title = models.CharField(max_length=200)  # snippet.title
-    description = models.TextField()  # snippet.description
 
     # from channel endpoint
     upload_playlist = models.CharField(max_length=200)  # contentDetails.relatedPlaylists.uploads
@@ -74,15 +72,12 @@ class Subscription(ThumbnailAbstract):
     id = ComputedCharField(lambda self: create_composite_key(str(self.user_id), self.channel_id),
                            primary_key=True, max_length=200)
 
-    class Meta:
-        ordering = ["title"]
-
     def __unicode__(self):
         tmpl = get_template("subscribae/models/subscription.html")
         return tmpl.render({"object": self})
 
     def __repr__(self):
-        return "<Subscription {}>".format(self.title.encode("utf-8", "ignore"))
+        return "<Subscription {}>".format(self.channel_id.encode("utf-8", "ignore"))
 
 
 class Bucket(UniquenessMixin, models.Model):

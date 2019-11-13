@@ -39,18 +39,6 @@ class ModelTestCase(TestCase):
             ["test1", "test2", "test3"]
         )
 
-    def test_default_subscription_ordering(self):
-        SubscriptionFactory(title="test2")
-        SubscriptionFactory(title="test1")
-        SubscriptionFactory(title="test3")
-
-        subscriptions = Subscription.objects.all()
-
-        self.assertEqual(
-            [i.title for i in subscriptions],
-            ["test1", "test2", "test3"]
-        )
-
     def test_default_video_ordering(self):
         VideoFactory(published_at=datetime(1997, 8, 16, 19, 20, 30, 450000, tzinfo=UTC), youtube_id="1")
         VideoFactory(published_at=datetime(1997, 6, 16, 19, 20, 30, 450000, tzinfo=UTC), youtube_id="4")
@@ -88,8 +76,8 @@ class ModelTestCase(TestCase):
 
     def test_video_from_subscription(self):
         user = UserFactory()
-        sub1 = SubscriptionFactory(user=user, title="test1")
-        sub2 = SubscriptionFactory(user=user, title="test2")
+        sub1 = SubscriptionFactory(user=user)
+        sub2 = SubscriptionFactory(user=user)
         video = VideoFactory(user=user, subscription=sub2)
 
         videos1 = Video.objects.from_subscription(user=user, subscription=sub1)

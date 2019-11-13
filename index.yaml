@@ -43,11 +43,6 @@ indexes:
   - name: user_id
   - name: title
 
-- kind: subscribae_subscription
-  properties:
-  - name: user_id
-  - name: title
-
 - kind: subscribae_video
   properties:
   - name: buckets_ids
