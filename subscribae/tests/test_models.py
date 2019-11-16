@@ -21,6 +21,7 @@ from datetime import datetime
 
 from djangae.test import TestCase
 from pytz import UTC
+import mock
 
 from subscribae.models import Bucket, SiteConfig, Subscription, Video, create_composite_key
 from subscribae.tests.utils import BucketFactory, SubscriptionFactory, UserFactory, VideoFactory
@@ -36,18 +37,6 @@ class ModelTestCase(TestCase):
 
         self.assertEqual(
             [i.title for i in buckets],
-            ["test1", "test2", "test3"]
-        )
-
-    def test_default_subscription_ordering(self):
-        SubscriptionFactory(title="test2")
-        SubscriptionFactory(title="test1")
-        SubscriptionFactory(title="test3")
-
-        subscriptions = Subscription.objects.all()
-
-        self.assertEqual(
-            [i.title for i in subscriptions],
             ["test1", "test2", "test3"]
         )
 
@@ -88,8 +77,8 @@ class ModelTestCase(TestCase):
 
     def test_video_from_subscription(self):
         user = UserFactory()
-        sub1 = SubscriptionFactory(user=user, title="test1")
-        sub2 = SubscriptionFactory(user=user, title="test2")
+        sub1 = SubscriptionFactory(user=user)
+        sub2 = SubscriptionFactory(user=user)
         video = VideoFactory(user=user, subscription=sub2)
 
         videos1 = Video.objects.from_subscription(user=user, subscription=sub1)
@@ -111,3 +100,66 @@ class ModelTestCase(TestCase):
         self.assertEqual(len(videos1), 0)
         self.assertEqual(len(videos2), 1)
         self.assertEqual(videos2[0], video)
+
+
+class AddTitlesTestCase(TestCase):
+    def setUp(self):
+        super(AddTitlesTestCase, self).setUp()
+
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.channel_mock = self.service_mock.return_value.channels.return_value.list
+
+        self.channel_mock.return_value.execute.return_value = {
+            'items': [
+                {
+                    'id': '123',
+                    'snippet': {
+                        "title": "henlo",
+                        "description": "bluh bluh",
+                    },
+                },
+                {
+                    'id': '456',
+                    'snippet': {
+                        "title": "bye-q",
+                        "description": "blah blah",
+                    },
+                },
+            ],
+        }
+
+    def tearDown(self):
+        mock.patch.stopall()
+
+    def test_model_method(self):
+        sub = SubscriptionFactory(channel_id="123")
+        with self.assertRaises(AttributeError):
+            sub.title
+        with self.assertRaises(AttributeError):
+            sub.description
+
+        sub.add_titles()
+
+        self.assertEqual(sub.title, "henlo")
+        self.assertEqual(sub.description, "bluh bluh")
+
+    def test_queryset_method(self):
+        SubscriptionFactory(channel_id="123")
+        SubscriptionFactory(channel_id="456")
+
+        subs = Subscription.objects.all()
+        for obj in subs:
+            with self.assertRaises(AttributeError):
+                obj.title
+            with self.assertRaises(AttributeError):
+                obj.description
+
+        titled_subs = subs.add_titles()
+        for obj in titled_subs:
+            self.assertNotEqual(obj.title, None)
+            self.assertNotEqual(obj.description, None)
+
+    def test_empty_queryset_method(self):
+        Subscription.objects.all().add_titles()
