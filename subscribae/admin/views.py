@@ -25,6 +25,7 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 
 from subscribae.admin.forms import SiteConfigForm, UserAddForm, UserEditForm
@@ -94,10 +95,7 @@ def user_add(request):
 
 @admin_for_superusers
 def user_edit(request, user_id):
-    try:
-        user = get_user_model().objects.get(pk=user_id)
-    except get_user_model().DoesNotExist:
-        raise Http404
+    user = get_object_or_404(get_user_model(), pk=user_id)
 
     if request.method == "POST":
         form = UserEditForm(instance=user, data=request.POST)
