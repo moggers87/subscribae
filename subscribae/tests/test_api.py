@@ -46,8 +46,16 @@ class BucketVideoApiTestCase(TestCase):
         self.user = get_user_model().objects.create(username='1', email='test@example.com', is_active=True)
         gae_login(self.user)
 
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.video_mock = self.service_mock.return_value.videos.return_value.list
+
+        self.video_mock.return_value.execute.return_value = {'items': []}
+
     def tearDown(self):
         gae_logout()
+        mock.patch.stopall()
         super(BucketVideoApiTestCase, self).tearDown()
 
     def test_login_required(self):
@@ -70,6 +78,7 @@ class BucketVideoApiTestCase(TestCase):
     def test_get(self):
         bucket = BucketFactory(user=self.user)
         video = VideoFactory(user=self.user, buckets=[bucket])
+        video = video.add_titles()
 
         response = self.client.get(reverse("bucket-video-api", kwargs={"bucket": bucket.pk}))
         self.assertEqual(response.status_code, 200)
@@ -88,8 +97,8 @@ class BucketVideoApiTestCase(TestCase):
 
     def test_get_with_start(self):
         bucket = BucketFactory(user=self.user)
-        videos = VideoFactory.create_batch(3, user=self.user, buckets=[bucket])
-        videos = sorted(videos, key=lambda v: v.ordering_key)
+        VideoFactory.create_batch(3, user=self.user, buckets=[bucket])
+        videos = list(Video.objects.all().order_by("ordering_key").add_titles())
 
         response = self.client.get("{}?start={}".format(reverse("bucket-video-api",
                                                         kwargs={"bucket": bucket.pk}), videos[1].ordering_key))
@@ -121,8 +130,8 @@ class BucketVideoApiTestCase(TestCase):
 
     def test_get_with_after(self):
         bucket = BucketFactory(user=self.user)
-        videos = VideoFactory.create_batch(3, user=self.user, buckets=[bucket])
-        videos = sorted(videos, key=lambda v: v.ordering_key)
+        VideoFactory.create_batch(3, user=self.user, buckets=[bucket])
+        videos = list(Video.objects.all().order_by("ordering_key").add_titles())
 
         response = self.client.get("{}?after={}".format(reverse("bucket-video-api",
                                                         kwargs={"bucket": bucket.pk}), videos[0].ordering_key))
@@ -159,8 +168,16 @@ class BucketVideoViewApiTestCase(TestCase):
         self.user = get_user_model().objects.create(username='1', email='test@example.com', is_active=True)
         gae_login(self.user)
 
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.video_mock = self.service_mock.return_value.videos.return_value.list
+
+        self.video_mock.return_value.execute.return_value = {'items': []}
+
     def tearDown(self):
         gae_logout()
+        mock.patch.stopall()
         super(BucketVideoViewApiTestCase, self).tearDown()
 
     def test_login_required(self):
@@ -213,8 +230,16 @@ class SubscriptionVideoApiTestCase(TestCase):
         self.user = get_user_model().objects.create(username='1', email='test@example.com', is_active=True)
         gae_login(self.user)
 
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.video_mock = self.service_mock.return_value.videos.return_value.list
+
+        self.video_mock.return_value.execute.return_value = {'items': []}
+
     def tearDown(self):
         gae_logout()
+        mock.patch.stopall()
         super(SubscriptionVideoApiTestCase, self).tearDown()
 
     def test_login_required(self):
@@ -234,6 +259,7 @@ class SubscriptionVideoApiTestCase(TestCase):
     def test_get(self):
         subscription = SubscriptionFactory(user=self.user)
         video = VideoFactory(user=self.user, subscription=subscription)
+        video = video.add_titles()
 
         response = self.client.get(reverse("subscription-video-api", kwargs={"subscription": subscription.pk}))
         self.assertEqual(response.status_code, 200)
@@ -253,8 +279,8 @@ class SubscriptionVideoApiTestCase(TestCase):
 
     def test_get_with_start(self):
         subscription = SubscriptionFactory(user=self.user)
-        videos = VideoFactory.create_batch(3, user=self.user, subscription=subscription)
-        videos = sorted(videos, key=lambda v: v.ordering_key)
+        VideoFactory.create_batch(3, user=self.user, subscription=subscription)
+        videos = list(Video.objects.all().order_by("ordering_key").add_titles())
 
         response = self.client.get(
             "{}?start={}".format(reverse("subscription-video-api",
@@ -287,8 +313,8 @@ class SubscriptionVideoApiTestCase(TestCase):
 
     def test_get_with_after(self):
         subscription = SubscriptionFactory(user=self.user)
-        videos = VideoFactory.create_batch(3, user=self.user, subscription=subscription)
-        videos = sorted(videos, key=lambda v: v.ordering_key)
+        VideoFactory.create_batch(3, user=self.user, subscription=subscription)
+        videos = list(Video.objects.all().order_by("ordering_key").add_titles())
 
         response = self.client.get(
             "{}?after={}".format(reverse("subscription-video-api",
@@ -369,6 +395,19 @@ class SubscriptionVideoViewApiTestCase(TestCase):
 
 
 class QuerySetToJsonTestCase(TestCase):
+    def setUp(self):
+        super(QuerySetToJsonTestCase, self).setUp()
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.video_mock = self.service_mock.return_value.videos.return_value.list
+
+        self.video_mock.return_value.execute.return_value = {'items': []}
+
+    def tearDown(self):
+        mock.patch.stopall()
+        super(QuerySetToJsonTestCase, self).tearDown()
+
     def test_empty(self):
         qs = Video.objects.none()
         result = queryset_to_json(qs, "pk", {"id": "id"})
@@ -376,8 +415,8 @@ class QuerySetToJsonTestCase(TestCase):
         self.assertEqual(result, ([], None, None))
 
     def test_pagination_options(self):
-        videos = VideoFactory.create_batch(3)
-        videos = sorted(videos, key=lambda v: v.id)
+        VideoFactory.create_batch(3)
+        videos = list(Video.objects.all().order_by("pk").add_titles())
 
         qs = Video.objects.all()
         items, first, last = queryset_to_json(qs, "pk", {"id": "id"})
@@ -395,7 +434,7 @@ class QuerySetToJsonTestCase(TestCase):
 
     def test_before(self):
         videos = VideoFactory.create_batch(3)
-        videos = sorted(videos, key=lambda v: v.pk)
+        videos = list(Video.objects.all().order_by("pk").add_titles())
 
         qs = Video.objects.all()
         items, first, last = queryset_to_json(qs, "pk", {"id": "id"}, before=videos[2].pk)
@@ -405,7 +444,7 @@ class QuerySetToJsonTestCase(TestCase):
 
     def test_after(self):
         videos = VideoFactory.create_batch(3)
-        videos = sorted(videos, key=lambda v: v.pk)
+        videos = list(Video.objects.all().order_by("pk").add_titles())
 
         qs = Video.objects.all()
         items, first, last = queryset_to_json(qs, "pk", {"id": "id"}, after=videos[0].pk)
@@ -415,7 +454,7 @@ class QuerySetToJsonTestCase(TestCase):
 
     def test_start(self):
         videos = VideoFactory.create_batch(3)
-        videos = sorted(videos, key=lambda v: v.pk)
+        videos = list(Video.objects.all().order_by("pk").add_titles())
 
         qs = Video.objects.all()
         items, first, last = queryset_to_json(qs, "pk", {"id": "id"}, start=videos[1].pk)
@@ -425,7 +464,7 @@ class QuerySetToJsonTestCase(TestCase):
 
     def test_end(self):
         videos = VideoFactory.create_batch(3)
-        videos = sorted(videos, key=lambda v: v.pk)
+        videos = list(Video.objects.all().order_by("pk").add_titles())
 
         qs = Video.objects.all()
         items, first, last = queryset_to_json(qs, "pk", {"id": "id"}, end=videos[1].pk)
@@ -434,7 +473,7 @@ class QuerySetToJsonTestCase(TestCase):
         self.assertEqual(last, videos[0].pk)
 
     def test_property_map(self):
-        video = VideoFactory()
+        video = VideoFactory().add_titles()
 
         qs = Video.objects.all()
         items, _, _ = queryset_to_json(qs, "pk", {"bob": "title"})

@@ -44,6 +44,12 @@ CHANNEL_TITLE_FIELDS = "items(snippet(title, description))"
 CHANNEL_TITLE_PARTS = "snippet"
 SUBSCRIPTION_FIELDS = "items(snippet(resourceId(channelId),thumbnails))"
 SUBSCRIPTION_PARTS = "snippet"
+PLAYLIST_FIELDS = "items(contentDetails(videoId))"
+PLAYLIST_PARTS = "contentDetails"
+VIDEO_FIELDS = "items(snippet(publishedAt,thumbnails))"
+VIDEO_PARTS = "snippet"
+VIDEO_TITLE_FIELDS = "items(snippet(title, description))"
+VIDEO_TITLE_PARTS = "snippet"
 
 # "random" id (it's actually my birthday)
 SITE_CONFIG_ID = 19871022
@@ -99,7 +105,29 @@ def subscription_add_titles(objects):
                     for chan in channel_list["items"]}
 
     for obj in objects:
-        data = channel_data[obj.channel_id]
+        data = channel_data.get(obj.channel_id, {"title": "", "description": ""})
+        obj.title = data["title"]
+        obj.description = data["description"]
+        yield obj
+
+
+def video_add_titles(objects):
+    # TODO we should cache this data somewhere
+    objects = list(objects)
+    if len(objects) == 0:
+        return
+
+    youtube = get_service(objects[0].user_id)
+    video_ids = [i.youtube_id for i in objects]
+
+    video_list = youtube.videos().list(id=','.join(video_ids), part=VIDEO_TITLE_PARTS,
+                                       fields=VIDEO_TITLE_FIELDS, maxResults=len(objects)).execute()
+
+    video_data = {chan["id"]: {"title": chan["snippet"]["title"], "description": chan["snippet"]["description"]}
+                  for chan in video_list["items"]}
+
+    for obj in objects:
+        data = video_data.get(obj.youtube_id, {"title": "", "description": ""})
         obj.title = data["title"]
         obj.description = data["description"]
         yield obj
@@ -206,14 +234,13 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
             # https://developers.google.com/youtube/v3/docs/activities/list it
             # has things like "publishedAfter" which could be a better way of
             # working out what we have and have not imported
-            playlistitem_list = youtube.playlistItems() \
-                .list(playlistId=playlist, part='contentDetails', pageToken=page_token, maxResults=API_MAX_RESULTS) \
-                .execute()
+            playlistitem_list = youtube.playlistItems().list(playlistId=playlist, part=PLAYLIST_PARTS,
+                                                             fields=PLAYLIST_FIELDS, pageToken=page_token,
+                                                             maxResults=API_MAX_RESULTS).execute()
             ids_from_playlist = [item['contentDetails']['videoId'] for item in playlistitem_list['items']]
 
-            video_list = youtube.videos() \
-                .list(id=','.join(ids_from_playlist), part='snippet', maxResults=API_MAX_RESULTS) \
-                .execute()
+            video_list = youtube.videos().list(id=','.join(ids_from_playlist), part=VIDEO_PARTS, fields=VIDEO_FIELDS,
+                                               maxResults=API_MAX_RESULTS).execute()
             ids_from_video = [video['id'] for video in video_list['items']]
 
             missing_videos = set(ids_from_playlist) - set(ids_from_video)
@@ -230,8 +257,6 @@ def import_videos(user_id, subscription_id, playlist, bucket_ids, page_token=Non
                 data = dict(
                     subscription_id=subscription_id,
                     user_id=user_id,
-                    title=video['snippet']['title'],
-                    description=video['snippet']['description'],
                     published_at=parse_datetime(video['snippet']['publishedAt']),
                     thumbnails={size: value.get('url', '') for size, value in video['snippet']['thumbnails'].items()},
                     youtube_id=video['id'],

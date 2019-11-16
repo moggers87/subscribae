@@ -121,8 +121,6 @@ class Video(ThumbnailAbstract):
 
     # from video endpoint
     youtube_id = models.CharField(max_length=200)  # id
-    title = models.CharField(max_length=200)  # snippet.title
-    description = models.TextField()  # snippet.description
     published_at = models.DateTimeField()
 
     # calculate id based on user ID + video ID so we can get by keys later
@@ -140,6 +138,11 @@ class Video(ThumbnailAbstract):
     def html_snippet(self):
         tmpl = get_template("subscribae/includes/videos.html")
         return tmpl.render({"video": self})
+
+    def add_titles(self):
+        """Fetches titles and descriptions for Video"""
+        from subscribae.utils import video_add_titles
+        return list(video_add_titles([self]))[0]
 
 
 class OauthToken(models.Model):

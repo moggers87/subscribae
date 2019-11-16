@@ -27,6 +27,14 @@ class VideoQuerySet(QuerySet):
     def from_bucket(self, user, bucket):
         return self.filter(user=user, buckets__contains=bucket)
 
+    def add_titles(self):
+        """Fetches titles and descriptions for Videos
+
+        Returns a generator, rather than another queryset
+        """
+        from subscribae.utils import video_add_titles
+        return video_add_titles(self)
+
 
 class SubscriptionQuerySet(QuerySet):
     def add_titles(self):

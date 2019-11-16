@@ -63,6 +63,7 @@ def queryset_to_json(qs, ordering, property_map=None, before=None, after=None, s
         qs = qs.filter(**{"{}__lte".format(ordering): end}).reverse()
 
     qs = qs[:API_PAGE_SIZE]
+    qs = qs.add_titles()
 
     items = []
     item_orderings = []

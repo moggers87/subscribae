@@ -102,9 +102,9 @@ class ModelTestCase(TestCase):
         self.assertEqual(videos2[0], video)
 
 
-class AddTitlesTestCase(TestCase):
+class AddTitlesSubscriptionTestCase(TestCase):
     def setUp(self):
-        super(AddTitlesTestCase, self).setUp()
+        super(AddTitlesSubscriptionTestCase, self).setUp()
 
         self.service_patch = mock.patch('subscribae.utils.get_service')
         self.service_mock = self.service_patch.start()
@@ -163,3 +163,66 @@ class AddTitlesTestCase(TestCase):
 
     def test_empty_queryset_method(self):
         Subscription.objects.all().add_titles()
+
+
+class AddTitlesVideoTestCase(TestCase):
+    def setUp(self):
+        super(AddTitlesVideoTestCase, self).setUp()
+
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.video_mock = self.service_mock.return_value.videos.return_value.list
+
+        self.video_mock.return_value.execute.return_value = {
+            'items': [
+                {
+                    'id': '123',
+                    'snippet': {
+                        "title": "henlo",
+                        "description": "bluh bluh",
+                    },
+                },
+                {
+                    'id': '456',
+                    'snippet': {
+                        "title": "bye-q",
+                        "description": "blah blah",
+                    },
+                },
+            ],
+        }
+
+    def tearDown(self):
+        mock.patch.stopall()
+
+    def test_model_method(self):
+        vid = VideoFactory(youtube_id="123")
+        with self.assertRaises(AttributeError):
+            vid.title
+        with self.assertRaises(AttributeError):
+            vid.description
+
+        vid.add_titles()
+
+        self.assertEqual(vid.title, "henlo")
+        self.assertEqual(vid.description, "bluh bluh")
+
+    def test_queryset_method(self):
+        VideoFactory(youtube_id="123")
+        VideoFactory(youtube_id="456")
+
+        vids = Video.objects.all()
+        for obj in vids:
+            with self.assertRaises(AttributeError):
+                obj.title
+            with self.assertRaises(AttributeError):
+                obj.description
+
+        titled_vids = vids.add_titles()
+        for obj in titled_vids:
+            self.assertNotEqual(obj.title, None)
+            self.assertNotEqual(obj.description, None)
+
+    def test_empty_queryset_method(self):
+        Video.objects.all().add_titles()
