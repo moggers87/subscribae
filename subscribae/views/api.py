@@ -21,6 +21,7 @@ from djangae.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 
 from subscribae.decorators import active_user
@@ -125,15 +126,8 @@ def bucket_video_viewed(request, bucket):
         raise Http404
 
     with transaction.atomic(xg=True):
-        try:
-            bucket_obj = Bucket.objects.get(id=bucket_id)
-        except Bucket.DoesNotExist:
-            raise Http404
-
-        try:
-            vid = Video.objects.from_bucket(user=request.user, bucket=bucket_id).get(id=key)
-        except Video.DoesNotExist:
-            raise Http404
+        bucket_obj = get_object_or_404(Bucket, id=bucket_id)
+        vid = get_object_or_404(Video.objects.from_bucket(user=request.user, bucket=bucket_id), id=key)
 
         bucket_obj.last_watched_video = vid.ordering_key
         bucket_obj.save()
@@ -176,15 +170,8 @@ def subscription_video_viewed(request, subscription):
         raise Http404
 
     with transaction.atomic(xg=True):
-        try:
-            subscription_obj = Subscription.objects.get(id=subscription)
-        except Subscription.DoesNotExist:
-            raise Http404
-
-        try:
-            vid = Video.objects.from_subscription(user=request.user, subscription=subscription).get(id=key)
-        except Video.DoesNotExist:
-            raise Http404
+        subscription_obj = get_object_or_404(Subscription, id=subscription)
+        vid = get_object_or_404(Video.objects.from_subscription(user=request.user, subscription=subscription), id=key)
 
         subscription_obj.last_watched_video = vid.ordering_key
         subscription_obj.save()
