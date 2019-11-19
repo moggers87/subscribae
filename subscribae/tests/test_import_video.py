@@ -79,23 +79,21 @@ class ImportVideoTasksTestCase(TestCase):
 
         self.assertEqual(playlistitems_mock.call_args, (
             (),
-            {'playlistId': 'upload123', 'part': 'contentDetails', 'maxResults': API_MAX_RESULTS, 'pageToken': None}
+            {'playlistId': 'upload123', 'part': 'contentDetails',
+             'fields': 'items(contentDetails(videoId))', 'maxResults': API_MAX_RESULTS, 'pageToken': None}
         ))
         self.assertEqual(videos_mock.call_args, (
             (),
-            {'id': 'video123,video456', 'part': 'snippet', 'maxResults': API_MAX_RESULTS}
+            {'id': 'video123,video456', 'part': 'snippet',
+             'fields': 'items(snippet(publishedAt,thumbnails))', 'maxResults': API_MAX_RESULTS}
         ))
 
         self.assertEqual(Video.objects.count(), 2)
         video1 = Video.objects.get(youtube_id="video123")
-        self.assertEqual(video1.title, "my video")
-        self.assertEqual(video1.description, "this is my video")
         self.assertEqual(video1.published_at, datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC))
         self.assertEqual(video1.ordering_key,
                          create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)), "video123"))
         video2 = Video.objects.get(youtube_id="video456")
-        self.assertEqual(video2.title, "my other video")
-        self.assertEqual(video2.description, "this is my other video")
         self.assertEqual(video2.published_at, datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC))
         self.assertEqual(video2.ordering_key,
                          create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)), "video456"))
@@ -123,9 +121,9 @@ class ImportVideoTasksTestCase(TestCase):
         self.assertEqual(playlistitems_mock.call_count, 2)
 
         self.assertEqual(playlistitems_mock.call_args_list, [
-            ((), {'part': 'contentDetails', 'playlistId': 'upload123',
+            ((), {'part': 'contentDetails', 'fields': 'items(contentDetails(videoId))', 'playlistId': 'upload123',
                   'maxResults': API_MAX_RESULTS, 'pageToken': None}),
-            ((), {'part': 'contentDetails', 'playlistId': 'upload123',
+            ((), {'part': 'contentDetails', 'fields': 'items(contentDetails(videoId))', 'playlistId': 'upload123',
                   'maxResults': API_MAX_RESULTS, 'pageToken': '123'}),
         ])
 
@@ -178,7 +176,7 @@ class ImportVideoTasksTestCase(TestCase):
         self.assertEqual(playlistitems_mock.call_count, 1)
 
         self.assertEqual(playlistitems_mock.call_args_list, [
-            ((), {'part': 'contentDetails', 'playlistId': 'upload123',
+            ((), {'part': 'contentDetails', 'playlistId': 'upload123', 'fields': 'items(contentDetails(videoId))',
                   'maxResults': API_MAX_RESULTS, 'pageToken': None}),
         ])
 
@@ -243,23 +241,21 @@ class ImportVideoTasksTestCase(TestCase):
 
         self.assertEqual(playlistitems_mock.call_args, (
             (),
-            {'playlistId': 'upload123', 'part': 'contentDetails', 'maxResults': API_MAX_RESULTS, 'pageToken': None}
+            {'playlistId': 'upload123', 'part': 'contentDetails',
+             'fields': 'items(contentDetails(videoId))', 'maxResults': API_MAX_RESULTS, 'pageToken': None}
         ))
         self.assertEqual(videos_mock.call_args, (
             (),
-            {'id': 'video123,video456', 'part': 'snippet', 'maxResults': API_MAX_RESULTS}
+            {'id': 'video123,video456', 'part': 'snippet',
+             'fields': 'items(snippet(publishedAt,thumbnails))', 'maxResults': API_MAX_RESULTS}
         ))
 
         self.assertEqual(Video.objects.count(), 2)
         video1 = Video.objects.get(youtube_id="video123")
-        self.assertEqual(video1.title, "my video")
-        self.assertEqual(video1.description, "this is my video")
         self.assertEqual(video1.published_at, datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC))
         self.assertEqual(video1.ordering_key,
                          create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)), "video123"))
         video2 = Video.objects.get(youtube_id="video456")
-        self.assertEqual(video2.title, "")
-        self.assertEqual(video2.description, "")
         self.assertNotEqual(video2.published_at, datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC))
         self.assertNotEqual(video2.ordering_key,
                             create_composite_key(str(datetime(1997, 7, 16, 19, 20, 30, 450000, tzinfo=UTC)),
