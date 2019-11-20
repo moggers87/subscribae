@@ -26,6 +26,7 @@ from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from google.appengine.api import memcache
 from google.appengine.ext.deferred import deferred
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
 from oauth2client import client
@@ -80,10 +81,13 @@ def get_oauth_flow(user):
     return flow
 
 
-def get_service(user_id):
+def get_service(user_id, cache=True):
+    http_kwargs = {}
+    if cache:
+        http_kwargs["cache"] = memcache
     token = OauthToken.objects.get(user_id=user_id)
     credentials = token.get()
-    http = credentials.authorize(httplib2.Http())
+    http = credentials.authorize(httplib2.Http(**http_kwargs))
 
     service = build(API_NAME, API_VERSION, http=http)
     return service
