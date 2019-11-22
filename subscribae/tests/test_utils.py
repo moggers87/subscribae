@@ -18,12 +18,14 @@
 ##
 
 from djangae.test import TestCase
+from django.core.cache import cache
 from google.appengine.api import memcache
 import mock
 
 from subscribae.models import OauthToken
-from subscribae.tests.utils import UserFactory
-from subscribae.utils import get_service
+from subscribae.tests.utils import SubscriptionFactory, UserFactory, VideoFactory
+from subscribae.utils import (SUBSCRIPTION_TITLE_CACHE_PREFIX, VIDEO_TITLE_CACHE_PREFIX, get_service,
+                              subscription_add_titles, video_add_titles)
 
 
 class GetServiceTestCase(TestCase):
@@ -76,3 +78,139 @@ class GetServiceTestCase(TestCase):
         self.assertEqual(authorize.call_args[0][0].cache, memcache)
         self.assertEqual(credentials.new_from_json.call_count, 1)
         self.assertEqual(credentials.new_from_json.call_args, ((u"{}",), {}))
+
+
+class AddTitlesSubscriptionTestCase(TestCase):
+    def setUp(self):
+        super(AddTitlesSubscriptionTestCase, self).setUp()
+
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.channel_mock = self.service_mock.return_value.channels.return_value.list
+
+        self.channel_mock.return_value.execute.return_value = {
+            'items': [
+                {
+                    'id': '123',
+                    'snippet': {
+                        "title": "henlo",
+                        "description": "bluh bluh",
+                    },
+                },
+                {
+                    'id': '456',
+                    'snippet': {
+                        "title": "bye-q",
+                        "description": "blah blah",
+                    },
+                },
+            ],
+        }
+
+    def tearDown(self):
+        mock.patch.stopall()
+
+    def test_clean_cache(self):
+        sub = SubscriptionFactory.build(channel_id="123")
+
+        cached_data = cache.get(SUBSCRIPTION_TITLE_CACHE_PREFIX + "123")
+        self.assertEqual(cached_data, None)
+
+        results = list(subscription_add_titles([sub]))
+        self.assertEqual(results, [sub])
+
+        self.assertEqual(sub.title, "henlo")
+        self.assertEqual(sub.description, "bluh bluh")
+
+        self.assertEqual(self.channel_mock.call_count, 1)
+        self.assertEqual(self.channel_mock.call_args[1]["id"], "123")
+
+        cached_data = cache.get(SUBSCRIPTION_TITLE_CACHE_PREFIX + "123")
+        self.assertEqual(cached_data, {"title": "henlo", "description": "bluh bluh"})
+
+    def test_cache_populated(self):
+        sub = SubscriptionFactory.build(channel_id="123")
+
+        cache.set(SUBSCRIPTION_TITLE_CACHE_PREFIX + "123", {"title": "henlo", "description": "bluh bluh"})
+
+        results = list(subscription_add_titles([sub]))
+        self.assertEqual(results, [sub])
+
+        self.assertEqual(sub.title, "henlo")
+        self.assertEqual(sub.description, "bluh bluh")
+
+        self.assertEqual(self.channel_mock.call_count, 0)
+
+    def test_no_objects(self):
+        results = list(subscription_add_titles([]))
+        self.assertEqual(results, [])
+        self.assertEqual(self.channel_mock.call_count, 0)
+
+
+class AddTitlesVideoTestCase(TestCase):
+    def setUp(self):
+        super(AddTitlesVideoTestCase, self).setUp()
+
+        self.service_patch = mock.patch('subscribae.utils.get_service')
+        self.service_mock = self.service_patch.start()
+
+        self.video_mock = self.service_mock.return_value.videos.return_value.list
+
+        self.video_mock.return_value.execute.return_value = {
+            'items': [
+                {
+                    'id': '123',
+                    'snippet': {
+                        "title": "henlo",
+                        "description": "bluh bluh",
+                    },
+                },
+                {
+                    'id': '456',
+                    'snippet': {
+                        "title": "bye-q",
+                        "description": "blah blah",
+                    },
+                },
+            ],
+        }
+
+    def tearDown(self):
+        mock.patch.stopall()
+
+    def test_clean_cache(self):
+        vid = VideoFactory.build(youtube_id="123")
+
+        cached_data = cache.get(VIDEO_TITLE_CACHE_PREFIX + "123")
+        self.assertEqual(cached_data, None)
+
+        results = list(video_add_titles([vid]))
+        self.assertEqual(results, [vid])
+
+        self.assertEqual(vid.title, "henlo")
+        self.assertEqual(vid.description, "bluh bluh")
+
+        self.assertEqual(self.video_mock.call_count, 1)
+        self.assertEqual(self.video_mock.call_args[1]["id"], "123")
+
+        cached_data = cache.get(VIDEO_TITLE_CACHE_PREFIX + "123")
+        self.assertEqual(cached_data, {"title": "henlo", "description": "bluh bluh"})
+
+    def test_cache_populated(self):
+        vid = VideoFactory.build(youtube_id="123")
+
+        cache.set(VIDEO_TITLE_CACHE_PREFIX + "123", {"title": "henlo", "description": "bluh bluh"})
+
+        results = list(video_add_titles([vid]))
+        self.assertEqual(results, [vid])
+
+        self.assertEqual(vid.title, "henlo")
+        self.assertEqual(vid.description, "bluh bluh")
+
+        self.assertEqual(self.video_mock.call_count, 0)
+
+    def test_no_objects(self):
+        results = list(video_add_titles([]))
+        self.assertEqual(results, [])
+        self.assertEqual(self.video_mock.call_count, 0)

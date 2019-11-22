@@ -17,6 +17,7 @@
 #    along with Subscribae.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+from datetime import timedelta
 import logging
 import os
 
@@ -56,6 +57,9 @@ VIDEO_TITLE_PARTS = "snippet"
 SITE_CONFIG_ID = 19871022
 
 SITE_CONFIG_CACHE_KEY = "subscribae-site-config-%s" % SITE_CONFIG_ID
+SUBSCRIPTION_TITLE_CACHE_PREFIX = "sub-title"
+VIDEO_TITLE_CACHE_PREFIX = "video-title"
+TITLE_CACHE_TIMEOUT = timedelta(days=28).total_seconds()  # 28 days
 
 _log = logging.getLogger(__name__)
 
@@ -94,19 +98,31 @@ def get_service(user_id, cache=True):
 
 
 def subscription_add_titles(objects):
-    # TODO we should cache this data somewhere
     objects = list(objects)
     if len(objects) == 0:
         return
 
+    channel_data = {}
     youtube = get_service(objects[0].user_id)
-    channel_ids = [i.channel_id for i in objects]
+    channel_ids = []
+    for obj in objects:
+        data = cache.get("{}{}".format(SUBSCRIPTION_TITLE_CACHE_PREFIX, obj.channel_id))
+        if data:
+            channel_data[obj.channel_id] = data
+        else:
+            channel_ids.append(obj.channel_id)
 
-    channel_list = youtube.channels().list(id=','.join(channel_ids), part=CHANNEL_TITLE_PARTS,
-                                           fields=CHANNEL_TITLE_FIELDS, maxResults=len(objects)).execute()
+    if len(channel_ids) > 0:
+        channel_list = youtube.channels().list(id=','.join(channel_ids), part=CHANNEL_TITLE_PARTS,
+                                               fields=CHANNEL_TITLE_FIELDS, maxResults=len(objects)).execute()
 
-    channel_data = {chan["id"]: {"title": chan["snippet"]["title"], "description": chan["snippet"]["description"]}
-                    for chan in channel_list["items"]}
+        for chan in channel_list["items"]:
+            data = {"title": chan["snippet"]["title"], "description": chan["snippet"]["description"]}
+            cache.set(
+                "{}{}".format(SUBSCRIPTION_TITLE_CACHE_PREFIX, chan["id"]),
+                data
+            )
+            channel_data[chan["id"]] = data
 
     for obj in objects:
         data = channel_data.get(obj.channel_id, {"title": "", "description": ""})
@@ -116,19 +132,31 @@ def subscription_add_titles(objects):
 
 
 def video_add_titles(objects):
-    # TODO we should cache this data somewhere
     objects = list(objects)
     if len(objects) == 0:
         return
 
-    youtube = get_service(objects[0].user_id)
-    video_ids = [i.youtube_id for i in objects]
+    video_data = {}
+    youtube = get_service(objects[0].user_id, False)
+    video_ids = []
+    for obj in objects:
+        data = cache.get("{}{}".format(VIDEO_TITLE_CACHE_PREFIX, obj.youtube_id))
+        if data:
+            video_data[obj.youtube_id] = data
+        else:
+            video_ids.append(obj.youtube_id)
 
-    video_list = youtube.videos().list(id=','.join(video_ids), part=VIDEO_TITLE_PARTS,
-                                       fields=VIDEO_TITLE_FIELDS, maxResults=len(objects)).execute()
+    if len(video_ids) > 0:
+        video_list = youtube.videos().list(id=','.join(video_ids), part=VIDEO_TITLE_PARTS,
+                                           fields=VIDEO_TITLE_FIELDS, maxResults=len(objects)).execute()
 
-    video_data = {chan["id"]: {"title": chan["snippet"]["title"], "description": chan["snippet"]["description"]}
-                  for chan in video_list["items"]}
+        for vid in video_list["items"]:
+            data = {"title": vid["snippet"]["title"], "description": vid["snippet"]["description"]}
+            cache.set(
+                "{}{}".format(VIDEO_TITLE_CACHE_PREFIX, vid["id"]),
+                data
+            )
+            video_data[vid["id"]] = data
 
     for obj in objects:
         data = video_data.get(obj.youtube_id, {"title": "", "description": ""})
