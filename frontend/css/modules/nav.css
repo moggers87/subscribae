@@ -3,28 +3,34 @@ nav {
     background-color: var(--main-colour);
     min-height: var(--nav-height-extra);
 
-    & ul {
-        display: inline-block;
-        height: calc(var(--nav-height-extra) / 2);
-
-        @media (--xs) {
-            display: none;
-            height: unset;
-        }
-    }
-
-    & li {
-        height: var(--nav-height);
-    }
-
     & a {
         text-decoration: none;
     }
 
+    & > .nav-header, & > ul, & > .logo-holder {
+        display: table-cell;
+        vertical-align: middle;
+        height: var(--nav-height-extra);
+    }
+
+    & .logo-holder {
+        width: var(--nav-indent);
+    }
+
+    & .nav-header {
+    }
+
+    & ul {
+        text-transform: lowercase;
+
+        & li {
+            margin-left: var(--nav-indent);
+        }
+    }
+
     & svg.logo {
-        float: left;
-        height: 100%;
         width: auto;
+        display: block;
 
         & .fg {
             fill: var(--dark-colour);
@@ -36,9 +42,6 @@ nav {
             fill-opacity: 1.0;
         }
 
-        & ~ span {
-            margin-left: 8px;
-        }
     }
 }
 
@@ -47,12 +50,19 @@ nav {
     top: -9999px;
     left: -9999px;
 
-    @media (--xs) {
+    @media (--xs-down) {
+        & ~ ul {
+            display: none;
+            height: unset;
+        }
+
         &:checked ~ ul {
             display: block;
 
             & li {
-                margin: 0 0.5rem;
+                display: block;
+                margin-left: var(--nav-indent);
+                height: var(--nav-height);
             }
         }
     }
@@ -87,9 +97,4 @@ nav {
     @media (--s-up) {
             display: none !important;
         }
-}
-
-.nav-header {
-    display: inline-block;
-    height: var(--nav-height-extra);
 }
