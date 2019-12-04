@@ -174,9 +174,19 @@ def update_subscriptions(last_pk=None):
         for obj in qs.iterator():
             if obj.user.is_active:
                 deferred.defer(subscriptions, obj.user_id)
+                deferred.defer(unsubscriptions, obj.user_id)
             last_pk = obj.pk
     except RuntimeExceededError:
         deferred.defer(update_subscriptions, last_pk)
+
+
+def unsubscriptions(user_id, last_pk=None):
+    """Check subscriptions are still valid, otherwise delete them
+    """
+    try:
+        pass
+    except RuntimeExceededError:
+        deferred.defer(unsubscriptions, user_id, last_pk)
 
 
 def subscriptions(user_id, page_token=None):
