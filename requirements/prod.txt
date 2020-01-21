@@ -4,16 +4,16 @@
 #
 #    pip-compile --output-file requirements/prod.txt requirements/prod.in
 #
-djangae==0.9.12
+djangae==1.0.0
 django-csp-reports==1.3
-django-csp==3.5
-django==1.11.26
+django-csp==3.6
+django==1.11.27
 google-api-python-client==1.6.7
-httplib2==0.14.0          # via google-api-python-client, oauth2client
+httplib2==0.16.0          # via google-api-python-client, oauth2client
 oauth2client==4.1.3       # via google-api-python-client
-pyasn1-modules==0.2.7     # via oauth2client
+pyasn1-modules==0.2.8     # via oauth2client
 pyasn1==0.4.8             # via oauth2client, pyasn1-modules, rsa
 pytz==2019.3              # via django
 rsa==4.0                  # via oauth2client
-six==1.13.0               # via django-csp-reports, google-api-python-client, oauth2client
-uritemplate==3.0.0        # via google-api-python-client
+six==1.14.0               # via django-csp-reports, google-api-python-client, oauth2client
+uritemplate==3.0.1        # via google-api-python-client
