@@ -19,7 +19,7 @@
 
 from datetime import datetime
 
-from djangae.test import TestCase
+from django.test import TestCase
 from pytz import UTC
 import mock
 

@@ -19,9 +19,6 @@
 
 import base64
 
-from djangae.contrib.gauth_datastore.models import GaeAbstractDatastoreUser
-from djangae.db.constraints import UniquenessMixin
-from djangae.fields import ComputedCharField, JSONField, RelatedSetField
 from django.conf import settings
 from django.db import models
 from django.template import Context, Template

@@ -17,7 +17,7 @@
 #    along with Subscribae.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from djangae.test import TestCase
+from django.test import TestCase
 
 from subscribae.forms import BucketEditForm
 from subscribae.tests.utils import BucketFactory, SubscriptionFactory, UserFactory

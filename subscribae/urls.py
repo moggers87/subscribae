@@ -66,14 +66,8 @@ urlpatterns = (
     url(r'^api/subscription/(?P<subscription>.+)/videos/viewed$',
         api.subscription_video_viewed, name='subscription-video-viewed-api'),
 
-    # crons
-    url(r'^cron/update_subscriptions$', tasks.update_subscriptions_cron, name='update-subscriptions-cron'),
-
-    url(r'^_ah/', include('djangae.urls')),
 
     url(r'^csp/', include('cspreports.urls')),
-
-    url(r'^auth/', include('djangae.contrib.gauth.urls')),
 
     url(r'^admin/', include('subscribae.admin.urls', namespace='admin')),
 )

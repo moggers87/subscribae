@@ -17,7 +17,7 @@
 #    along with Subscribae.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from djangae.db import transaction
+from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import Http404, JsonResponse

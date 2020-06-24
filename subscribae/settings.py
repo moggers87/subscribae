@@ -1,18 +1,4 @@
 ##
-#    Copyright 2014 Potato London Ltd.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-#    this file except in compliance with the License. You may obtain a copy of the
-#    License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software distributed
-#    under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-#    CONDITIONS OF ANY KIND, either express or implied. See the License for the
-#    specific language governing permissions and limitations under the License.
-##
-##
 #    Copyright (C) 2016  Matt Molyneaux <moggers87+git@moggers87.co.uk>
 #
 #    This file is part of Subscribae.
@@ -43,16 +29,13 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
-from djangae.settings_base import * # noqa
 from django.core.urlresolvers import reverse_lazy
-
-from .boot import get_app_config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_app_config().secret_key
+SECRET_KEY = "set me"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -65,27 +48,20 @@ DJANGAE_CREATE_UNKNOWN_USER = True
 # Application definition
 
 INSTALLED_APPS = (
-    'djangae',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'djangae.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django.forms',
     'csp',
     'cspreports',
-    'djangae.contrib.gauth_datastore',
-    'djangae.contrib.security',
     'subscribae',
     'subscribae.admin',
-    # 'djangae.contrib.uniquetool',
 )
 
 MIDDLEWARE_CLASSES = (
-    'djangae.contrib.security.middleware.AppEngineSecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'djangae.contrib.gauth.middleware.AuthenticationMiddleware',
     'csp.middleware.CSPMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -118,7 +94,6 @@ TEMPLATES = [
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 SILENCED_SYSTEM_CHECKS = [
-    'djangae.E001',  # we're using Django 1.11 session csrf feature
 ]
 
 CSRF_USE_SESSIONS = True
@@ -187,7 +162,5 @@ CSP_SCRIPT_SRC = ("'self'", "https://www.youtube.com", "https://s.ytimg.com")
 CSP_IMG_SRC = ("'self'", "https:")
 CSP_CONNECT_SRC = ("'self'",)
 
-
-from djangae.contrib.gauth.settings import *  # noqa
 
 AUTH_USER_MODEL = "subscribae.SubscribaeUser"

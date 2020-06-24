@@ -19,7 +19,7 @@
 
 import os
 
-from djangae.test import TestCase, inconsistent_db
+from django.test import TestCase, inconsistent_db
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
@@ -169,10 +169,9 @@ class ViewTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertNumTasksEquals(0)
 
-        with mock.patch("djangae.environment.is_in_cron"):
-            response = self.client.get(reverse('update-subscriptions-cron'))
-            self.assertEqual(response.status_code, 200)
-            self.assertNumTasksEquals(1)
+        response = self.client.get(reverse('update-subscriptions-cron'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNumTasksEquals(1)
 
     def test_source(self):
         response = self.client.get(reverse('source'))

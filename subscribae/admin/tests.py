@@ -19,12 +19,12 @@
 
 import os
 
-from djangae.test import TestCase, inconsistent_db
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse
+from django.test import TestCase
 
 from subscribae.admin.views import (USER_PAGE_SIZE, admin_for_superusers, index, site_config, user_add, user_edit,
                                     user_index)

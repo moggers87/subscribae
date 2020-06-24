@@ -20,7 +20,6 @@
 from functools import wraps
 import logging
 
-from djangae.db.consistency import ensure_instance_consistent
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.urlresolvers import reverse

@@ -17,7 +17,7 @@
 #    along with Subscribae.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from djangae.test import TestCase
+from django.test import TestCase
 from django.core.cache import cache
 import mock
 

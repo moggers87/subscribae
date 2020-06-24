@@ -20,7 +20,7 @@
 from datetime import timedelta
 import unittest
 
-from djangae.test import TestCase
+from django.test import TestCase
 from django.utils import timezone
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError
 import mock

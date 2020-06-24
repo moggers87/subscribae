@@ -17,7 +17,7 @@
 #    along with Subscribae.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from djangae.test import TestCase
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ImproperlyConfigured

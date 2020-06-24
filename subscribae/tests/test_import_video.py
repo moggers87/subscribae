@@ -19,7 +19,7 @@
 
 from datetime import datetime
 
-from djangae.test import TestCase
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from google.appengine.runtime import DeadlineExceededError as RuntimeExceededError

@@ -19,7 +19,7 @@
 
 import json
 
-from djangae.test import TestCase
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 import mock
@@ -61,7 +61,7 @@ class BucketVideoApiTestCase(TestCase):
     def test_login_required(self):
         gae_logout()
         response = self.client.get(reverse("bucket-video-api", kwargs={"bucket": "123"}))
-        self.assertRedirects(response, "{}?next={}".format(reverse("djangae_login_redirect"),
+        self.assertRedirects(response, "{}?next={}".format(reverse("login_redirect"),
                              reverse("bucket-video-api", kwargs={"bucket": "123"})), fetch_redirect_response=False)
 
     def test_get_empty(self):
@@ -183,7 +183,7 @@ class BucketVideoViewApiTestCase(TestCase):
     def test_login_required(self):
         gae_logout()
         response = self.client.get(reverse("bucket-video-viewed-api", kwargs={"bucket": "123"}))
-        self.assertRedirects(response, "{}?next={}".format(reverse("djangae_login_redirect"),
+        self.assertRedirects(response, "{}?next={}".format(reverse("login_redirect"),
                              reverse("bucket-video-viewed-api",
                                      kwargs={"bucket": "123"})), fetch_redirect_response=False)
 
@@ -245,7 +245,7 @@ class SubscriptionVideoApiTestCase(TestCase):
     def test_login_required(self):
         gae_logout()
         response = self.client.get(reverse("subscription-video-api", kwargs={"subscription": "123"}))
-        self.assertRedirects(response, "{}?next={}".format(reverse("djangae_login_redirect"),
+        self.assertRedirects(response, "{}?next={}".format(reverse("login_redirect"),
                              reverse("subscription-video-api",
                                      kwargs={"subscription": "123"})), fetch_redirect_response=False)
 
@@ -359,7 +359,7 @@ class SubscriptionVideoViewApiTestCase(TestCase):
     def test_login_required(self):
         gae_logout()
         response = self.client.get(reverse("subscription-video-viewed-api", kwargs={"subscription": "123"}))
-        self.assertRedirects(response, "{}?next={}".format(reverse("djangae_login_redirect"),
+        self.assertRedirects(response, "{}?next={}".format(reverse("login_redirect"),
                              reverse("subscription-video-viewed-api",
                                      kwargs={"subscription": "123"})), fetch_redirect_response=False)
 

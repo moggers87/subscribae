@@ -19,7 +19,7 @@ tests-js: install-deps
 
 .PHONY: install-pip-deps
 install-pip-deps:
-	./install_deps
+	pip install -r requirements/prod.txt -r requirements/dev.txt
 
 .PHONY: install-npm-deps
 install-npm-deps:

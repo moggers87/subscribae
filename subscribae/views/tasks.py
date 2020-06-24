@@ -17,7 +17,6 @@
 #    along with Subscribae.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from djangae.environment import task_or_admin_only
 from django.http import HttpResponse
 from google.appengine.ext.deferred import deferred
 
